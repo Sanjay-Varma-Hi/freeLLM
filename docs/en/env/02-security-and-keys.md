@@ -73,4 +73,6 @@ An operator pointing `FREEAPI_DB_PATH` at a dedicated pre-existing directory can
 
 ## First-run setup code
 
-The first dashboard account is created through the UI. A browser on the same machine as the server can do this with no extra step. If the server is reachable from other devices, creating that first account also requires a one-time setup code, printed in the server logs at startup while no account exists — this stops a stranger from claiming a freshly exposed install.
+The first dashboard account is created through the UI. A browser on the same machine as the server can do this with no extra step. If the server is reachable from other devices, creating that first account also requires a setup code, printed in the server logs at startup while no account exists — this stops a stranger from claiming a freshly exposed install.
+
+The code stays stable across process restarts while the dashboard is still unclaimed: it is reused from the `settings` table when the database survives, and can be pinned with `SETUP_CODE` / `FREELLMAPI_SETUP_CODE` when the disk is ephemeral (for example Render's free tier). Likewise, pin the unified `/v1` key with `UNIFIED_API_KEY` / `FREELLMAPI_UNIFIED_API_KEY` so callers keep the same credential after a wiped SQLite file; dashboard Regenerate is refused while that env var is set.

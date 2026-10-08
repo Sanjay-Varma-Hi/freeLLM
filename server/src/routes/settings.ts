@@ -393,8 +393,13 @@ settingsRouter.get('/api-key', (_req: Request, res: Response) => {
 
 // Regenerate the unified API key
 settingsRouter.post('/api-key/regenerate', (_req: Request, res: Response) => {
-  const newKey = regenerateUnifiedKey();
-  res.json({ apiKey: newKey });
+  try {
+    const newKey = regenerateUnifiedKey();
+    res.json({ apiKey: newKey });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(409).json({ error: { message, type: 'unified_key_pinned' } });
+  }
 });
 
 // Get the proxy settings

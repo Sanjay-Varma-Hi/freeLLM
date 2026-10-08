@@ -222,13 +222,71 @@ export function initDb(
   return db;
 }
 
+/** Env names that pin the unified /v1 key across restarts and ephemeral disks. */
+const UNIFIED_API_KEY_ENV = ['FREELLMAPI_UNIFIED_API_KEY', 'UNIFIED_API_KEY'] as const;
+
+/**
+ * A pinned unified key from the environment, or null when unset / invalid.
+ * Format matches keys this gateway issues: `freellmapi-` + at least 16 hex chars.
+ */
+export function readPinnedUnifiedApiKey(): string | null {
+  for (const name of UNIFIED_API_KEY_ENV) {
+    const raw = process.env[name]?.trim();
+    if (!raw) continue;
+    const match = /^freellmapi-([a-f0-9]{16,})$/i.exec(raw);
+    if (!match) {
+      console.warn(
+        `[unified-key] Ignoring ${name}: expected freellmapi-<hex> (at least 16 hex chars).`,
+      );
+      continue;
+    }
+    return `freellmapi-${match[1]!.toLowerCase()}`;
+  }
+  return null;
+}
+
+export function isUnifiedApiKeyPinned(): boolean {
+  return readPinnedUnifiedApiKey() != null;
+}
+
+/**
+ * When UNIFIED_API_KEY / FREELLMAPI_UNIFIED_API_KEY is set, write it into the
+ * settings row so the dashboard and /v1 auth agree — even after a wiped DB
+ * reminted a random key during migrations.
+ */
+export function syncPinnedUnifiedApiKey(): void {
+  const pinned = readPinnedUnifiedApiKey();
+  if (!pinned) return;
+  const db = getDb();
+  const existing = db.prepare("SELECT value FROM settings WHERE key = 'unified_api_key'").get() as
+    | { value: string }
+    | undefined;
+  if (existing?.value === pinned) return;
+  db.prepare(`
+    INSERT INTO settings (key, value) VALUES ('unified_api_key', ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `).run(pinned);
+  console.log(
+    '[unified-key] Using UNIFIED_API_KEY / FREELLMAPI_UNIFIED_API_KEY from the environment ' +
+      '(stable across restarts; dashboard Regenerate is disabled while pinned).',
+  );
+}
+
 export function getUnifiedApiKey(): string {
+  const pinned = readPinnedUnifiedApiKey();
+  if (pinned) return pinned;
   const db = getDb();
   const row = db.prepare("SELECT value FROM settings WHERE key = 'unified_api_key'").get() as { value: string };
   return row.value;
 }
 
 export function regenerateUnifiedKey(): string {
+  if (isUnifiedApiKeyPinned()) {
+    throw new Error(
+      'Unified API key is pinned by UNIFIED_API_KEY / FREELLMAPI_UNIFIED_API_KEY. ' +
+        'Unset that environment variable to rotate the key from the dashboard.',
+    );
+  }
   const db = getDb();
   const key = `freellmapi-${crypto.randomBytes(24).toString('hex')}`;
   db.prepare("UPDATE settings SET value = ? WHERE key = 'unified_api_key'").run(key);

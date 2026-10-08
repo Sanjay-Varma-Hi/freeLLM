@@ -15,6 +15,11 @@ const CODE_LENGTH = 10;
 export interface OneTimeCode {
   /** Mint a new code, replacing any existing one. Returns the raw code string. */
   generate(): string;
+  /**
+   * Install a known code without minting. Used to reuse a persisted or
+   * env-pinned value across process restarts.
+   */
+  adopt(code: string): string;
   /** Return the current code, or null if none is active. */
   get(): string | null;
   /** Invalidate the current code. */
@@ -37,6 +42,11 @@ export function createOneTimeCode(): OneTimeCode {
         out += ALPHABET[bytes[i]! % ALPHABET.length];
       }
       current = out;
+      return current;
+    },
+
+    adopt(code: string) {
+      current = code;
       return current;
     },
 

@@ -2236,7 +2236,12 @@ function backfillFallback(db: Db) {
 function ensureUnifiedKey(db: Db) {
   const existing = db.prepare("SELECT value FROM settings WHERE key = 'unified_api_key'").get() as { value: string } | undefined;
   if (!existing) {
-    const key = `freellmapi-${crypto.randomBytes(24).toString('hex')}`;
+    // Prefer a host-pinned key (Render env, Docker secrets, …) so an ephemeral
+    // disk reminting the DB does not rotate the credential callers already hold.
+    const pinned = (process.env.FREELLMAPI_UNIFIED_API_KEY ?? process.env.UNIFIED_API_KEY ?? '').trim();
+    const key = /^freellmapi-[a-f0-9]{16,}$/i.test(pinned)
+      ? `freellmapi-${pinned.slice('freellmapi-'.length).toLowerCase()}`
+      : `freellmapi-${crypto.randomBytes(24).toString('hex')}`;
     db.prepare("INSERT INTO settings (key, value) VALUES ('unified_api_key', ?)").run(key);
     // A direct stdout write bypasses the process-wide console redaction, so it
     // is only safe for a deliberate local-development session with an attached
@@ -2244,6 +2249,10 @@ function ensureUnifiedKey(db: Db) {
     // credential in a log stream; the dashboard is the safe retrieval path.
     if (isInteractiveLocalDevelopment()) {
       process.stdout.write(`\n  Your unified API key: ${key}\n\n`);
+    } else if (/^freellmapi-[a-f0-9]{16,}$/i.test(pinned)) {
+      console.log(
+        '\n  Using UNIFIED_API_KEY / FREELLMAPI_UNIFIED_API_KEY from the environment.\n',
+      );
     } else {
       console.log(
         '\n  A unified API key was generated. Open the dashboard and retrieve it from the Keys page.\n' +

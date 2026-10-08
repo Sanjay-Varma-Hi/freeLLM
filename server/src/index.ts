@@ -1,6 +1,6 @@
 import './env.js';
 import { createApp } from './app.js';
-import { initDb, getDb } from './db/index.js';
+import { initDb, getDb, syncPinnedUnifiedApiKey } from './db/index.js';
 import { startHealthChecker, checkAllKeys } from './services/health.js';
 import { restoreProxySettings, flushProxyCache } from './lib/proxy.js';
 import { startWakeDetect } from './lib/wake-detect.js';
@@ -44,6 +44,9 @@ async function main() {
     await restoreDbBackupIfNeeded();
   }
   initDb(config.dbPath ?? undefined);
+  // Env-pinned unified key wins over whatever migrations just minted into a
+  // fresh (or wiped) SQLite file — keeps /v1 callers stable on ephemeral hosts.
+  syncPinnedUnifiedApiKey();
   applyDeclarativeConfigFromEnv();
   // After initDb: the unknown-model half of this check reads the catalog.
   warnOnRoutingOverrideDrift();
@@ -63,9 +66,10 @@ async function main() {
     console.log(`[ratelimit] cleared ${expiredCooldowns} expired cooldown${expiredCooldowns === 1 ? '' : 's'}`);
   }
 
-  // First-run hardening: when the dashboard is still unclaimed, mint a one-time
-  // setup code and log it. A loopback browser can finish setup without it; a
-  // remote caller must supply it (see routes/auth.ts). Regenerated each boot.
+  // First-run hardening: when the dashboard is still unclaimed, resolve a setup
+  // code and log it. Prefers SETUP_CODE env, then a code persisted from a prior
+  // boot, then mints a new one. A loopback browser can finish setup without it;
+  // a remote caller must supply it (see routes/auth.ts).
   if (userCount() === 0) {
     generateSetupCode();
   }
