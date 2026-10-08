@@ -6,6 +6,10 @@ import type { Db } from '../db/types.js';
 import type { Scheduler } from './scheduler.js';
 import { getDefaultDbPath } from '../db/index.js';
 import { restrictToOwner } from './file-permissions.js';
+import {
+  isMongoConfigured, mongoLabel, readMongoSnapshot, writeMongoSnapshot,
+  syncMongoMirrors, seedFromMongoMirrors,
+} from './mongo-store.js';
 
 const MAGIC = Buffer.from('FAPIBK1\0');
 const DEFAULT_INTERVAL_MS = 5 * 60 * 1000;
@@ -20,7 +24,22 @@ export interface DbBackupResult {
   skipped?: string;
 }
 
+const MONGO_TARGET = 'mongodb';
+const MONGO_DEFAULT_INTERVAL_MS = 2 * 60 * 1000;
+const SOON_DELAY_MS = 3 * 1000;
+
+function isMongoTarget(target: string): boolean {
+  return target === MONGO_TARGET;
+}
+
+/** What to print in logs — a MongoDB URI carries the password, so never print it. */
+function describeTarget(target: string): string {
+  return isMongoTarget(target) ? mongoLabel() : target;
+}
+
 function backupTarget(): string | null {
+  // MONGODB_URI wins: it is the persistence layer for ephemeral hosts.
+  if (isMongoConfigured()) return MONGO_TARGET;
   const raw = process.env.FREEAPI_DB_BACKUP_TARGET
     ?? process.env.FREEAPI_DB_BACKUP_URL
     ?? process.env.FREEAPI_DB_BACKUP_PATH
@@ -35,9 +54,10 @@ export function isDbBackupConfigured(): boolean {
 
 function backupIntervalMs(): number {
   const raw = process.env.FREEAPI_DB_BACKUP_INTERVAL_MS;
-  if (!raw) return DEFAULT_INTERVAL_MS;
+  const fallback = isMongoConfigured() ? MONGO_DEFAULT_INTERVAL_MS : DEFAULT_INTERVAL_MS;
+  if (!raw) return fallback;
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : DEFAULT_INTERVAL_MS;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
 }
 
 function isHttpTarget(target: string): boolean {
@@ -161,6 +181,7 @@ function decodeHuggingFacePayload(raw: Buffer): Buffer {
 }
 
 async function readTarget(target: string): Promise<Buffer | null> {
+  if (isMongoTarget(target)) return readMongoSnapshot();
   if (isHttpTarget(target)) {
     const headers: Record<string, string> = {};
     const token = process.env.FREEAPI_DB_BACKUP_TOKEN?.trim();
@@ -176,7 +197,11 @@ async function readTarget(target: string): Promise<Buffer | null> {
   return fs.readFileSync(target);
 }
 
-async function writeTarget(target: string, payload: Buffer): Promise<void> {
+async function writeTarget(target: string, payload: Buffer, meta: { sha256: string; bytes: number }): Promise<void> {
+  if (isMongoTarget(target)) {
+    await writeMongoSnapshot(payload, meta);
+    return;
+  }
   if (isHttpTarget(target)) {
     const token = process.env.FREEAPI_DB_BACKUP_TOKEN?.trim();
     const huggingFace = parseHuggingFaceTarget(target);
@@ -226,7 +251,7 @@ export async function restoreDbBackupIfNeeded(dbPath = getDefaultDbPath()): Prom
     restored = gunzipSync(decryptBackup(payload));
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
-    throw new Error(`could not restore SQLite backup from ${target}: ${detail}`);
+    throw new Error(`could not restore SQLite backup from ${describeTarget(target)}: ${detail}`);
   }
 
   fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
@@ -237,11 +262,19 @@ export async function restoreDbBackupIfNeeded(dbPath = getDefaultDbPath()): Prom
   if (!restrictToOwner(dbPath)) {
     console.warn(`[db-backup] could not restrict permissions on the restored database at ${dbPath}`);
   }
-  console.log(`[db-backup] restored ${restored.length} bytes from ${target}`);
+  console.log(`[db-backup] restored ${restored.length} bytes from ${describeTarget(target)}`);
+  lastUploadedSha = crypto.createHash('sha256').update(restored).digest('hex');
   return { ok: true, target, bytes: restored.length, restored: true };
 }
 
-export async function backupDbNow(db: Db, dbPath = getDefaultDbPath()): Promise<DbBackupResult> {
+let lastUploadedSha: string | null = null;
+let inFlight: Promise<DbBackupResult> | null = null;
+let rerunRequested = false;
+let pumpDb: Db | null = null;
+let pumpDbPath: string | undefined;
+let soonTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function backupDbOnce(db: Db, dbPath: string): Promise<DbBackupResult> {
   const target = backupTarget();
   if (!target) return { ok: true, skipped: 'not configured' };
   if (dbPath === ':memory:') return { ok: true, target, skipped: 'memory database' };
@@ -254,18 +287,91 @@ export async function backupDbNow(db: Db, dbPath = getDefaultDbPath()): Promise<
   }
 
   const plain = fs.readFileSync(dbPath);
+  const sha256 = crypto.createHash('sha256').update(plain).digest('hex');
+  // Nothing changed since the last upload: skip the round-trip entirely.
+  // (MongoDB only — file/HTTP targets keep their original always-upload behaviour.)
+  if (isMongoTarget(target) && sha256 === lastUploadedSha) return { ok: true, target, skipped: 'unchanged' };
+
   const payload = encryptBackup(gzipSync(plain));
-  await writeTarget(target, payload);
-  console.log(`[db-backup] uploaded ${plain.length} bytes to ${target}`);
+  await writeTarget(target, payload, { sha256, bytes: plain.length });
+  lastUploadedSha = sha256;
+  let extra = '';
+  if (isMongoTarget(target)) {
+    const m = await syncMongoMirrors(db);
+    extra = ` (+ ${m.accounts} account${m.accounts === 1 ? '' : 's'}, ${m.keys} provider key${m.keys === 1 ? '' : 's'})`;
+  }
+  console.log(`[db-backup] uploaded ${plain.length} bytes to ${describeTarget(target)}${extra}`);
   return { ok: true, target, bytes: plain.length };
+}
+
+/** Back up now. Calls that arrive while an upload is running are coalesced into
+ *  one follow-up run, so a burst of dashboard edits costs at most two uploads. */
+export async function backupDbNow(db: Db, dbPath = getDefaultDbPath()): Promise<DbBackupResult> {
+  if (inFlight) {
+    rerunRequested = true;
+    return inFlight;
+  }
+  inFlight = (async () => {
+    try {
+      let result = await backupDbOnce(db, dbPath);
+      while (rerunRequested) {
+        rerunRequested = false;
+        result = await backupDbOnce(db, dbPath);
+      }
+      return result;
+    } finally {
+      inFlight = null;
+    }
+  })();
+  return inFlight;
+}
+
+function logBackupError(err: unknown): void {
+  console.warn(`[db-backup] ${err instanceof Error ? err.message : err}`);
+}
+
+/** Debounced backup a few seconds after a dashboard change (new account,
+ *  password change, provider key added/removed, settings edited). */
+export function requestDbBackupSoon(): void {
+  if (!pumpDb) return;
+  if (soonTimer) clearTimeout(soonTimer);
+  soonTimer = setTimeout(() => {
+    soonTimer = null;
+    if (pumpDb) void backupDbNow(pumpDb, pumpDbPath).catch(logBackupError);
+  }, SOON_DELAY_MS);
+  soonTimer.unref?.();
+}
+
+/** Final upload before the process exits (Render sends SIGTERM on spin-down). */
+export async function flushDbBackup(timeoutMs = 8000): Promise<void> {
+  if (!pumpDb) return;
+  if (soonTimer) { clearTimeout(soonTimer); soonTimer = null; }
+  await Promise.race([
+    backupDbNow(pumpDb, pumpDbPath).catch(logBackupError),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
+/** When MongoDB is configured and the database came up without accounts or
+ *  provider keys (no snapshot to restore), re-seed them from the mirrors. */
+export async function seedFromMirrorsIfEmpty(db: Db): Promise<void> {
+  if (!isMongoConfigured()) return;
+  try {
+    const r = await seedFromMongoMirrors(db);
+    if (r.accounts || r.keys) {
+      console.log(`[db-backup] re-seeded ${r.accounts} account(s) and ${r.keys} provider key(s) from ${mongoLabel()}`);
+    }
+  } catch (err) {
+    console.warn(`[db-backup] could not read account mirrors from ${mongoLabel()}: ${err instanceof Error ? err.message : err}`);
+  }
 }
 
 export function startDbBackupPump(db: Db, scheduler: Scheduler, dbPath = getDefaultDbPath()): (() => void) | null {
   if (!backupTarget()) return null;
+  pumpDb = db;
+  pumpDbPath = dbPath;
   const run = () => {
-    void backupDbNow(db, dbPath).catch(err => {
-      console.warn(`[db-backup] ${err instanceof Error ? err.message : err}`);
-    });
+    void backupDbNow(db, dbPath).catch(logBackupError);
   };
   run();
   return scheduler.every(backupIntervalMs(), run);

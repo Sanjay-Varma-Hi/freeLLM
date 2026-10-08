@@ -12,7 +12,8 @@ import { installProcessSafetyNet } from './lib/process-safety-net.js';
 import { NodeScheduler } from './lib/scheduler.js';
 import { loadConfig } from './lib/config.js';
 import { applyDeclarativeConfigFromEnv } from './services/declarative-config.js';
-import { restoreDbBackupIfNeeded, startDbBackupPump } from './lib/db-backup.js';
+import { restoreDbBackupIfNeeded, startDbBackupPump, seedFromMirrorsIfEmpty, flushDbBackup } from './lib/db-backup.js';
+import { isMongoConfigured, mongoLabel, closeMongo } from './lib/mongo-store.js';
 import { startBackupScheduler } from './services/backups.js';
 import { userCount } from './services/auth.js';
 import { generateSetupCode } from './lib/setup-code.js';
@@ -47,6 +48,10 @@ async function main() {
   // Env-pinned unified key wins over whatever migrations just minted into a
   // fresh (or wiped) SQLite file — keeps /v1 callers stable on ephemeral hosts.
   syncPinnedUnifiedApiKey();
+  // MongoDB persistence: if the disk came up empty and there was no snapshot to
+  // restore, bring back dashboard accounts and provider keys from the mirrors.
+  await seedFromMirrorsIfEmpty(getDb());
+  if (isMongoConfigured()) console.log(`[db-backup] persisting to ${mongoLabel()}`);
   applyDeclarativeConfigFromEnv();
   // After initDb: the unknown-model half of this check reads the catalog.
   warnOnRoutingOverrideDrift();
@@ -125,6 +130,21 @@ async function main() {
     s.keepAliveTimeout = 75_000;
     s.headersTimeout = 76_000;
   };
+
+  // Render (and Docker) stop the container with SIGTERM — on Render's free plan
+  // that happens every time the service spins down. Upload a final snapshot
+  // first so nothing changed since the last periodic backup is lost.
+  let shuttingDown = false;
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+    process.once(signal, () => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      console.log(`[server] ${signal} received — saving a final database backup`);
+      void flushDbBackup()
+        .finally(() => closeMongo())
+        .finally(() => process.exit(0));
+    });
+  }
 
   const server = app.listen(Number(PORT), HOST, onReady(HOST));
   tuneKeepAlive(server);

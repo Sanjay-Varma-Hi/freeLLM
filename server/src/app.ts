@@ -25,6 +25,7 @@ import { backupsRouter } from './routes/backups.js';
 import { cacheRouter } from './routes/cache.js';
 import { compressionRouter } from './routes/compression.js';
 import { authRouter } from './routes/auth.js';
+import { requestDbBackupSoon } from './lib/db-backup.js';
 import { docsRouter } from './routes/docs.js';
 import { mcpRouter } from './routes/mcp.js';
 import { statusRouter, providersRouter } from './routes/status.js';
@@ -228,6 +229,18 @@ export function createApp(config?: Config) {
   // the Ollama /api/* mount above, which carries its own proxy limiter.
   const adminRateLimiter = createAdminRateLimiter();
   app.use('/api', adminRateLimiter);
+
+  // Persist dashboard changes promptly: any successful write to the admin API
+  // (account setup, password change, provider keys, chains, settings) schedules
+  // a debounced database backup. A no-op unless a backup target is configured.
+  app.use('/api', (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS') {
+      res.on('finish', () => {
+        if (res.statusCode < 400) requestDbBackupSoon();
+      });
+    }
+    next();
+  });
 
   // Dashboard auth (#35): /api/auth/{status,setup,login} bootstrap without a
   // session; everything else under /api/* requires a logged-in dashboard user.
