@@ -7,7 +7,7 @@ import { useI18n } from '@/i18n'
 // Searchable model picker, extracted from the Playground so every model
 // selection in the dashboard can use the same control. Substring match over
 // name, provider names, and id; arrow keys + Enter select. The Add key dialog
-// reuses it for its provider list too (#707), hence `header`/`triggerPlaceholder`.
+// reuses it for its provider list too, hence `header`/`triggerPlaceholder`.
 export interface ModelComboOption {
   value: string
   label: string

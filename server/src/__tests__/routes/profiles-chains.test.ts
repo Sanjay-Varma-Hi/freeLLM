@@ -6,7 +6,7 @@ import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 import { ensureAllModelsInProfiles, ensureModelInProfiles } from '../../services/profile-models.js';
 import { resolveRoutingChain } from '../../services/router.js';
 
-// Named fallback chains you build by hand (#895). Two things have to hold for
+// Named fallback chains you build by hand. Two things have to hold for
 // a curated chain to survive: creating one must not dump the whole catalog
 // into it, and the catalog-sync backfill must leave it alone afterwards.
 let app: Express;
@@ -40,7 +40,7 @@ function catalogSize(): number {
     .get() as { n: number }).n;
 }
 
-/** The single global table every chain used to be aliased onto (#1021). */
+/** The single global table every chain used to be aliased onto. */
 function globalConfig(): { model_db_id: number; priority: number; enabled: number }[] {
   return getDb().prepare(
     'SELECT model_db_id, priority, enabled FROM fallback_config ORDER BY model_db_id',
@@ -73,7 +73,7 @@ describe('named fallback chains', () => {
     dashToken = mintDashboardToken();
   });
 
-  it('creates an empty chain that holds nothing (#895)', async () => {
+  it('creates an empty chain that holds nothing', async () => {
     const { status, body } = await request('POST', '/api/profiles', { name: 'hand-built', empty: true });
     expect(status).toBe(201);
     expect(body.name).toBe('hand-built');
@@ -104,7 +104,7 @@ describe('named fallback chains', () => {
     expect(chainSize(body.id)).toBe(0);
   });
 
-  it('keeps a curated chain pruned across a catalog backfill (#895)', async () => {
+  it('keeps a curated chain pruned across a catalog backfill', async () => {
     const curated = (await request('POST', '/api/profiles', { name: 'curated', empty: true })).body;
     const inheriting = (await request('POST', '/api/profiles', { name: 'inheriting' })).body;
     const inheritingBefore = chainSize(inheriting.id);
@@ -146,7 +146,7 @@ describe('named fallback chains', () => {
     expect(chainSize(chain.id)).toBe(0);
   });
 
-  it('shows an empty active chain as the catalog with nothing turned on (#1021)', async () => {
+  it('shows an empty active chain as the catalog with nothing turned on', async () => {
     const empty = (await request('POST', '/api/profiles', { name: 'blank', empty: true })).body;
     expect((await request('POST', '/api/profiles/active', { profileId: empty.id })).status).toBe(200);
 
@@ -166,7 +166,7 @@ describe('named fallback chains', () => {
     expect(chainSize(empty.id)).toBe(0);
   });
 
-  it('fills an empty chain on save without touching the global table (#1021)', async () => {
+  it('fills an empty chain on save without touching the global table', async () => {
     const chain = (await request('POST', '/api/profiles', { name: 'built', empty: true })).body;
     await request('POST', '/api/profiles/active', { profileId: chain.id });
 
@@ -189,7 +189,7 @@ describe('named fallback chains', () => {
     expect(globalConfig()).toEqual(before);
   });
 
-  it('keeps two empty chains from sharing one configuration (#1021)', async () => {
+  it('keeps two empty chains from sharing one configuration', async () => {
     const a = (await request('POST', '/api/profiles', { name: 'chain-a', empty: true })).body;
     const b = (await request('POST', '/api/profiles', { name: 'chain-b', empty: true })).body;
 
@@ -211,7 +211,7 @@ describe('named fallback chains', () => {
     expect(seenFromA.filter(row => row.enabled).length).toBe(2);
   });
 
-  it('sorts an empty chain into the chain, not the global table (#1021)', async () => {
+  it('sorts an empty chain into the chain, not the global table', async () => {
     const chain = (await request('POST', '/api/profiles', { name: 'sorted', empty: true })).body;
     await request('POST', '/api/profiles/active', { profileId: chain.id });
 
@@ -241,7 +241,7 @@ describe('named fallback chains', () => {
     expect(fallbackDefault.auto_include_new_models).toBe(1);
   });
 
-  // Renaming a chain (#1179). The name IS the client-facing address — a
+  // Renaming a chain. The name IS the client-facing address — a
   // request picks the chain with model="auto:<name>" — so rename has to
   // enforce exactly the creation rules and never silently no-op.
   it('renames a custom chain and moves the auto:<name> address with it', async () => {

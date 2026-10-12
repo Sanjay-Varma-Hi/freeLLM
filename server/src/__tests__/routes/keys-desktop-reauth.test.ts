@@ -5,7 +5,7 @@ import { requireAuth } from '../../middleware/requireAuth.js';
 import { initDb, getDb } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #786: the desktop build has no user-set password, so reveal/export skip the
+// the desktop build has no user-set password, so reveal/export skip the
 // re-verification there — but only for a caller on the machine itself. The
 // desktop app can bind 0.0.0.0 (its LAN-access toggle), and a LAN client of that
 // server must still re-enter the password or the second factor is gone for the
@@ -54,7 +54,7 @@ async function addKey(): Promise<number> {
   return body.id;
 }
 
-describe('Desktop re-auth bypass is loopback-only (#786)', () => {
+describe('Desktop re-auth bypass is loopback-only', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

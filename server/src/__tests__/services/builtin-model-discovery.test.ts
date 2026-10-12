@@ -14,9 +14,9 @@ import {
 import { applyCatalog } from '../../services/catalog-sync.js';
 import { recordCatalogModelTombstone, isCatalogManagedModel } from '../../services/model-state.js';
 
-// #1348: built-in OpenAI-compatible providers the signed catalog carries no
+// built-in OpenAI-compatible providers the signed catalog carries no
 // models for fill their list from their own /models. These tests pin the
-// eligibility rules (allowlist, catalog-managed, Premium-gated), the
+// automatic-discovery eligibility rules (allowlist, catalog-managed), the
 // precedence of catalog and user rows over discovered ones, and how the
 // catalog adopts and retires discovered rows later.
 
@@ -79,7 +79,7 @@ function rows(platform: string) {
   ).all(platform) as Array<{ id: number; model_id: string; source: string; display_name: string; enabled: number; key_id: number | null }>;
 }
 
-describe('built-in model discovery (#1348)', () => {
+describe('built-in model discovery', () => {
   beforeEach(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     process.env.BUILTIN_MODEL_DISCOVERY = 'auto';
@@ -114,11 +114,11 @@ describe('built-in model discovery (#1348)', () => {
       expect(builtinDiscoveryEligibility(db, 'custom').eligible).toBe(false);
     });
 
-    it('keeps Premium-window and audited-off providers out of the allowlist', () => {
-      // radeon/routeway ship enabled rows in the Premium catalog only (not yet
-      // aged into free); reka/navy/opencode/orcarouter/xfyun carry disabled
-      // rows the audit keeps off. A free install cannot see either, so the
-      // allowlist is what keeps discovery from bypassing the gate.
+    it('keeps not-yet-released and audited-off providers out of the automatic allowlist', () => {
+      // radeon/routeway are not in the public catalog yet; reka/navy/opencode/
+      // orcarouter/xfyun carry disabled rows the audit keeps off. Automatic
+      // discovery must not register either on its own; the dashboard's
+      // Fetch models (reviewed by a person) is the way to pick them.
       for (const gated of ['radeon', 'routeway', 'reka', 'navy', 'opencode', 'orcarouter', 'xfyun']) {
         expect(BUILTIN_DISCOVERY_PLATFORMS).not.toContain(gated);
         expect(builtinDiscoveryEligibility(getDb(), gated).eligible).toBe(false);
@@ -131,7 +131,7 @@ describe('built-in model discovery (#1348)', () => {
       expect(builtinDiscoveryEligibility(getDb(), 'longcat').eligible).toBe(true);
     });
 
-    it('honors a names-only managedPlatforms entry (Premium window, no rows in this tier)', () => {
+    it('honors a names-only managedPlatforms entry (no rows in this catalog)', () => {
       cacheAppliedCatalog(catalogOf([], { managedPlatforms: ['longcat'] }));
       expect(builtinDiscoveryEligibility(getDb(), 'longcat')).toMatchObject({ eligible: false, reason: 'catalog_managed' });
     });
@@ -226,7 +226,7 @@ describe('built-in model discovery (#1348)', () => {
       expect(mock).not.toHaveBeenCalled();
     });
 
-    it('never touches a Premium-gated platform even with a healthy key', async () => {
+    it('automatic discovery never touches a not-yet-released platform even with a healthy key', async () => {
       addKey('routeway');
       const mock = stubModels(['a:free']);
       await runBuiltinModelDiscovery(getDb(), 'routeway');

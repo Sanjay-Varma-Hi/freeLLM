@@ -4,7 +4,7 @@ import { getProvider, hasProvider, resolveProvider } from '../../providers/index
 import type { KeyValidationFailure } from '../../providers/base.js';
 
 // Fake fixtures only — no real Pollinations key appears here or in any
-// assertion message (#608 acceptance criterion: never log the key).
+// assertion message (acceptance criterion: never log the key).
 const REVOKED_KEY = 'sk_test_revoked';
 const VALID_KEY = 'sk_test_valid';
 
@@ -33,7 +33,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('Pollinations registration (#608)', () => {
+describe('Pollinations registration', () => {
   it('is registered and routable in the provider registry', () => {
     expect(hasProvider('pollinations')).toBe(true);
     const provider = getProvider('pollinations');
@@ -45,7 +45,7 @@ describe('Pollinations registration (#608)', () => {
   });
 });
 
-describe('Pollinations validateKey (#608)', () => {
+describe('Pollinations validateKey', () => {
   it('does NOT trust the public GET /v1/models — a revoked key that 200s there is invalid', async () => {
     // The reported repro: the same revoked key gets 200 from /v1/models and 401
     // from an authenticated endpoint.

@@ -4,7 +4,7 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 
 // Dashboard authentication: email + password accounts with opaque session
 // tokens. Distinct from the unified API key, which authenticates the /v1 proxy
-// for apps — this gates the /api/* admin surface for the human operator (#35).
+// for apps — this gates the /api/* admin surface for the human operator.
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 

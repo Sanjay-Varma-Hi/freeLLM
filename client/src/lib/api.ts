@@ -1,7 +1,7 @@
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 const TOKEN_KEY = 'freellmapi_dashboard_token';
 
-// Dashboard session token (#35). Stored in localStorage; sent as a Bearer on
+// Dashboard session token. Stored in localStorage; sent as a Bearer on
 // every /api request and cleared on a 401.
 export function getToken(): string | null {
   try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
@@ -65,7 +65,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   // index.html for /api/* instead of forwarding it to the backend. Without this
   // guard the raw res.json() throws an opaque "Unexpected token '<'", which on
   // the setup/login form surfaces as "sign up page cannot work". Say what's
-  // actually wrong. (#257)
+  // actually wrong.
   const text = await res.text();
   try {
     return JSON.parse(text) as T;

@@ -13,7 +13,7 @@ function hasColumn(db: Db, table: string, column: string): boolean {
 
 /**
  * Tombstones used to mean exactly one thing: "the user deleted this catalog
- * model, keep it deleted across syncs". Issue #634 adds a second, machine-made
+ * model, keep it deleted across syncs". adds a second, machine-made
  * kind — "the provider retired this model upstream (410 / end of life)" — which
  * disables the row instead of deleting it and carries the upstream wording so
  * the dashboard can say why. `source` keeps the two apart ('user' is the

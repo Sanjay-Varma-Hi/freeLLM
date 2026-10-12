@@ -8,7 +8,7 @@ import { getDefaultDbPath } from '../db/index.js';
 import { restrictToOwner } from './file-permissions.js';
 import {
   isMongoConfigured, mongoLabel, readMongoSnapshot, writeMongoSnapshot,
-  syncMongoMirrors, seedFromMongoMirrors,
+  syncMongoMirrors, seedFromMongoMirrors, explainMongoError,
 } from './mongo-store.js';
 
 const MAGIC = Buffer.from('FAPIBK1\0');
@@ -27,6 +27,26 @@ export interface DbBackupResult {
 const MONGO_TARGET = 'mongodb';
 const MONGO_DEFAULT_INTERVAL_MS = 2 * 60 * 1000;
 const SOON_DELAY_MS = 3 * 1000;
+const MONGO_RESTORE_RETRY_DELAYS_MS = [3_000, 7_000, 15_000];
+
+/** Read the MongoDB snapshot, retrying transient failures. If it still fails,
+ *  throw an explained error: booting would otherwise continue with an EMPTY
+ *  database (a fresh setup screen) while the real data sits unread in MongoDB. */
+async function readMongoWithRetry(): Promise<Buffer | null> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= MONGO_RESTORE_RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      return await readMongoSnapshot();
+    } catch (err) {
+      lastErr = err;
+      const wait = MONGO_RESTORE_RETRY_DELAYS_MS[attempt];
+      if (wait === undefined) break;
+      console.warn(`[db-backup] restore attempt ${attempt + 1} failed — retrying in ${wait / 1000}s: ${explainMongoError(err)}`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+  throw new Error(`could not read the database backup. ${explainMongoError(lastErr)}`);
+}
 
 function isMongoTarget(target: string): boolean {
   return target === MONGO_TARGET;
@@ -243,7 +263,7 @@ export async function restoreDbBackupIfNeeded(dbPath = getDefaultDbPath()): Prom
   if (dbPath === ':memory:') return { ok: true, target, skipped: 'memory database' };
   if (fs.existsSync(dbPath) && fs.statSync(dbPath).size > 0) return { ok: true, target, skipped: 'database already exists' };
 
-  const payload = await readTarget(target);
+  const payload = isMongoTarget(target) ? await readMongoWithRetry() : await readTarget(target);
   if (!payload || payload.length === 0) return { ok: true, target, skipped: 'no backup found' };
 
   let restored: Buffer;
@@ -284,6 +304,14 @@ async function backupDbOnce(db: Db, dbPath: string): Promise<DbBackupResult> {
     db.pragma('wal_checkpoint(TRUNCATE)');
   } catch {
     // Best effort: reading the main DB still works for rollback-journal or quiet WAL DBs.
+  }
+
+  // Safety (MongoDB): never upload a database that has no dashboard account.
+  // An account-less database is a fresh one; uploading it could rotate the
+  // real snapshot out of the kept versions. Nothing worth saving exists yet.
+  if (isMongoTarget(target)) {
+    const users = (db.prepare('SELECT COUNT(*) AS c FROM users').get() as { c: number }).c;
+    if (users === 0) return { ok: true, target, skipped: 'no dashboard account yet' };
   }
 
   const plain = fs.readFileSync(dbPath);
@@ -327,7 +355,7 @@ export async function backupDbNow(db: Db, dbPath = getDefaultDbPath()): Promise<
 }
 
 function logBackupError(err: unknown): void {
-  console.warn(`[db-backup] ${err instanceof Error ? err.message : err}`);
+  console.warn(`[db-backup] ${isMongoConfigured() ? explainMongoError(err) : (err instanceof Error ? err.message : err)}`);
 }
 
 /** Debounced backup a few seconds after a dashboard change (new account,

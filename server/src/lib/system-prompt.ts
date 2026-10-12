@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import type { ChatMessage } from '@freellmapi/shared/types.js';
 import { getDb, getUnifiedApiKey } from '../db/index.js';
 
-// Per-client API keys with server-enforced system prompts (#411). A client
+// Per-client API keys with server-enforced system prompts. A client
 // profile is a second kind of inference credential: it authenticates ONLY the
 // /v1 inference surface (proxy + responses), never the /api dashboard routes —
 // those require a dashboard session (middleware/requireAuth). The unified key

@@ -4,7 +4,7 @@ import { authRouter } from '../../routes/auth.js';
 import { initDb } from '../../db/index.js';
 import { getResetCode, clearResetCode } from '../../lib/reset-code.js';
 
-// Password reset without an active session (#560). Proof of identity is being
+// Password reset without an active session. Proof of identity is being
 // able to read the server logs, the same trust model first-run setup already
 // uses: POST /forgot-password mints a code and prints it, and the operator
 // enters it on the reset form. The code never crosses the wire, so these tests

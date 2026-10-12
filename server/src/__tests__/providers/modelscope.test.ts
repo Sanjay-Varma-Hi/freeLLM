@@ -22,7 +22,7 @@ const ROSTER = {
 // The verified keyless probe (2026-07-26): a 401 from chat/completions with a
 // garbage Bearer token. The alibaba-binding variant below is the
 // maintainer-documented shape for unbound accounts — unconfirmed until a
-// community tester runs a real token (#581).
+// community tester runs a real token.
 const AUTH_FAILED_401 = {
   ok: false,
   status: 401,
@@ -35,7 +35,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('ModelScope registration (#581)', () => {
+describe('ModelScope registration', () => {
   it('is registered and routable in the provider registry', () => {
     expect(hasProvider('modelscope')).toBe(true);
     const provider = getProvider('modelscope');
@@ -48,7 +48,7 @@ describe('ModelScope registration (#581)', () => {
   });
 });
 
-describe('ModelScope validateKey (#581)', () => {
+describe('ModelScope validateKey', () => {
   it('does NOT trust GET /v1/models — a garbage key that 200s there is still invalid', async () => {
     // The trap: ModelScope's /v1/models answers 200 with or without auth
     // (verified keyless 2026-07-26), so the default openai-compat validateKey

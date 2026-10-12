@@ -28,7 +28,7 @@ describe('contentToString', () => {
     ])).toBe('describe this');
   });
 
-  it('extracts Gemini-part-style { text } blocks with no type field (#200)', () => {
+  it('extracts Gemini-part-style { text } blocks with no type field', () => {
     expect(contentToString([{ text: 'hi' }, { text: ' there' }])).toBe('hi there');
     // a typed NON-text block still gets dropped even when it carries text
     expect(contentToString([{ type: 'reasoning', text: 'inner monologue' }, { type: 'text', text: 'ok' }])).toBe('ok');
@@ -123,7 +123,7 @@ describe('stripImagesFromMessages', () => {
   });
 });
 
-describe('normalizeOutboundContent (#166)', () => {
+describe('normalizeOutboundContent', () => {
   it('coerces array delta.content to a string on streaming chunks', () => {
     const chunk = { choices: [{ index: 0, delta: { content: [{ type: 'text', text: 'hel' }, { type: 'text', text: 'lo' }] } }] };
     const out = normalizeOutboundContent(chunk);
@@ -167,7 +167,7 @@ describe('sanitizeResponse', () => {
     expect((sanitizeResponse(result) as any).choices[0].finish_reason).toBe('stop');
   });
 
-  it('deletes a literal tool_calls: null on message and delta (the #200 mirror)', () => {
+  it('deletes a literal tool_calls: null on message and delta (the mirror)', () => {
     const nonStream = { choices: [{ message: { role: 'assistant', content: 'hi', tool_calls: null } }] };
     const out1 = sanitizeResponse(nonStream) as any;
     expect('tool_calls' in out1.choices[0].message).toBe(false);

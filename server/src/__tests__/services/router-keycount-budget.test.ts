@@ -6,8 +6,8 @@ import { getRoutingScores, refreshStatsCache } from '../../services/router.js';
 // The monthly free-tier budget is PER KEY, and monthly usage is pooled across
 // all keys — so the headroom guardrail must scale the budget by the usable key
 // count or a multi-key model gets damped to the floor after one account's worth
-// of tokens (#456).
-describe('routing headroom scales the monthly budget by usable key count (#456)', () => {
+// of tokens.
+describe('routing headroom scales the monthly budget by usable key count', () => {
   let modelDbId: number;
   let modelId: string;
 

@@ -1,6 +1,6 @@
 // Auto-retirement of models the upstream provider has permanently removed.
 //
-// Issue #634: NVIDIA answered every request for `minimaxai/minimax-m2.7` with
+// NVIDIA answered every request for `minimaxai/minimax-m2.7` with
 // "410 … has reached its end of life … and is no longer available". The failure
 // classifies as a model-level skip, which rules the model out for ONE request —
 // so the next request tried it again, and the next, forever, each one paying a
@@ -49,7 +49,7 @@ export interface RetirementRoute {
   platform: string;
   modelId: string;
   /**
-   * The endpoint this route belongs to, for custom relays (#651). Two relays
+   * The endpoint this route belongs to, for custom relays. Two relays
    * can serve the same model id; a 410 from one says nothing about the other,
    * so their corroboration counters must not share a bucket. Absent/'' for
    * catalog platforms, which keeps their key exactly what it always was.

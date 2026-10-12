@@ -216,7 +216,7 @@ describe('bandit router', () => {
   });
 
   it('getRoutingScores returns a per-axis breakdown ranked by score', () => {
-    // The peak-hours adjustment (#760) is opt-in and off here, so the preset is
+    // The peak-hours adjustment is opt-in and off here, so the preset is
     // returned verbatim — but the clock is still pinned to off-peak noon so this
     // assertion can never depend on when CI happens to run.
     vi.useFakeTimers();
@@ -256,7 +256,7 @@ describe('bandit router', () => {
     expect(getPeakHoursConfig()).toEqual(DEFAULT_PEAK_HOURS);
   });
 
-  it('leaves preset weights alone while the peak adjustment is off (#760)', () => {
+  it('leaves preset weights alone while the peak adjustment is off', () => {
     vi.useFakeTimers();
     // 20:00 UTC — squarely inside the default 18:00–06:00 window.
     vi.setSystemTime(new Date('2026-01-15T20:00:00Z'));
@@ -274,7 +274,7 @@ describe('bandit router', () => {
     }
   });
 
-  it('shifts speed onto reliability inside the window, in the configured timezone (#760)', () => {
+  it('shifts speed onto reliability inside the window, in the configured timezone', () => {
     vi.useFakeTimers();
     // 13:00 UTC = 18:30 in Kolkata (inside 18:00–06:00) and 13:00 in UTC (outside).
     vi.setSystemTime(new Date('2026-01-15T13:00:00Z'));
@@ -298,7 +298,7 @@ describe('bandit router', () => {
     }
   });
 
-  it('exempts fastest and reliable from the peak adjustment (#760)', () => {
+  it('exempts fastest and reliable from the peak adjustment', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-15T20:00:00Z')); // inside the default window
     try {
@@ -356,7 +356,7 @@ describe('bandit router', () => {
     expect(withExplore['new'] ?? 0).toBeGreaterThan(0);
   });
 
-  it('exploration never probes a model zeroed out via MODEL_ROUTING_OVERRIDES (#738)', () => {
+  it('exploration never probes a model zeroed out via MODEL_ROUTING_OVERRIDES', () => {
     // A weight-0 model never wins a bandit draw, so it never accumulates the
     // samples that would graduate it out of the unmeasured pool — without the
     // probe exclusion it would receive explore traffic forever.
@@ -380,7 +380,7 @@ describe('bandit router', () => {
     }
   });
 
-  it('community priors persist, drop invalid entries, and cap effective sample size (#685)', () => {
+  it('community priors persist, drop invalid entries, and cap effective sample size', () => {
     expect(getCommunityPrior('groq', 'llama', undefined)).toBeUndefined();
 
     // Invalid entries (negative, all-zero, missing ':') are dropped.
@@ -403,7 +403,7 @@ describe('bandit router', () => {
       .toEqual({ successes: 30, failures: 10 });
   });
 
-  it('community priors are ignored until the opt-in flag is on (#685)', () => {
+  it('community priors are ignored until the opt-in flag is on', () => {
     // A model with no local samples reads as 0.5 (uniform prior). A stored
     // community record must NOT move that while the flag is off (default).
     addModel({ platform: 'google', modelId: 'g1', name: 'G1', intelligenceRank: 1, sizeLabel: 'Frontier', budget: '~50M', priority: 1 });
@@ -425,7 +425,7 @@ describe('bandit router', () => {
     expect(seeded.scores[0]!.reliability).toBeGreaterThan(0.9);
   });
 
-  it('local failures override a capped community prior (#685)', () => {
+  it('local failures override a capped community prior', () => {
     // 5 local successes vs 95 failures: even with a glowing (capped) community
     // record the displayed reliability must fall well below the prior's rate —
     // a huge upstream count can no longer pin a locally-broken model at ~0.98.
@@ -440,7 +440,7 @@ describe('bandit router', () => {
     expect(scores[0]!.reliability).toBeLessThan(0.5);
   });
 
-  it('tiny community priors vanish under real local traffic (#685)', () => {
+  it('tiny community priors vanish under real local traffic', () => {
     // A small pessimistic prior barely moves a model with hundreds of local
     // successes: local evidence dominates.
     addModel({ platform: 'google', modelId: 'g1', name: 'G1', intelligenceRank: 1, sizeLabel: 'Frontier', budget: '~50M', priority: 1 });
@@ -459,8 +459,8 @@ describe('bandit router', () => {
     expect(Math.abs(localOnly - withPrior)).toBeLessThan(0.03);
   });
 
-  it('a saved intelligence_rank override visibly moves the axis (#673)', () => {
-    // Regression for #673. A realistic chain: a Frontier flagship on top, a
+  it('a saved intelligence_rank override visibly moves the axis', () => {
+    // Regression. A realistic chain: a Frontier flagship on top, a
     // Medium model at the bottom, and the Large model in between — the one the
     // user re-ranks from 6 to 1 ("this is actually the best model I have").
     //
@@ -493,10 +493,10 @@ describe('bandit router', () => {
   });
 });
 
-// #1230: a model that keeps answering tool requests with a 400 is tried LAST
+// a model that keeps answering tool requests with a 400 is tried LAST
 // for tool requests. Soft preference only: it never empties the pool and it
 // never affects requests without tools.
-describe('tool-rejecting models are deferred for tool requests (#1230)', () => {
+describe('tool-rejecting models are deferred for tool requests', () => {
   beforeEach(() => {
     process.env.DEV_MODE = 'true';
     process.env.NODE_ENV = 'test';

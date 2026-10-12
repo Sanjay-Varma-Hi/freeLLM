@@ -3,10 +3,10 @@ import { initDb, getDb } from '../../db/index.js';
 import { encrypt } from '../../lib/crypto.js';
 import { routeRequest, hasOtherUsableKey, setRoutingStrategy } from '../../services/router.js';
 
-// Per-key model scopes (#657): a key whose model_scope_json is set must only
+// Per-key model scopes: a key whose model_scope_json is set must only
 // ever serve the models it lists, and must not count as a usable sibling for
 // models outside it. NULL scope is today's behavior, verbatim.
-describe('Router model scope (#657)', () => {
+describe('Router model scope', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -85,7 +85,7 @@ describe('Router model scope (#657)', () => {
       const failedKeyId = insertKey('google', 'failed-key', null);
       insertKey('google', 'scoped-sibling', ['some-other-model']);
       // The only sibling can never serve this model, so the model IS exhausted
-      // and the model-level penalty must not be suppressed (#454 gate).
+      // and the model-level penalty must not be suppressed (gate).
       expect(hasOtherUsableKey(top.id, failedKeyId)).toBe(false);
     });
 

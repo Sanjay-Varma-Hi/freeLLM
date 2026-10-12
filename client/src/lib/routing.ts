@@ -36,16 +36,16 @@ export interface FallbackEntry {
   // EVERY custom row bound to an endpoint carries both, including the single
   // relay of a one-endpoint install. Neither may be rendered directly —
   // go through memberProviderLabel / providerPinId / memberEndpointTitle, which
-  // reveal them only once two endpoints actually collide (#651).
+  // reveal them only once two endpoints actually collide.
   endpointScope?: string | null
   qualifiedModelId?: string | null
   hasOverrides?: boolean
   // Which fields a local override replaces, so the model page can mark the
-  // individual inputs that no longer show the catalog default (#551).
+  // individual inputs that no longer show the catalog default.
   overrideFields?: string[]
   // The provider reported this model as permanently gone (410 / end of life),
   // so the gateway disabled it by itself — distinct from a switch the user
-  // flipped off. `retiredReason` is the upstream wording. See #634.
+  // flipped off. `retiredReason` is the upstream wording..
   retiredUpstream?: boolean
   retiredReason?: string | null
   keyCount: number
@@ -59,13 +59,13 @@ export interface FallbackEntry {
 export type RoutingStrategy = 'priority' | 'balanced' | 'smartest' | 'fastest' | 'reliable' | 'custom'
 
 // How the gateway picks between several keys of ONE platform, once a model has
-// been chosen (#919). Separate from RoutingStrategy, which ranks models: the
+// been chosen. Separate from RoutingStrategy, which ranks models: the
 // two are independent knobs and the Fallback page sets them side by side.
 export type KeySelectionStrategy = 'auto' | 'least-remaining'
 
 export type RoutingWeights = { reliability: number; speed: number; intelligence: number }
 
-/** Presets the peak-hours adjustment (#760) leaves alone: they already sit at
+/** Presets the peak-hours adjustment leaves alone: they already sit at
  *  the two ends of the speed↔reliability axis, so reweighting them would make
  *  one preset behave like another the user could have picked. Kept in sync with
  *  PEAK_EXEMPT_STRATEGIES in server/src/services/scoring.ts. */
@@ -87,10 +87,10 @@ export interface RoutingData {
   weights: RoutingWeights | null
   customWeights: RoutingWeights
   /** Exploration toggle: when on, unmeasured models get a guaranteed chance to
-   *  be tried so they build reliability/speed data (#685 follow-up). Required:
+   *  be tried so they build reliability/speed data. Required:
    *  the server always sends it, and the checkbox renders straight from it. */
   exploreEnabled: boolean
-  /** Peak-hours adjustment (#760): opt-in, off by default. `peakAdjusted` says
+  /** Peak-hours adjustment: opt-in, off by default. `peakAdjusted` says
    *  whether `weights` above is the raw preset or a peak-hours variant of it —
    *  the weight summary is labelled from that flag so the numbers never change
    *  under the operator without an explanation. */
@@ -100,10 +100,10 @@ export interface RoutingData {
   /** IANA timezone the peak window is read in (default 'UTC'). */
   peakTimezone: string
   peakAdjusted: boolean
-  /** Key-selection policy (#919). Required for the same reason as
+  /** Key-selection policy. Required for the same reason as
    *  exploreEnabled: the picker renders straight from GET /routing. */
   keySelectionStrategy: KeySelectionStrategy
-  /** Ceiling on the router's own cooldown guesses in ms (#952); null = no cap
+  /** Ceiling on the router's own cooldown guesses in ms; null = no cap
    *  (ladder tops out at 24h, 402/403 bench a day). */
   cooldownCeilingMs: number | null
   scores: (RoutingScore & { platform: string; modelId: string; displayName: string; enabled: boolean })[]
@@ -123,13 +123,13 @@ export interface TokenUsageData {
 // Custom endpoints all share the generic 'custom' platform id, so show the
 // user's key label ("Ollama box") instead so the models list names the actual
 // provider. Falls back to the platform for catalog models (and unlabeled custom
-// keys, whose label defaults to "Custom"). (#469)
+// keys, whose label defaults to "Custom").
 export function providerLabel(row: { platform: string; source?: 'catalog' | 'custom' | 'discovered'; keyLabel?: string | null }): string {
   if (row.source === 'custom' && row.keyLabel && row.keyLabel.trim()) return row.keyLabel
   return row.platform
 }
 
-// Two custom endpoints can now each serve the same model id (#651). Short
+// Two custom endpoints can now each serve the same model id. Short
 // host-ish form of an endpoint URL, used only to tell those two apart.
 export function endpointShortLabel(scope: string): string {
   return scope.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').replace(/\/+$/, '')
@@ -161,7 +161,7 @@ export function memberProviderLabel<T extends {
  * identity), and a same-id row on another platform is already told apart by its
  * platform. Callers must pass EVERY configured row, not one display group's
  * members, or a renamed sibling goes unseen and the endpoint is hidden exactly
- * when it is needed (#651).
+ * when it is needed.
  */
 function hasEndpointCollision<T extends {
   platform: string; modelId: string; source?: 'catalog' | 'custom' | 'discovered'; endpointScope?: string | null
@@ -179,7 +179,7 @@ function hasEndpointCollision<T extends {
  * to disambiguate. Gated on the SAME collision test as the visible label rather
  * than on `endpointScope` alone — every custom row carries a scope, so gating on
  * the field itself would pop a tooltip with the user's own base URL on a
- * single-endpoint install, which is exactly what #651 must not do.
+ * single-endpoint install, which is exactly what must not do.
  */
 export function memberEndpointTitle<T extends {
   platform: string; modelId: string; source?: 'catalog' | 'custom' | 'discovered'
@@ -207,7 +207,7 @@ export function providerPinId<T extends {
  * the ids shown to users, this is ALWAYS the qualified form for a row that has
  * an endpoint: an override is persisted state, so it has to keep naming the same
  * row even after the sibling that caused the collision is removed. The server
- * matches the plain member id too, so overrides written before #651 still apply.
+ * matches the plain member id too, so overrides written still apply.
  */
 export function memberOverrideKey(row: {
   platform: string; modelId: string; qualifiedModelId?: string | null
@@ -219,7 +219,7 @@ type OverrideRow = { platform: string; modelId: string; qualifiedModelId?: strin
 type SplitEntry = { member: string; groupKey?: string }
 
 /**
- * Every persisted form that names this row: the qualified id written since #651,
+ * Every persisted form that names this row: the qualified id written,
  * and the plain "platform:modelId" that overrides saved before it use. Matching
  * both is what keeps an existing split undoable — the alternative, rewriting
  * stored keys on read, is a silent data migration for a cosmetic gain.
@@ -309,7 +309,7 @@ export function groupQuotaBadge(
   return null
 }
 
-// ── Remaining time-window quota (#876) ───────────────────────────────────────
+// ── Remaining time-window quota ───────────────────────────────────────
 // Server-reported per-model RPM/RPD/TPM usage, served by
 // GET /api/fallback/rate-limit-usage. Each row already reflects the key the
 // router would pick next for that model (the routable key with the most
@@ -377,8 +377,8 @@ export function tightestRateLimit(
   return best
 }
 
-// ── Depleted rows (#1015) ────────────────────────────────────────────────────
-// A member is depleted when its tightest time-window quota (#876) is used up —
+// ── Depleted rows ────────────────────────────────────────────────────
+// A member is depleted when its tightest time-window quota is used up —
 // exactly the state that turns its RateLimitBadge red. A member with no usage
 // data is never depleted: an idle provider may simply not have been polled
 // yet, and there is no evidence it cannot serve.
@@ -468,7 +468,7 @@ export interface ModelGroupRow {
 // under the priority strategy, by live score otherwise — and groups inherit the
 // best member's position so the unified order matches the flat order.
 //
-// With rate-limit usage supplied (#1015) and the table ordering itself (score
+// With rate-limit usage supplied and the table ordering itself (score
 // mode), members and groups whose time-window quota is used up sink to the
 // bottom so healthy models stay on top. Both passes are stable sorts, so the
 // score order survives inside each partition. Manual mode deliberately opts
@@ -504,7 +504,7 @@ export function buildGroups(
   return groups
 }
 
-// Clamp a typed 1-based rank (#1317) to a valid 0-based index into the visible
+// Clamp a typed 1-based rank to a valid 0-based index into the visible
 // chain. Jump-to-rank edits clamp instead of erroring: 1 means "front", a
 // number past the end means "last", and garbage falls back to staying put.
 export function clampRankToIndex(toRank: number, length: number): number {
@@ -515,7 +515,7 @@ export function clampRankToIndex(toRank: number, length: number): number {
 }
 
 /**
- * Whether a search query matches a logical-model group (#1056). The hay covers
+ * Whether a search query matches a logical-model group. The hay covers
  * everything the table can DISPLAY for the group: its label, canonical id, and
  * every member's platform, display name and model id — plus, for custom rows,
  * the key label and endpoint host the row is actually rendered with. Those last

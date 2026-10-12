@@ -16,8 +16,8 @@ import {
 import { openapiSpec } from '../docs/openapi.js';
 
 // Machine-readable operational endpoints for meta-gateways / orchestrators that
-// run this proxy as one upstream lane (LibreChat, LiteLLM Proxy, OmniRoute — see
-// #433). `/livez` and `/readyz` are unauthenticated so a load balancer can probe
+// run this proxy as one upstream lane (LibreChat, LiteLLM Proxy, OmniRoute — see)
+// `/livez` and `/readyz` are unauthenticated so a load balancer can probe
 // them; `/v1/providers` sits behind the same unified API key as the rest of /v1.
 
 export const statusRouter = Router();
@@ -213,7 +213,7 @@ providersRouter.get('/providers', (req: Request, res: Response) => {
   res.json({ providers, counts });
 });
 
-// GET /quota-forecast — per-pool daily headroom + low-balance warning (#1104).
+// GET /quota-forecast — per-pool daily headroom + low-balance warning.
 // Machine-readable sibling of /v1/providers: same unified-key auth, no key
 // material, no PII. A meta-gateway can gate its own routing on `low_balance`
 // BEFORE spending a request that would 429, and know `seconds_until_reset` for

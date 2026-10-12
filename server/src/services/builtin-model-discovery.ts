@@ -13,23 +13,22 @@ import { customModelSeed } from './custom-model-seed.js';
 import { ensureModelInProfiles } from './profile-models.js';
 import { customModelSyncFreePatterns, customModelSyncIntervalMs } from './custom-model-sync.js';
 
-// ── Model discovery for built-in providers the catalog does not carry (#1348) ──
+// ── Model discovery for built-in providers the catalog does not carry ──
 //
 // Some registered OpenAI-compatible providers have NO rows in the signed
 // catalog, so a healthy key for them served nothing and the dashboard had no
 // way to fill the gap. This asks the provider's own /models (through the
 // registered adapter, with the operator's own key) and registers what it
-// serves, the same way custom-endpoint discovery (#488) does.
+// serves, the same way custom-endpoint discovery does.
 //
-// The signed, audited catalog stays authoritative:
-//  - Only an explicit allowlist of platforms is eligible. The rule behind the
-//    list is "zero rows in the signed catalog on every tier". A free install
-//    cannot see the Premium (live) catalog, so it cannot tell a provider the
-//    catalog has never carried from one still inside its 30-day Premium window
-//    (radeon, routeway) or one the audit keeps switched off with disabled rows
-//    (reka, navy, opencode, orcarouter, xfyun). Discovering those would hand
-//    free installs models the catalog gates or has ruled out, so the list is
-//    decided here, in the binary, not inferred at runtime.
+// AUTOMATIC discovery (BUILTIN_MODEL_DISCOVERY=auto) is deliberately narrow,
+// because nobody reviews what it registers:
+//  - Only an explicit allowlist of platforms is eligible: providers the catalog
+//    carries no rows for. Providers the catalog has not released yet (radeon,
+//    routeway) or keeps switched off (reka, navy, opencode, orcarouter, xfyun)
+//    are left out, so a background pass never starts routing to them.
+//  - The dashboard's Fetch models is NOT limited by this list: see
+//    manualDiscoveryEligibility, where a person reviews and picks each model.
 //  - Even an allowlisted platform stops being eligible the moment the applied
 //    catalog manages it (any row, or a managedPlatforms entry), or the local
 //    DB holds catalog-owned rows for it (the bundled baseline before the first
@@ -91,6 +90,28 @@ export function isBuiltinDiscoveryEligible(db: Db, platform: string): boolean {
   return builtinDiscoveryEligibility(db, platform).eligible;
 }
 
+/**
+ * Whether the operator may run "Fetch models" for this platform from the
+ * dashboard. Deliberately wider than automatic discovery: ANY OpenAI-compatible
+ * built-in provider qualifies, including one the catalog already manages, so a
+ * provider's newest free models can be used right away with your own key
+ * instead of waiting for them to reach the catalog. This is safe because a
+ * person reviews the list and ticks each model (paid models are labelled);
+ * automatic passes keep the strict rules in builtinDiscoveryEligibility.
+ */
+export function manualDiscoveryEligibility(platform: string): DiscoveryEligibility {
+  if (builtinDiscoveryMode() === 'off') return { eligible: false, reason: 'disabled' };
+  if (platform === 'custom') return { eligible: false, reason: 'not_allowlisted' };
+  const provider = getProvider(platform as Platform);
+  if (!(provider instanceof OpenAICompatProvider)) return { eligible: false, reason: 'not_openai_compatible' };
+  return { eligible: true, provider };
+}
+
+/** True when the catalog manages this platform (see builtinDiscoveryEligibility). */
+export function isCatalogManagedPlatform(db: Db, platform: string): boolean {
+  return appliedCatalogPlatforms(db).has(platform) || hasCatalogOwnedRows(db, platform);
+}
+
 /** A human sentence for an ineligible platform, for route errors. */
 export function ineligibleMessage(platform: string, reason: IneligibleReason | undefined): string {
   switch (reason) {
@@ -98,6 +119,8 @@ export function ineligibleMessage(platform: string, reason: IneligibleReason | u
       return 'Model discovery for built-in providers is turned off (BUILTIN_MODEL_DISCOVERY=off).';
     case 'catalog_managed':
       return `${platform} models come from the catalog, so they cannot be fetched from the provider.`;
+    case 'not_openai_compatible':
+      return `${platform} does not offer an OpenAI-compatible model list, so its models come from the catalog.`;
     default:
       return `${platform} models come from the catalog, not from the provider's model list.`;
   }
@@ -127,7 +150,7 @@ interface KeyRow {
 }
 
 /** Fetch the platform's /models with one of its keys, through that key's own
- *  proxy (#590), exactly as the health check reaches it. */
+ *  proxy, exactly as the health check reaches it. */
 export async function discoverBuiltinModels(
   provider: OpenAICompatProvider,
   key: KeyRow,
@@ -164,7 +187,12 @@ export interface RegisterDiscoveredResult {
  * that already exists for (platform, model_id) in the built-in scope is never
  * updated, so catalog rows, user rows and anything the operator tuned by hand
  * all win. `explicit` marks a pick the operator made in the dashboard, which
- * lifts a previous deletion, the way re-adding a custom model does (#926).
+ * lifts a previous deletion, the way re-adding a custom model does.
+ *
+ * An explicit pick on a platform the catalog manages is stored as a 'user'
+ * row — exactly like adding the model by hand — so a later catalog sync never
+ * retires a model the operator chose. Everywhere else picks stay 'discovered'
+ * and the catalog adopts them if it later lists the same model.
  */
 export function registerDiscoveredModels(
   db: Db,
@@ -175,6 +203,7 @@ export function registerDiscoveredModels(
   return db.transaction(() => {
     const result: RegisterDiscoveredResult = { created: [], existing: [], tombstoned: [] };
     const seed = customModelSeed(db);
+    const source = options.explicit && isCatalogManagedPlatform(db, platform) ? 'user' : DISCOVERED_MODEL_SOURCE;
     const exists = db.prepare("SELECT 1 FROM models WHERE platform = ? AND model_id = ? AND endpoint_scope = ''");
     const insert = db.prepare(`
       INSERT INTO models
@@ -211,7 +240,7 @@ export function registerDiscoveredModels(
         sizeLabel: seed.sizeLabel,
         contextWindow: entry.contextWindow ?? null,
         vision: entry.vision ? 1 : 0,
-        source: DISCOVERED_MODEL_SOURCE,
+        source,
       });
       const row = selectId.get(platform, entry.modelId) as { id: number };
       if (!inChain.get(row.id)) {
@@ -234,9 +263,9 @@ function patternMatches(pattern: string, id: string): boolean {
  * Which discovered models an AUTOMATIC pass may register. Stricter than a
  * dashboard pick, because nobody looked at the list:
  *  - chat only: embedding, image, audio, transcription and video ids are
- *    skipped (#1051), as in the custom-model sync;
+ *    skipped, as in the custom-model sync;
  *  - an upstream that prices a model and says it is not free is skipped;
- *  - CUSTOM_MODEL_SYNC_FREE_PATTERNS, when set, applies here too (#746).
+ *  - CUSTOM_MODEL_SYNC_FREE_PATTERNS, when set, applies here too.
  */
 export function autoRegistrable(models: DiscoveredModel[]): { accepted: DiscoveredModel[]; nonChat: number; paid: number } {
   const freePatterns = customModelSyncFreePatterns();

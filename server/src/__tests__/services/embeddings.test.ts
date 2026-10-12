@@ -377,7 +377,7 @@ describe('embeddings service', () => {
       expect(log.key_id).toBe(keyId);
     });
 
-    it('sends no Authorization header to a custom endpoint holding the no-key sentinel (#1331)', async () => {
+    it('sends no Authorization header to a custom endpoint holding the no-key sentinel', async () => {
       const keyId = addCustomKey('http://127.0.0.1:8182/v1', 'no-key');
       getDb().prepare(`
         INSERT INTO embedding_models

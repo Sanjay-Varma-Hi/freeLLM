@@ -133,7 +133,7 @@ describe('OpenAI multimodal array content', () => {
     expect(body.choices[0].message.content).toBe('got it');
   });
 
-  // #325: the dashboard Playground attaches files by downscaling images to a
+  // the dashboard Playground attaches files by downscaling images to a
   // data URI and inlining text-like files as fenced blocks. This pins the exact
   // envelope it emits, so a change on either side breaks here first.
   it('round-trips a Playground file-attachment payload to the provider (mocked groq)', async () => {
@@ -193,7 +193,7 @@ describe('OpenAI multimodal array content', () => {
     expect(status).toBe(400);
   });
 
-  it('accepts an assistant message with empty content and no tool_calls (#165)', async () => {
+  it('accepts an assistant message with empty content and no tool_calls', async () => {
     // OpenAI accepts empty/null assistant turns in history; we coerce to "" and
     // forward rather than 400-ing a payload OpenAI would take. The request then
     // routes (and fails downstream on the fake key) — the point is it is NOT a
@@ -209,10 +209,10 @@ describe('OpenAI multimodal array content', () => {
     if (status === 400) throw new Error(`unexpected 400: ${JSON.stringify(body)}`);
   });
 
-  // #200: code agents (AionUI, OpenCode, Qwen Code) fail on the SECOND request
+  // code agents (AionUI, OpenCode, Qwen Code) fail on the SECOND request
   // of a session because their follow-up history carries shapes the strict
   // schema rejected. Each case below is a real second-turn payload pattern.
-  describe('agent second-turn shapes (#200)', () => {
+  describe('agent second-turn shapes', () => {
     it('accepts Gemini-part-style content blocks without a type field', async () => {
       const { status, body } = await request(app, 'POST', '/v1/chat/completions', {
         messages: [

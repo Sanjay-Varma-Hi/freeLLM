@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n'
 import { toast } from '@/lib/toast'
 
-// #702: a custom endpoint pools several credentials (#619), but the only way to
+// a custom endpoint pools several credentials, but the only way to
 // register one was the model form, which insists on a model id. Once every model
 // an endpoint serves is already registered there is nothing left to name there,
 // so adding a second key needs its own door. Models belong to the endpoint, not

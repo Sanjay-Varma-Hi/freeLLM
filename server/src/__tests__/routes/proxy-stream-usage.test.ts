@@ -211,7 +211,7 @@ describe('Streaming usage-frame fallback injection', () => {
     }, authHeaders());
 
     expect(status).toBe(200);
-    // #1084: agents read `usage` for context-window display even when they
+    // agents read `usage` for context-window display even when they
     // never requested include_usage; a missing frame used to show 0. The
     // estimate is injected regardless of the client's stream_options.
     const frames = usageFrames(raw);
@@ -239,7 +239,7 @@ describe('Streaming usage-frame fallback injection', () => {
               message: { role: 'assistant', content: 'hi there' },
               finish_reason: 'stop',
             }],
-            // No `usage` block — the #1084 scenario.
+            // No `usage` block — the scenario this test guards.
           }),
         } as any;
       }

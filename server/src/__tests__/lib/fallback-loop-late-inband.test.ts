@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-// Issue #1218 Gap 3 — an in-band provider error that arrives only after the
+// Gap 3 — an in-band provider error that arrives only after the
 // attempt has silently consumed most of the operator's whole retry budget
 // behaved like a stall for its entire window (observed: nvidia nemotron-3-ultra
 // ran 140.7s before surfacing "Service temporarily overloaded", leaving scraps
@@ -91,7 +91,7 @@ beforeEach(() => {
 // dispatch that sleeps past the fraction, so no timer faking is needed.
 const BUDGET_MS = 400;
 
-describe('late in-band provider error benches the route (#1218 Gap 3)', () => {
+describe('late in-band provider error benches the route (Gap 3)', () => {
   it('an in-band error after most of the budget benches the route for the truncation window', async () => {
     const onExhausted = vi.fn();
     const candidates = [routeFor(keyA), routeFor(keyB)];

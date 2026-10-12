@@ -170,7 +170,7 @@ describe('Analytics API', () => {
     expect(body.lifetimeTotalRequests).toBe(3);
   });
 
-  it("counts 'canceled' rows in totals but in no success/error rate (#752)", async () => {
+  it("counts 'canceled' rows in totals but in no success/error rate", async () => {
     vi.useRealTimers();
     logRequest('groq', 'llama-3.3-70b-versatile', 0, 'success', 100, 50, 12, null);
     logRequest('groq', 'llama-3.3-70b-versatile', 0, 'error', 30, 0, 9, 'boom');
@@ -478,13 +478,13 @@ describe('Analytics API', () => {
     });
   });
 
-  // #889 — custom endpoints all share the platform id 'custom', so the
+  // custom endpoints all share the platform id 'custom', so the
   // provider breakdown must split them by the serving key's base_url (the
   // canonical endpoint identity) instead of collapsing every relay into one
   // "custom" row. These tests seed two distinct custom endpoints (plus a
   // pooled second key on the first) and assert the split, the per-endpoint
   // p95 scoping, and the recent-calls provider filter.
-  describe('custom endpoint identifiers (#889)', () => {
+  describe('custom endpoint identifiers', () => {
     // Seed a custom endpoint key and return its id. base_url is the endpoint
     // identity; the credential itself is a placeholder (never read here).
     function insertCustomKey(id: number, baseUrl: string, label: string): void {
@@ -494,7 +494,7 @@ describe('Analytics API', () => {
       `).run(id, label, baseUrl);
     }
 
-    // A model row belonging to ONE endpoint (#651): `models` is unique on
+    // A model row belonging to ONE endpoint: `models` is unique on
     // (platform, model_id, endpoint_scope), so two relays can each hold their
     // own row for the same model id.
     function insertScopedModel(modelId: string, displayName: string, endpointScope: string): void {
@@ -541,7 +541,7 @@ describe('Analytics API', () => {
     });
 
     it('groups a pooled endpoint (several keys, one base_url) into a single row', async () => {
-      // Two credentials for the SAME relay — the pooling case (#619). They
+      // Two credentials for the SAME relay — the pooling case. They
       // share a base_url, so they must read as ONE endpoint, not two rows.
       insertCustomKey(1, 'https://relay-a.example.com/v1', 'Relay A key 1');
       insertCustomKey(2, 'https://relay-a.example.com/v1', 'Relay A key 2');
@@ -626,7 +626,7 @@ describe('Analytics API', () => {
     it('tells two endpoints on the same host apart', async () => {
       // One gateway, two tenants. Host alone is the same string for both, so a
       // host-only display name would show two identical rows the operator
-      // cannot match to an endpoint — the #889 collision one level down.
+      // cannot match to an endpoint — the collision one level down.
       insertCustomKey(1, 'https://gw.example.com/tenant-a/v1', 'Tenant A');
       insertCustomKey(2, 'https://gw.example.com/tenant-b/v1', 'Tenant B');
 

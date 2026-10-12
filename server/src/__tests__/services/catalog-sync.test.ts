@@ -115,7 +115,7 @@ describe('applyCatalog', () => {
     expect(fb).toBeTruthy();
   });
 
-  it('caps GitHub GPT-4.1 catalog context at the routable free-tier limit (#426)', () => {
+  it('caps GitHub GPT-4.1 catalog context at the routable free-tier limit', () => {
     const models = existingAsCatalogModels();
     const target = models.find((m) => m.platform === 'github' && m.modelId === 'openai/gpt-4.1');
     expect(target).toBeDefined();

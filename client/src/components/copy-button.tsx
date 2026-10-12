@@ -23,7 +23,7 @@ export function CopyButton({ text, className, label = 'Copy' }: CopyButtonProps)
       onClick={() => {
         // Only claim success once the text is really on the clipboard: on an
         // insecure origin the copy can fail, and a check mark over an empty
-        // clipboard is worse than no feedback at all (#734).
+        // clipboard is worse than no feedback at all.
         void copyText(text).then(ok => {
           if (!ok) {
             toast.error(t('common.copyFailed'))

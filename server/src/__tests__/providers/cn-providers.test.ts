@@ -3,7 +3,7 @@ import { getProvider } from '../../providers/index.js';
 import { AUTH_JSON_PROVIDER_MAP, detectPlatform } from '../../lib/key-parser.js';
 import type { Platform } from '@freellmapi/shared/types.js';
 
-// Chinese domestic providers (#922/#923/#924). The failure this file guards
+// Chinese domestic providers. The failure this file guards
 // against is a HALF-registered platform: the original PRs registered the
 // provider and the Platform type but skipped the key-parser and the Keys page,
 // so the provider existed on the server and was unreachable for a user — no way

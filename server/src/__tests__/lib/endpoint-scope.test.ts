@@ -8,7 +8,7 @@ import {
   qualifiedModelMemberId,
 } from '../../lib/endpoint-scope.js';
 
-describe('endpoint scope (#651)', () => {
+describe('endpoint scope', () => {
   it('normalizes a base_url the way registration stores it', () => {
     expect(normalizeBaseUrl('  https://relay.example.com/v1/  ')).toBe('https://relay.example.com/v1');
     expect(endpointScopeForBaseUrl(null)).toBe('');

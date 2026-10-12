@@ -42,7 +42,7 @@ describe('Proxy authentication and CORS', () => {
     expect(body.error.type).toBe('authentication_error');
   });
 
-  // #103: Claude Code via CC Switch (and other Anthropic-format clients) send
+  // Claude Code via CC Switch (and other Anthropic-format clients) send
   // the key in the `x-api-key` header, not as an Authorization bearer token.
   it('rejects a wrong key supplied via the x-api-key header', async () => {
     const { status, body } = await request(app, 'POST', '/v1/chat/completions', {

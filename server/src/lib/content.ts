@@ -22,7 +22,7 @@ export function contentToString(content: unknown): string {
         // OpenAI blocks carry type:'text'; Gemini-lineage agents (Qwen Code,
         // AionUI) send part-style `{ text }` with no type at all — accept any
         // block whose `text` is a string and whose type doesn't say it's
-        // something else. (#200)
+        // something else.
         if (typeof block?.text === 'string' && (block.type === 'text' || block.type === undefined)) {
           return block.text;
         }
@@ -69,7 +69,7 @@ export function contentHasImage(content: unknown): boolean {
 }
 
 // True if any message carries an image content block. Used to route image
-// requests only to vision-capable models (#118, #125).
+// requests only to vision-capable models.
 export function messageHasImage(messages: ChatMessage[]): boolean {
   return messages.some((m) => contentHasImage(m.content));
 }
@@ -162,10 +162,10 @@ export function truncateMessagesForGithub(
 // (which fixes array content) by fixing the *frame* fields, not the content:
 //   - `model` coerced to a string (some providers send null/number).
 //   - `choices[].finish_reason` defaulted to null when absent — the field must
-//     exist per spec; Rust agents (the #200 class of compat bugs) branch on it.
+//     exist per spec; Rust agents (the class of compat bugs) branch on it.
 //   - a literal `tool_calls: null` on a message/delta is DELETED — OpenAI omits
 //     the field entirely when there are no calls, and `null` breaks clients that
-//     test for its presence (this is the response-side mirror of the #200 fix).
+//     test for its presence (this is the response-side mirror of the fix).
 // Content, real tool_calls arrays, reasoning_content, and every other field are
 // left untouched. Mutates and returns the same object (frames are parsed fresh
 // per SSE line, so in-place mutation is safe), matching normalizeOutboundContent.
@@ -194,7 +194,7 @@ export function sanitizeResponse<T>(payload: T): T {
 // and, mid-stream, drops the turn's tool calls. We coerce array content to a
 // string while leaving `tool_calls` and every other field untouched. Mutates
 // and returns the same object (chunks are parsed fresh from JSON per frame, so
-// in-place mutation is safe). Non-array content passes through unchanged. (#166)
+// in-place mutation is safe). Non-array content passes through unchanged.
 export function normalizeOutboundContent<T>(payload: T): T {
   const choices = (payload as { choices?: unknown })?.choices;
   if (!Array.isArray(choices)) return payload;

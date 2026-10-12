@@ -33,7 +33,7 @@ export const REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high'] as
 export type ReasoningEffort = typeof REASONING_EFFORTS[number];
 
 // Effort spellings clients actually send that aren't on OpenAI's scale, mapped
-// to the nearest value we do support (#619: a strict enum turned a client's
+// to the nearest value we do support (a strict enum turned a client's
 // `reasoning_effort: 'max'` into a 400 from our own edge — a knob nobody asked
 // to be fatal). Values that mean "let the model decide" ('auto', 'adaptive',
 // 'default') are deliberately absent: they resolve to undefined below, i.e.
@@ -84,7 +84,7 @@ function clampEffortTo(effort: ReasoningEffort, supported: readonly ReasoningEff
 }
 
 // Every field is `.nullable()` because real clients serialize their whole
-// request struct and send explicit nulls for unset knobs (#200); null is
+// request struct and send explicit nulls for unset knobs; null is
 // treated as absent and never forwarded.
 export const samplingParamSchemaFields = {
   top_k: z.number().int().min(1).nullable().optional(),
@@ -106,7 +106,7 @@ export const samplingParamSchemaFields = {
   }).passthrough().nullable().optional(),
   // Accepted as free-form and normalized by pickSamplingParams rather than
   // validated against the enum: clients invent effort values ('max', 'xhigh')
-  // and rejecting them made an advisory knob fatal (#619).
+  // and rejecting them made an advisory knob fatal.
   reasoning_effort: z.unknown().optional(),
   // Object-form alias some clients send (OpenRouter-style chat clients, and
   // the Responses API's native shape): `reasoning: { effort }`. Resolved into
@@ -210,11 +210,11 @@ export interface PlatformParamPolicy {
   jsonSchemaToObject?: boolean;
   // The effort values this platform's API accepts, when it accepts fewer than
   // the full scale. A request outside the set is clamped to the nearest
-  // supported value instead of being forwarded into a 400 (#619). Omitted =
+  // supported value instead of being forwarded into a 400. Omitted =
   // forward whatever the client asked for.
   reasoningEfforts?: readonly ReasoningEffort[];
   // Output-token floor sent when — and ONLY when — the client omitted
-  // max_tokens entirely (#553). Some providers apply a tiny server-side
+  // max_tokens entirely. Some providers apply a tiny server-side
   // default in that case and cut the answer off mid-sentence, which clients
   // experience as a broken stream rather than as a truncation. A
   // client-supplied value always wins, larger or smaller. Applied by the
@@ -296,7 +296,7 @@ export const PLATFORM_PARAM_POLICIES: Partial<Record<Platform, PlatformParamPoli
   // when the request omits one, so an SDK client that never sets max_tokens
   // (the common case) sees answers stop a couple of seconds in — reported on
   // @cf/openai/gpt-oss-120b, where the model's own reasoning trace eats the
-  // default before any visible text lands (#553). 8192 is the floor we send
+  // default before any visible text lands. 8192 is the floor we send
   // instead: generous for a chat turn plus reasoning, and small enough to fit
   // inside the smallest context window in the Workers AI catalog (24K on
   // @cf/meta/llama-3.3-70b-instruct-fp8-fast) with room left for the prompt.
@@ -378,7 +378,7 @@ export function maxTokensCapFor(platform: string): number | undefined {
 
 /**
  * The max_tokens to put on the wire for one request: whatever the client asked
- * for, or the platform's floor when the client asked for nothing (#553), then
+ * for, or the platform's floor when the client asked for nothing, then
  * lowered to the tightest ceiling that applies — the platform's own
  * maxTokensCap, the operator's unified cap, or both. With neither in play
  * nothing is clamped — a client-set value passes through untouched in both

@@ -29,7 +29,7 @@ const IMAGE_MESSAGE = {
   }],
 };
 
-describe('Vision-aware routing (#118, #125)', () => {
+describe('Vision-aware routing', () => {
   let app: Express;
   let key: string;
 

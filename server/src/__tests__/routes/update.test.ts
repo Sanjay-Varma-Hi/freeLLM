@@ -109,7 +109,7 @@ describe('Update API', () => {
         checkedAt: '2026-07-28T14:00:00.000Z',
       });
       expect(fetchMock).toHaveBeenCalledWith(
-        `https://api.github.com/repos/tashfeenahmed/freellmapi/compare/${LOCAL_SHA}...main`,
+        `https://api.github.com/repos/Sanjay-Varma-Hi/freeLLM/compare/${LOCAL_SHA}...main`,
         expect.any(Object),
       );
     });
@@ -166,7 +166,7 @@ describe('Update API', () => {
         if (String(url).includes('/releases/latest')) {
           return response({
             tag_name: 'v0.11.0',
-            html_url: 'https://github.com/tashfeenahmed/freellmapi/releases/tag/v0.11.0',
+            html_url: 'https://github.com/Sanjay-Varma-Hi/freeLLM/releases/tag/v0.11.0',
           });
         }
         return response(compareBody('identical'));
@@ -180,7 +180,7 @@ describe('Update API', () => {
 
       expect(result.body).toMatchObject({ status: 'current', installation: 'desktop' });
       expect(fetchMock).toHaveBeenCalledWith(
-        `https://api.github.com/repos/tashfeenahmed/freellmapi/compare/${LOCAL_SHA}...v0.11.0`,
+        `https://api.github.com/repos/Sanjay-Varma-Hi/freeLLM/compare/${LOCAL_SHA}...v0.11.0`,
         expect.any(Object),
       );
       // 'identical' against the tag: no update offered for untagged main commits.
@@ -192,7 +192,7 @@ describe('Update API', () => {
         if (String(url).includes('/releases/latest')) {
           return response({
             tag_name: 'v0.12.0',
-            html_url: 'https://github.com/tashfeenahmed/freellmapi/releases/tag/v0.12.0',
+            html_url: 'https://github.com/Sanjay-Varma-Hi/freeLLM/releases/tag/v0.12.0',
           });
         }
         return response(compareBody('ahead'));
@@ -229,7 +229,7 @@ describe('Update API', () => {
         if (String(url).includes('/releases/latest')) {
           return response({
             tag_name: 'v0.11.0',
-            html_url: 'https://github.com/tashfeenahmed/freellmapi/releases/tag/v0.11.0',
+            html_url: 'https://github.com/Sanjay-Varma-Hi/freeLLM/releases/tag/v0.11.0',
           });
         }
         return response({ message: 'rate limited' }, 403);
@@ -298,7 +298,7 @@ describe('Update API', () => {
       });
       expect(fetchMock).toHaveBeenNthCalledWith(
         2,
-        'https://github.com/tashfeenahmed/freellmapi/commits/main.atom',
+        'https://github.com/Sanjay-Varma-Hi/freeLLM/commits/main.atom',
         expect.any(Object),
       );
     });

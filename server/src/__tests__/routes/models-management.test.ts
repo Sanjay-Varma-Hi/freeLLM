@@ -79,7 +79,7 @@ describe('Model management API', () => {
        ORDER BY id LIMIT 1
     `).get() as { id: number };
 
-    // Only an actual divergence is recorded as an override now (#1178): a
+    // Only an actual divergence is recorded as an override now: a
     // capability write that restates the catalog value is a no-op. So flip
     // the tool flag to the opposite of whatever the catalog ships.
     const currentTools = (getDb().prepare('SELECT supports_tools FROM models WHERE id = ?')
@@ -122,7 +122,7 @@ describe('Model management API', () => {
     expect(item.fallbackEnabled).toBe(false);
   });
 
-  it('clears a local override once the field returns to its pre-override value (#1178)', async () => {
+  it('clears a local override once the field returns to its pre-override value', async () => {
     const db = getDb();
     // A fresh catalog-managed row: supports_vision defaults to 0, so that is
     // the baseline the override is measured against.
@@ -144,7 +144,7 @@ describe('Model management API', () => {
     expect(listed.body.find((m: any) => m.id === id).hasOverrides).toBe(true);
 
     // Flipping it back OFF drops the override entirely: the effective value is
-    // the catalog's again, so the badge must go, not stay stuck on (#1178).
+    // the catalog's again, so the badge must go, not stay stuck on.
     expect((await request(app, 'PATCH', `/api/models/${id}`, { supportsVision: false })).status).toBe(200);
     expect(blob()).toBeUndefined();
     listed = await request(app, 'GET', '/api/models');
@@ -184,7 +184,7 @@ describe('Model management API', () => {
     expect(override).toBeUndefined();
   });
 
-  it('disabling a model also clears its fallback/profile/fusion selection (#499)', async () => {
+  it('disabling a model also clears its fallback/profile/fusion selection', async () => {
     const db = getDb();
     const profile = db.prepare(ACTIVE_PROFILE_SQL).get() as { id: number };
     const targetInsert = db.prepare(INSERT_MODEL_SQL).run(
@@ -242,7 +242,7 @@ describe('Model management API', () => {
     expect(savedFusionConfig.judge).toBeNull();
   });
 
-  it('persists rank and rate-limit edits as overrides that survive a catalog re-apply (#551)', async () => {
+  it('persists rank and rate-limit edits as overrides that survive a catalog re-apply', async () => {
     const target = getDb().prepare(`
       SELECT m.id, m.platform, m.model_id FROM models m
         JOIN fallback_config fc ON fc.model_db_id = m.id
@@ -299,7 +299,7 @@ describe('Model management API', () => {
     expect(entry.tpdLimit).toBe(23);
   });
 
-  it('clears a rate limit back to unlimited with an explicit null (#551)', async () => {
+  it('clears a rate limit back to unlimited with an explicit null', async () => {
     const target = getDb().prepare(`
       SELECT m.id, m.platform, m.model_id FROM models m
        WHERE m.platform = 'cerebras' AND m.key_id IS NULL AND m.source != 'user'
@@ -323,7 +323,7 @@ describe('Model management API', () => {
     expect((getDb().prepare('SELECT rpm_limit FROM models WHERE id = ?').get(target.id) as any).rpm_limit).toBeNull();
   });
 
-  it("clears the capability tier back to unscored with an empty sizeLabel (#685)", async () => {
+  it("clears the capability tier back to unscored with an empty sizeLabel", async () => {
     const target = getDb().prepare(`
       SELECT m.id, m.platform, m.model_id FROM models m
        WHERE m.platform = 'groq' AND m.key_id IS NULL AND m.source != 'user'
@@ -347,7 +347,7 @@ describe('Model management API', () => {
     expect((getDb().prepare('SELECT size_label FROM models WHERE id = ?').get(target.id) as any).size_label).toBe('');
   });
 
-  it('rejects an out-of-range intelligence rank (#551)', async () => {
+  it('rejects an out-of-range intelligence rank', async () => {
     const target = getDb().prepare(`
       SELECT id FROM models WHERE platform = 'groq' AND key_id IS NULL ORDER BY id LIMIT 1
     `).get() as { id: number };
@@ -410,7 +410,7 @@ describe('Model management API', () => {
       .run(profileId, modelDbId, enabled);
   }
 
-  it('exposes custom profiles as auto:<name> chains in /v1/models (#960/#895)', async () => {
+  it('exposes custom profiles as auto:<name> chains in /v1/models', async () => {
     seedGroqKey();
 
     // A chain whose single member is enabled and backed by an enabled key.
@@ -446,7 +446,7 @@ describe('Model management API', () => {
     expect(listed.body.data.filter((m: any) => m.id === 'auto:my-group')).toHaveLength(1);
   });
 
-  it('lists the Claude family ids on the plain OpenAI /v1/models too (#880)', async () => {
+  it('lists the Claude family ids on the plain OpenAI /v1/models too', async () => {
     // routes/anthropic.ts only answers GET /v1/models when the caller sends an
     // `anthropic-version` header. Claude Desktop's gateway picker does not, so
     // the OpenAI-shaped listing has to carry the same Claude-shaped ids or the
@@ -470,7 +470,7 @@ describe('Model management API', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('routes a request to model auto:<name> through that named chain (#960/#895)', async () => {
+  it('routes a request to model auto:<name> through that named chain', async () => {
     const chainOnlyId = seedChainOnlyModel('named-chain-routed', 128000);
     addToProfile(newProfile('route-group', 7), chainOnlyId);
 
@@ -540,7 +540,7 @@ describe('Model management API', () => {
       .get() as { model_id: string } | undefined)?.model_id;
   }
 
-  it('routes /v1/messages to model auto:<name> through that named chain (#1170)', async () => {
+  it('routes /v1/messages to model auto:<name> through that named chain', async () => {
     seedGroqKey();
     const chainOnlyId = seedChainOnlyModel('named-chain-messages', 128000);
     addToProfile(newProfile('messages-group', 8), chainOnlyId);
@@ -555,7 +555,7 @@ describe('Model management API', () => {
     expect(lastServedModel()).toBe('named-chain-messages');
   });
 
-  it('rejects unknown auto:<name> on /v1/messages with 400 (#1170)', async () => {
+  it('rejects unknown auto:<name> on /v1/messages with 400', async () => {
     seedGroqKey();
     mockGroqChat('should-not-serve', 'silent pool fallback');
 
@@ -568,7 +568,7 @@ describe('Model management API', () => {
     expect(JSON.stringify(missing.body)).toContain('no-such-group');
   });
 
-  it('routes /v1/responses to model auto:<name> through that named chain (#1170)', async () => {
+  it('routes /v1/responses to model auto:<name> through that named chain', async () => {
     seedGroqKey();
     const chainOnlyId = seedChainOnlyModel('named-chain-responses', 128000);
     addToProfile(newProfile('responses-group', 9), chainOnlyId);
@@ -582,7 +582,7 @@ describe('Model management API', () => {
     expect(lastServedModel()).toBe('named-chain-responses');
   });
 
-  it('rejects unknown auto:<name> on /v1/responses with 400 (#1170)', async () => {
+  it('rejects unknown auto:<name> on /v1/responses with 400', async () => {
     seedGroqKey();
     mockGroqChat('should-not-serve', 'silent pool fallback');
 

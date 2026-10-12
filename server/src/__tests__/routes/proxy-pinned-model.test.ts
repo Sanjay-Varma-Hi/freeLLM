@@ -92,7 +92,7 @@ describe('requested_model analytics logging', () => {
     }, authHeaders());
     expect(status).toBe(200);
     // Provider metadata is not forwarded blindly: Reka returns "default" for
-    // concrete models, and any compatible provider may do the same (#568).
+    // concrete models, and any compatible provider may do the same.
     expect(body.model).toBe(groqModelId);
 
     const row = getDb().prepare('SELECT model_id, requested_model FROM requests ORDER BY id DESC LIMIT 1').get() as any;

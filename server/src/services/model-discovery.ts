@@ -2,7 +2,7 @@ import { OpenAICompatProvider } from '../providers/openai-compat.js';
 import { isAbortLikeError } from '../lib/error-classify.js';
 import type { ChatCompletionResponse, ChatMessage, ChatToolDefinition } from '@freellmapi/shared/types.js';
 
-// ── Model discovery on a user's own custom endpoint (#488) ──────────────────
+// ── Model discovery on a user's own custom endpoint ──────────────────
 //
 // Relay services add and drop models weekly, so registering them by hand from a
 // `curl .../v1/models | jq` goes stale immediately. This asks the operator's
@@ -27,7 +27,7 @@ export const MAX_DISCOVERED_MODELS = 500;
 /** Ids longer than this are certainly not model ids; skip rather than store. */
 const MAX_MODEL_ID_LENGTH = 256;
 
-/** What a discovered model IS, when it discernibly isn't a chat model (#1051).
+/** What a discovered model IS, when it discernibly isn't a chat model.
  *  Absent means "chat as far as anyone can tell" — the field is emitted only
  *  when a non-chat kind is detected, so plain chat rows keep their shape. */
 export type DiscoveredModelKind = 'embedding' | 'image' | 'audio' | 'transcription' | 'video';
@@ -39,7 +39,7 @@ export interface DiscoveredModel {
    *  (OpenRouter's context_length, Ollama's ctx_len, max_model_len, ...). */
   contextWindow?: number;
   /** Human-readable price hint ("free", "$1.25/M in $2/M out") when the
-   *  upstream ships one — normalized to USD per MILLION tokens (#685). */
+   *  upstream ships one — normalized to USD per MILLION tokens. */
   priceNote?: string;
   /** True when every price component the upstream advertises is zero, or it
    *  plainly says "free". Set only alongside priceNote, and the only thing the
@@ -47,7 +47,7 @@ export interface DiscoveredModel {
   isFree?: boolean;
   /** True when the upstream advertises image input (modalities/vision). */
   vision?: boolean;
-  /** Present only when the model is discernibly NOT a chat model (#1051). */
+  /** Present only when the model is discernibly NOT a chat model. */
   kind?: DiscoveredModelKind;
 }
 
@@ -83,7 +83,7 @@ const VISION_KEYS = ['vision', 'supports_vision', 'supportsVision', 'image_input
 const MODALITY_KEYS = ['modalities', 'input_modalities', 'inputModalities', 'modality'] as const;
 // A modality entry (or a substring of the modality string) that means images.
 const VISION_MODALITIES = ['image', 'vision', 'image-input'] as const;
-// #1051: some OpenAI-compatible upstreams (SiliconFlow among them) answer
+// some OpenAI-compatible upstreams (SiliconFlow among them) answer
 // /v1/models with entries that carry an id and nothing else, so visionOf finds
 // no signal at all and a VL model is indistinguishable from a chat one. These
 // id markers are the last resort. They are matched per token (the id split on
@@ -220,7 +220,7 @@ function visionOf(record: Record<string, unknown>): boolean | undefined {
 }
 
 /** Vision read off the model id, for upstreams that advertise no modality
- *  metadata whatsoever (#1051). Returns true or undefined and never false: a
+ *  metadata whatsoever. Returns true or undefined and never false: a
  *  missing marker is not evidence that a model lacks vision, and a false here
  *  would stamp `vision: false` onto every bare `{ id }` entry. */
 function visionFromId(id: string): true | undefined {
@@ -233,7 +233,7 @@ function visionFromId(id: string): true | undefined {
   return undefined;
 }
 
-// #1051, the non-vision half: an upstream that answers with bare ids gives us
+// the non-vision half: an upstream that answers with bare ids gives us
 // no `object`/`type` to read (SiliconFlow ships none at all), so a diffusion,
 // whisper or video model registers as a chat model and then 404s forever. The
 // id is the only signal left. Same rules as VISION_ID_MARKERS: matched per
@@ -285,7 +285,7 @@ const KIND_METADATA_VALUES: ReadonlyArray<readonly [DiscoveredModelKind, RegExp]
 ];
 
 /** The model's kind read off its id, for upstreams that advertise no usable
- *  type metadata (#1051). Returns a kind or undefined and never 'chat': absence
+ *  type metadata. Returns a kind or undefined and never 'chat': absence
  *  of a marker is not evidence of anything, and chat stays the default. */
 export function classifyModelId(id: string): DiscoveredModelKind | undefined {
   for (const token of id.toLowerCase().split(/[^a-z0-9]+/)) {
@@ -341,7 +341,7 @@ function toDiscovered(entry: unknown): DiscoveredModel | null {
   const vision = visionOf(record) ?? visionFromId(id);
   if (vision !== undefined) model.vision = vision;
   // Metadata wins over the id; a vision verdict wins over both — a VL model is
-  // a chat model that sees, not a media model (#1051).
+  // a chat model that sees, not a media model.
   if (vision !== true) {
     const kind = kindFromMetadata(record) ?? classifyModelId(id);
     if (kind !== undefined) model.kind = kind;
@@ -453,7 +453,7 @@ export async function discoverEndpointModels(baseUrl: string, apiKey: string): P
 /**
  * The shared half of discovery: GET `${provider}/models` through the adapter
  * and parse whatever envelope comes back. Built-in OpenAI-compatible platforms
- * (#1348) call this with their REGISTERED adapter, so the registry's base URL,
+ * call this with their REGISTERED adapter, so the registry's base URL,
  * extra headers (User-Agent quirks) and auth scheme apply exactly as they do
  * for health checks. `label` only names the endpoint in error messages.
  */
@@ -499,7 +499,7 @@ export async function discoverProviderModels(
  *  rather than a magic number. See the call site for why it is not 1. */
 export const PROBE_MAX_TOKENS = 4;
 
-/** Result of a capability probe (#874, phase 1). The `ping` latency/sample
+/** Result of a capability probe (phase 1). The `ping` latency/sample
  *  fields are unchanged from the original probe; `reasoning` and `toolCalls`
  *  are OPTIONAL additions so a client reading only `{ modelId, latencyMs }`
  *  keeps working (backward compatible). A probe that answers `ping` but then
@@ -525,13 +525,13 @@ export interface ProbeEndpointModelResult extends ProbeCapabilities {
 
 /**
  * Fire one minimal real chat request at a custom endpoint to measure latency
- * and confirm the key works end-to-end ("probe now", #685 follow-up). When the
+ * and confirm the key works end-to-end ("probe now", follow-up). When the
  * caller already knows which model to probe (a model registered on this
  * endpoint — the one whose bandit stats the sample feeds), it passes
  * `preferredModelId` and the discovery round-trip is skipped entirely; only an
  * endpoint with nothing registered falls back to discovering a model id.
  *
- * Phase 1 (#874): after the `ping` latency probe succeeds, two extra probes
+ * Phase 1: after the `ping` latency probe succeeds, two extra probes
  * fire while the operator is still watching — a deterministic reasoning probe
  * and a tool-call probe. These are best-effort: a capability probe that errors
  * or times out simply leaves that capability flag unset, so a flaky relay can
@@ -574,7 +574,7 @@ export async function probeEndpointModel(
       modelId,
       // Not 1: several relays enforce a floor above it and 400 the probe
       // outright ("max_tokens must be greater than 2" on b.ai's
-      // deepseek-v4-flash, #903), so a probe that only wanted to measure
+      // deepseek-v4-flash), so a probe that only wanted to measure
       // latency reported the endpoint as broken. 4 clears the floors seen so
       // far and still costs a rounding error.
       { max_tokens: PROBE_MAX_TOKENS },
@@ -590,7 +590,7 @@ export async function probeEndpointModel(
   // roughly three times slower than it is.
   const latencyMs = Date.now() - startedAt;
 
-  // Phase 1 (#874): the ping only proved the key works and the model answers.
+  // Phase 1: the ping only proved the key works and the model answers.
   // Fire two extra best-effort probes — reasoning + tool calls — so the
   // operator gets a capability snapshot on the same "probe now" click. Neither
   // can fail the whole probe: the ping's success is the sample-of-record, and a
@@ -610,7 +610,7 @@ export async function probeEndpointModel(
   };
 }
 
-// ── Capability probes (#874, phase 1) ─────────────────────────────────────
+// ── Capability probes (phase 1) ─────────────────────────────────────
 //
 // Two focused probes run after the ping, while the operator is still watching
 // the probe spinner. Neither writes a `requests` row — the ping is the
@@ -648,7 +648,7 @@ const TOOL_PROBE: ChatToolDefinition = {
 };
 
 /**
- * Run the reasoning and tool-call capability probes against a model (#874,
+ * Run the reasoning and tool-call capability probes against a model (
  * phase 1). Best-effort: a probe that errors leaves its flag unset rather than
  * throwing — the caller treats "unset" as "unknown" and only writes
  * `supports_tools` on a positive `toolCalls`.

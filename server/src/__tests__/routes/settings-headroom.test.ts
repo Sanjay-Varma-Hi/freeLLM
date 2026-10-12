@@ -21,7 +21,7 @@ async function request(app: Express, method: string, path: string, body: any, to
   return { status: res.status, body: json };
 }
 
-// GET/PUT /api/settings/headroom (#899): tunable proactive-demotion thresholds
+// GET/PUT /api/settings/headroom: tunable proactive-demotion thresholds
 // for the free-quota headroom guardrail.
 describe('/api/settings/headroom', () => {
   let app: Express;

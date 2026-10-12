@@ -59,7 +59,7 @@ describe('Fallback API', () => {
     expect(first).toHaveProperty('platform');
     expect(first).toHaveProperty('displayName');
     expect(first).toHaveProperty('intelligenceRank');
-    // contextWindow powers the dashboard catalog filter (#343); present even when
+    // contextWindow powers the dashboard catalog filter; present even when
     // the catalog has no value for a model (null).
     expect(first).toHaveProperty('contextWindow');
   });
@@ -107,7 +107,7 @@ describe('Fallback API', () => {
 
   // The budget bar's legend follows this payload's order. Chain priority is
   // seeded provider by provider, so ordering by it read as "grouped by
-  // provider" on the dashboard (#1243); the legend wants smartest first.
+  // provider" on the dashboard; the legend wants smartest first.
   it('GET /api/fallback/token-usage lists models smartest first and carries the rank', async () => {
     const db = getDb();
     // Two platforms with keys, several models each, in a deliberately
@@ -265,7 +265,7 @@ describe('Fallback API', () => {
     expect(get2.body.exploreEnabled).toBe(false);
   });
 
-  // Peak-hours adjustment (#760): opt-in, so the stock payload must report it
+  // Peak-hours adjustment: opt-in, so the stock payload must report it
   // off with the documented window, and the router must still be on the raw
   // preset weights no matter what hour the suite runs at.
   it('GET /api/fallback/routing reports the peak-hours settings, off by default', async () => {
@@ -371,7 +371,7 @@ describe('Fallback API', () => {
     const { body } = await request(app, 'GET', '/api/fallback');
 
     // intelligence_rank is per-provider, so the sort normalizes on the
-    // cross-provider capability tier (size_label) first (issue #135).
+    // cross-provider capability tier (size_label) first.
     const tier: Record<string, number> = { Frontier: 1, Large: 2, Medium: 3, Small: 4 };
     const tierOf = (label: string) => tier[label] ?? 5;
 
@@ -430,7 +430,7 @@ describe('Fallback API', () => {
     }
   });
 
-  it('intelligence sort never places a weaker tier above a Frontier model (#135)', async () => {
+  it('intelligence sort never places a weaker tier above a Frontier model', async () => {
     await request(app, 'POST', '/api/fallback/sort/intelligence');
     const { body } = await request(app, 'GET', '/api/fallback');
 

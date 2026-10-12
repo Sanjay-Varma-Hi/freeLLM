@@ -152,7 +152,7 @@ describe('migration round trip', () => {
         VALUES ('custom', 'roundtrip-custom', 'Roundtrip Custom', 50, 50, 1, 0, 1, 'user')
       `).run();
 
-      // Same reasoning for the endpoint-label rename (#704): it only touches
+      // Same reasoning for the endpoint-label rename: it only touches
       // custom api_keys rows, so seed one in its post-migration state (labelled
       // with its host) for the down (host -> 'Custom') and up to exercise.
       db.prepare(`
@@ -160,7 +160,7 @@ describe('migration round trip', () => {
         VALUES ('custom', '127.0.0.1:11434', 'x', 'x', 'x', 'http://127.0.0.1:11434/v1')
       `).run();
 
-      // Same again for the /mcp lifecycle seed (#925): it reads api_keys, and
+      // Same again for the /mcp lifecycle seed: it reads api_keys, and
       // with the key above present its post-migration state is enabled ('1').
       // The first up ran against an empty api_keys and wrote '0', so pin the
       // post-seed value here for down (row removed) and up (row rewritten) to

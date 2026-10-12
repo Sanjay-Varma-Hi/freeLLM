@@ -19,7 +19,7 @@ import { contentToString } from '../lib/content.js';
 import { bearerAuthHeader } from '../lib/credential.js';
 
 // Shared with the media/embeddings custom-endpoint paths; re-exported so
-// existing imports keep working (#1331).
+// existing imports keep working.
 export { isAnonymousCredential } from '../lib/credential.js';
 
 /** Hosts that ARE Moonshot's OpenAI-compatible API (api.moonshot.ai,
@@ -32,7 +32,7 @@ const MOONSHOT_HOST_SUFFIXES = ['moonshot.ai', 'moonshot.cn', 'kimi.com'];
  * upstream understands, and there is no built-in moonshot platform — Kimi
  * models are otherwise served by Groq, Cloudflare, OpenRouter, Hugging Face,
  * Ollama, ... — so the flag is gated on the endpoint host, never on the model
- * id. Returns false for anything that does not parse as a URL. (#1038)
+ * id. Returns false for anything that does not parse as a URL.
  */
 export function isMoonshotEndpoint(baseUrl: string): boolean {
   let host: string;
@@ -70,7 +70,7 @@ export function inBandCreditsError(text: string | null | undefined): string | nu
  * Covers: Groq, Cerebras, NVIDIA NIM, Mistral, OpenRouter,
  * GitHub Models, Fireworks AI.
  */
-/** A provider's key-info/quota endpoint (#1403): the GET URL and the JSON
+/** A provider's key-info/quota endpoint: the GET URL and the JSON
  * field names carrying the limit and the remaining balance. Fields are looked
  * up first under a `data` wrapper (OpenRouter style), then at the top level.
  * `credits` are in the provider's own currency (OpenRouter USD, SiliconFlow
@@ -95,12 +95,12 @@ export class OpenAICompatProvider extends BaseProvider {
   private readonly timeoutMs: number;
   /** NVIDIA NIM models reject any request that permits parallel tool calls with
    * `400 This model only supports single tool-calls at once!`. When set, pin
-   * parallel_tool_calls to false whenever tools are in play. See issue #255. */
+   * parallel_tool_calls to false whenever tools are in play.. */
   private readonly forceSingleToolCall: boolean;
   /** True only for a custom endpoint whose host is Moonshot's own API; see
-   * isMoonshotEndpoint(). Gates the assistant `partial` prefill flag (#1038). */
+   * isMoonshotEndpoint. Gates the assistant `partial` prefill flag. */
   private readonly forwardsPartial: boolean;
-  /** Optional provider-reported quota endpoint (#1403). */
+  /** Optional provider-reported quota endpoint. */
   private readonly quotaProbe?: QuotaProbeSpec;
 
   constructor(opts: {
@@ -120,7 +120,7 @@ export class OpenAICompatProvider extends BaseProvider {
     this.baseUrl = opts.baseUrl;
     this.extraHeaders = opts.extraHeaders ?? {};
     this.validateUrl = opts.validateUrl;
-    // PROVIDER_TIMEOUT_<PLATFORM> wins over the registration default (#547).
+    // PROVIDER_TIMEOUT_<PLATFORM> wins over the registration default.
     this.timeoutMs = providerTimeoutMs(opts.platform, opts.timeoutMs ?? 60_000);
     this.keyless = opts.keyless ?? false;
     this.forceSingleToolCall = opts.forceSingleToolCall ?? false;
@@ -131,7 +131,7 @@ export class OpenAICompatProvider extends BaseProvider {
   /** Resolve the parallel_tool_calls flag to send upstream. For providers that
    * only accept single tool calls (NVIDIA NIM), force `false` whenever tools are
    * present so the model never tries to emit two at once and 400s; otherwise pass
-   * the caller's value through unchanged. See issue #255. */
+   * the caller's value through unchanged.. */
   private resolveParallelToolCalls(options?: CompletionOptions): boolean | undefined {
     if (this.forceSingleToolCall && options?.tools && options.tools.length > 0) return false;
     return options?.parallel_tool_calls;
@@ -146,7 +146,7 @@ export class OpenAICompatProvider extends BaseProvider {
    * perfectly recoverable. Reuse the same inline-dialect rescue the proxy already
    * applies to streamed text: parse `failed_generation` into structured
    * tool_calls so the turn succeeds instead of failing over (or exhausting the
-   * chain when every enabled tool model behaves the same way). See issue #264. */
+   * chain when every enabled tool model behaves the same way).. */
   private rescueFailedGeneration(errBody: unknown, options?: CompletionOptions): ChatToolCall[] | null {
     const failed = (errBody as { error?: { failed_generation?: unknown } })?.error?.failed_generation;
     if (typeof failed !== 'string' || failed.length === 0) return null;
@@ -176,7 +176,7 @@ export class OpenAICompatProvider extends BaseProvider {
    * at error.message, but NVIDIA NIM answers RFC7807-style ({"title": ...,
    * "detail": "Function id '...': DEGRADED function cannot be invoked"}) — the
    * old error.message-only read collapsed that to "Bad Request", so neither the
-   * logs nor the error classifier could ever see the DEGRADED marker (#522). */
+   * logs nor the error classifier could ever see the DEGRADED marker. */
   private upstreamErrorText(errBody: unknown, res: Response): string {
     const e = errBody as { error?: { message?: unknown }; detail?: unknown; title?: unknown };
     if (typeof e?.error?.message === 'string' && e.error.message) return e.error.message;
@@ -191,7 +191,7 @@ export class OpenAICompatProvider extends BaseProvider {
    * off. Sending `Bearer no-key` upstream is never right — upstreams read it
    * as an invalid key. A REAL key saved on a keyless platform is used instead
    * of the anonymous path, and a real key on a custom endpoint still gets its
-   * bearer (#1331): the presence of a credential decides at request time —
+   * bearer: the presence of a credential decides at request time —
    * Kilo, OVH and AI Horde all accept both modes per their docs. */
   private authHeader(apiKey: string): Record<string, string> {
     return bearerAuthHeader(apiKey);
@@ -217,7 +217,7 @@ export class OpenAICompatProvider extends BaseProvider {
   /**
    * OpenAI-compatible endpoints that are strict about unknown nested fields:
    * Mistral returns 422 for provider-private replay fields, Groq rejects
-   * assistant `reasoning_content` with 400 (verified in production, #1070),
+   * assistant `reasoning_content` with 400 (verified in production),
    * and Cerebras rejects it too — `property 'messages.N.assistant.
    * reasoning_content' is unsupported` (confirmed via vercel/ai#15042 and
    * opencode#26762, and by Cerebras' own docs, which use a `reasoning` field
@@ -269,7 +269,7 @@ export class OpenAICompatProvider extends BaseProvider {
     // Moonshot/Kimi host). Every other OpenAI-compatible gateway — including
     // the ones that serve Kimi models, like Groq, Cloudflare or OpenRouter —
     // gets it stripped, since strict upstreams 400/422 on unknown message keys
-    // and the rest would ignore it anyway. (#1038)
+    // and the rest would ignore it anyway.
     const sanitized = this.forwardsPartial ? messages : messages.map((m) => {
       if (m.role === 'assistant' && m.partial !== undefined) {
         const { partial: _partial, ...rest } = m;
@@ -337,7 +337,7 @@ export class OpenAICompatProvider extends BaseProvider {
       const err = await res.json().catch(() => ({}));
       const rescued = this.rescueFailedGeneration(err, options);
       if (rescued) {
-        console.log(`[${this.name}] Rescued ${rescued.length} inline tool call(s) from a ${res.status} tool_use_failed (#264)`);
+        console.log(`[${this.name}] Rescued ${rescued.length} inline tool call(s) from a ${res.status} tool_use_failed`);
         const out: ChatCompletionResponse = {
           id: `chatcmpl-rescued-${Date.now()}`,
           object: 'chat.completion',
@@ -367,7 +367,7 @@ export class OpenAICompatProvider extends BaseProvider {
     if (!data) {
       // A 200 whose body isn't a single JSON document. Two distinct causes:
       //   (1) base URL points at a non-OpenAI-compatible API (Ollama's native
-      //       NDJSON /api endpoints, llama.cpp's non-/v1 server, etc., #189).
+      //       NDJSON /api endpoints, llama.cpp's non-/v1 server, etc.).
       //       Typical signals: Content-Type is application/x-ndjson or
       //       text/event-stream; parser sees a SECOND JSON object after the
       //       first one ends ("Unexpected non-whitespace character after JSON
@@ -382,7 +382,7 @@ export class OpenAICompatProvider extends BaseProvider {
       //       (CF proxies it transparently); latency_ms ≈ 600000.
       // Without this split every Cloudflare-truncated request was logged as
       // "endpoint is not OpenAI-compatible", which sent operators chasing a
-      // base-URL config bug that doesn't exist (#430).
+      // base-URL config bug that doesn't exist.
       const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
       const contentType = (res.headers?.get?.('content-type') ?? '').toLowerCase();
       const looksLikeNdjson = /ndjson|text\/event-stream|x-ndjson/.test(contentType);
@@ -468,7 +468,7 @@ export class OpenAICompatProvider extends BaseProvider {
       const err = await res.json().catch(() => ({}));
       const rescued = this.rescueFailedGeneration(err, options);
       if (rescued) {
-        console.log(`[${this.name}] Rescued ${rescued.length} inline tool call(s) from a ${res.status} tool_use_failed (stream, #264)`);
+        console.log(`[${this.name}] Rescued ${rescued.length} inline tool call(s) from a ${res.status} tool_use_failed (stream)`);
         const base = { id: `chatcmpl-rescued-${Date.now()}`, object: 'chat.completion.chunk' as const, created: Math.floor(Date.now() / 1000), model: modelId };
         yield { ...base, choices: [{ index: 0, delta: { role: 'assistant' }, finish_reason: null }] };
         yield { ...base, choices: [{ index: 0, delta: { tool_calls: rescued.map((c, i) => ({ index: i, ...c })) as unknown as ChatToolCall[] }, finish_reason: null }] };
@@ -478,7 +478,7 @@ export class OpenAICompatProvider extends BaseProvider {
       throw providerHttpError(res, `${this.name} API error ${res.status}: ${this.upstreamErrorText(err, res)}`, err);
     }
 
-    // First-byte grace (#584): the same chat timeout that bounded the headers
+    // First-byte grace: the same chat timeout that bounded the headers
     // also budgets the first stream read — NIM-style providers send SSE
     // headers instantly, then prefill long prompts for minutes.
     yield* this.guardInBandCreditsError(
@@ -527,7 +527,7 @@ export class OpenAICompatProvider extends BaseProvider {
    * GET a catalog-style endpoint with this provider's auth header, extra
    * headers, proxy routing, timeout policy and quota bookkeeping. Shared by
    * validateKey (which only reads the status) and custom-endpoint model
-   * discovery (#488), which also reads the body — one place owns how we talk
+   * discovery, which also reads the body — one place owns how we talk
    * to a provider's /models route.
    *
    * Note: transport errors (DNS / timeout / TLS) propagate to the caller.
@@ -561,7 +561,7 @@ export class OpenAICompatProvider extends BaseProvider {
   }
 
   /** The raw `${baseUrl}/models` response, body unread. Used by custom-endpoint
-   *  model discovery (#488); unlike validateKey it always hits /models, never a
+   *  model discovery; unlike validateKey it always hits /models, never a
    *  provider-specific validateUrl, because the caller wants the catalog. */
   fetchModelCatalog(apiKey: string, quotaContext?: QuotaObservationContext): Promise<Response> {
     return this.fetchCatalogEndpoint(this.modelsUrl, apiKey, quotaContext);
@@ -573,7 +573,7 @@ export class OpenAICompatProvider extends BaseProvider {
   }
 
   /**
-   * Provider-reported balance via the registered quotaProbe endpoint (#1403).
+   * Provider-reported balance via the registered quotaProbe endpoint.
    * GETs the key-info URL (e.g. OpenRouter's `GET /api/v1/key`), pulls the
    * limit/remaining numbers out of the JSON (checking the `data` wrapper and
    * the top level), and records them as a `source: 'quota_api'` observation.
@@ -636,7 +636,7 @@ export class OpenAICompatProvider extends BaseProvider {
       });
       return record !== null;
     } catch {
-      // Transport/parse failure: inconclusive, never a key verdict (#1403).
+      // Transport/parse failure: inconclusive, never a key verdict.
       return false;
     }
   }

@@ -20,7 +20,7 @@ import { analyticsRouter } from './routes/analytics.js';
 import { healthRouter } from './routes/health.js';
 import { freeTierRouter } from './routes/free-tier.js';
 import { settingsRouter } from './routes/settings.js';
-import { premiumRouter } from './routes/premium.js';
+import { catalogRouter } from './routes/catalog.js';
 import { backupsRouter } from './routes/backups.js';
 import { cacheRouter } from './routes/cache.js';
 import { compressionRouter } from './routes/compression.js';
@@ -89,7 +89,7 @@ function isHttpsRequest(req: express.Request): boolean {
 // Whether the browser will treat this origin as a secure context. Headers that
 // only apply to secure contexts are worse than useless elsewhere: the browser
 // drops them and logs an error, which is exactly what a plain-HTTP LAN install
-// reported in #734.
+// reported.
 function isTrustworthyOrigin(req: express.Request): boolean {
   return isHttpsRequest(req) || LOOPBACK_HOST_RE.test(req.hostname ?? '');
 }
@@ -97,7 +97,7 @@ function isTrustworthyOrigin(req: express.Request): boolean {
 export function createApp(config?: Config) {
   const cfg = config ?? loadConfig();
   const app = express();
-  // TRUST_PROXY (#1024): opt-in trust of X-Forwarded-* from a reverse proxy.
+  // TRUST_PROXY: opt-in trust of X-Forwarded-* from a reverse proxy.
   // false (default) ignores forwarded headers so direct callers cannot spoof
   // the client IP; true trusts every hop; a comma-separated list of addresses
   // /CIDRs trusts only those proxies. Must be set before client-context and
@@ -114,16 +114,16 @@ export function createApp(config?: Config) {
   // this is a single-user local proxy served over HTTP (see README).
   //
   // `upgrade-insecure-requests` is emitted by Helmet by default; v0.6.6's
-  // CSP hardening (#498) inherited it and broke HTTP LAN installs because the
+  // CSP hardening inherited it and broke HTTP LAN installs because the
   // browser rewrites /assets/* to https:// on an origin that has no TLS,
-  // producing ERR_SSL_PROTOCOL_ERROR and a blank dashboard (#682).
+  // producing ERR_SSL_PROTOCOL_ERROR and a blank dashboard.
   // The directive is dropped from the static Helmet config and re-added per
   // request below, gated by protocol + the CSP_UPGRADE_INSECURE_REQUESTS env.
   //
   // Cross-Origin-Opener-Policy and Origin-Agent-Cluster are handled the same
   // way, for the same reason: both only apply to secure contexts, so on a
   // plain-HTTP LAN origin the browser discards them and logs a console error
-  // instead (#734). They are re-added per request whenever the origin is one
+  // instead. They are re-added per request whenever the origin is one
   // the browser trusts — HTTPS, or loopback, which covers desktop/localhost.
   app.use(helmet({
     contentSecurityPolicy: {
@@ -188,7 +188,7 @@ export function createApp(config?: Config) {
   // 10MB and used to 413 HERE, before auth/routing: no fallback attempt, no
   // analytics row, just an opaque 'request entity too large'. Those surfaces
   // get the larger REQUEST_BODY_LIMIT_MB ceiling (default 25MB); everything
-  // else keeps the #200 limit — code agents (OpenCode, AionUI, Qwen Code)
+  // else keeps the limit — code agents (OpenCode, AionUI, Qwen Code)
   // ship very large system prompts + tool schemas + repo context, and 1mb cut
   // their sessions off mid-conversation. body-parser skips requests whose
   // body was already parsed, so the second parser only sees what the first
@@ -242,7 +242,7 @@ export function createApp(config?: Config) {
     next();
   });
 
-  // Dashboard auth (#35): /api/auth/{status,setup,login} bootstrap without a
+  // Dashboard auth: /api/auth/{status,setup,login} bootstrap without a
   // session; everything else under /api/* requires a logged-in dashboard user.
   // The /v1 proxy keeps its own unified-API-key auth and is NOT gated here.
   app.use('/api/auth', authRouter);
@@ -254,7 +254,7 @@ export function createApp(config?: Config) {
   app.use('/api/keys/export', createAdminRateLimiter(EXPORT_RATE_LIMIT_RPM));
 
   app.use('/api/keys', requireAuth, keysRouter);
-  // Per-client key management (#411). Dashboard-session gated like the rest of
+  // Per-client key management. Dashboard-session gated like the rest of
   // /api — the profile keys it mints authenticate only the /v1 inference
   // surface and are never valid here.
   app.use('/api/client-profiles', requireAuth, clientProfilesRouter);
@@ -274,7 +274,7 @@ export function createApp(config?: Config) {
   app.use('/api/health', requireAuth, healthRouter);
   app.use('/api/free-tier', requireAuth, freeTierRouter);
   app.use('/api/settings', requireAuth, settingsRouter);
-  app.use('/api/premium', requireAuth, premiumRouter);
+  app.use('/api/catalog', requireAuth, catalogRouter);
   // Database dumps and restores. Dashboard-session gated: the dump files carry
   // encrypted provider keys and every routing setting, so the unified /v1 key
   // must not open this surface.
@@ -294,7 +294,7 @@ export function createApp(config?: Config) {
   // owns those two paths; everything else falls through to the routers below.
   app.use('/v1', docsRouter);
 
-  // Read-only per-upstream status for meta-gateways (GET /v1/providers, #433).
+  // Read-only per-upstream status for meta-gateways (GET /v1/providers).
   // Unified-key auth is enforced inside the handler; mounted before the rate
   // limiter (like docsRouter) so status polling doesn't draw down a caller's
   // request budget.
@@ -304,7 +304,7 @@ export function createApp(config?: Config) {
   app.use('/v1/t/:token', createProxyRateLimiter(cfg.proxyRateLimitRpm));
   app.use('/v1/t/:token', urlTokenRouter);
 
-  // OpenAI-compatible proxy. Per-IP rate limiting (#35 item #6) runs first so
+  // OpenAI-compatible proxy. Per-IP rate limiting (item #6) runs first so
   // it throttles unauthenticated brute-force / flood attempts before any
   // routing work. Tune via PROXY_RATE_LIMIT_RPM; 0 disables it.
   app.use('/v1', createProxyRateLimiter(cfg.proxyRateLimitRpm));
@@ -315,7 +315,7 @@ export function createApp(config?: Config) {
   // paths it doesn't own fall through to the OpenAI router untouched.
   app.use('/v1', anthropicRouter);
   app.use('/v1', proxyRouter);
-  // OpenAI Responses API shim (Codex CLI requires wire_api="responses"; see #96)
+  // OpenAI Responses API shim (Codex CLI requires wire_api="responses")
   app.use('/v1', responsesRouter);
 
   // Native Gemini wire surface for Gemini CLI and Gemini-lineage agents.
@@ -330,7 +330,7 @@ export function createApp(config?: Config) {
   app.use('/mcp', createProxyRateLimiter(cfg.proxyRateLimitRpm));
   app.use('/mcp', mcpRouter);
 
-  // Liveness / readiness probes for orchestrators (GET /livez, /readyz, #433).
+  // Liveness / readiness probes for orchestrators (GET /livez, /readyz).
   // Unauthenticated so a load balancer can probe them; registered before the
   // static / SPA-fallback block below so these root paths resolve to JSON
   // instead of index.html.

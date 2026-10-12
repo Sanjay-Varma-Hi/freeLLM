@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Jump-to-rank (#1317): the rank cell in manual mode is a button that opens an
+// Jump-to-rank: the rank cell in manual mode is a button that opens an
 // inline number input. This mounts the real SortableGroupRow (inside a DndContext
 // so useSortable's hooks have their provider) and drives the actual
 // click → type → Enter / Escape / blur cycle, asserting the row's click-to-detail
@@ -77,7 +77,7 @@ function type(input: HTMLInputElement, value: string) {
 
 function rankButton() { return container.querySelector('td:nth-child(2) button') as HTMLButtonElement }
 
-describe('rank cell jump-to-rank (#1317)', () => {
+describe('rank cell jump-to-rank', () => {
   it('renders a plain number when the rank is not editable', () => {
     const onMove = vi.fn()
     render(onMove, false)

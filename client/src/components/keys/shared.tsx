@@ -2,7 +2,7 @@ import type { ApiKeyModel, Platform, ProviderQuotaState } from '../../../../shar
 import { ExternalLink } from 'lucide-react'
 import { useI18n } from '@/i18n'
 
-// Small "Get API key" external link shown next to a provider (#137).
+// Small "Get API key" external link shown next to a provider.
 export function GetKeyLink({ url }: { url: string }) {
   const { t } = useI18n()
   if (!url) return null
@@ -20,10 +20,10 @@ export function GetKeyLink({ url }: { url: string }) {
 }
 
 // `url` points to each provider's key-management / signup page so the Keys page
-// can show a "Get API key" shortcut (#137). OpenCode Zen's key is free from
-// opencode.ai/auth — no card needed; billing only applies to paid models (#128).
+// can show a "Get API key" shortcut. OpenCode Zen's key is free from
+// opencode.ai/auth — no card needed; billing only applies to paid models.
 // `keyless: true` providers (Kilo, OVH, AI Horde) need no API key but accept
-// one (#1331): the key field is optional, a blank submit stores a sentinel so
+// one: the key field is optional, a blank submit stores a sentinel so
 // routing treats the platform as configured and calls go out anonymously, and
 // a real key is stored and sent like any other.
 export const PLATFORMS: { value: Platform; label: string; url: string; keyless?: boolean }[] = [
@@ -89,7 +89,7 @@ export const PLATFORMS: { value: Platform; label: string; url: string; keyless?:
   // Chinese domestic providers. All four gate API access behind real-name
   // verification on the cloud account, so the label says so up front rather
   // than letting a user mint a key that 401s on every call (the ModelScope
-  // lesson, #581). LongCat is the one that takes an overseas email signup.
+  // lesson). LongCat is the one that takes an overseas email signup.
   { value: 'qianfan', label: 'Baidu Qianfan (free ERNIE, needs cn real-name)', url: 'https://console.bce.baidu.com/qianfan/overview' },
   { value: 'volcengine', label: 'Volcengine Ark (free daily, needs cn real-name)', url: 'https://console.volcengine.com/ark' },
   { value: 'longcat', label: 'LongCat (free daily, email signup ok)', url: 'https://longcat.chat/platform' },

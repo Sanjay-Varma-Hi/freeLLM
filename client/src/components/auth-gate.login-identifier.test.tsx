@@ -4,7 +4,7 @@
 // route accepts that identifier on purpose, but the form used to reject it
 // client-side ("Enter a valid email address") before any request was sent, so
 // a desktop user who opened the dashboard in a browser could reset the
-// password and still never sign in (#1250). Setup keeps the strict check.
+// password and still never sign in. Setup keeps the strict check.
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'

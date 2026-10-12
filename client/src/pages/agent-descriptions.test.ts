@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-// #801: the agent cards showed only a wire protocol and a base-URL suffix,
+// the agent cards showed only a wire protocol and a base-URL suffix,
 // which says nothing about what any of these tools actually is. The cards now
 // read `agents.descriptions.<id>` and fall back to the old protocol line when
 // the key is absent, so the thing worth holding here is that no catalog entry

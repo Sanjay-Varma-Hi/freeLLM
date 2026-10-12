@@ -70,7 +70,7 @@ describe('Custom Provider Endpoints', () => {
   });
 });
 
-  describe('POST /api/keys/custom (#117)', () => {
+  describe('POST /api/keys/custom', () => {
     let app: Express;
   
     beforeAll(() => {
@@ -158,7 +158,7 @@ describe('Custom Provider Endpoints', () => {
     expect(['qwen3:4b', 'llama3:8b']).toContain(route.modelId);
   });
 
-  it('deleting the custom key cascades its models out of the fallback chain (#189)', async () => {
+  it('deleting the custom key cascades its models out of the fallback chain', async () => {
     const db = getDb();
     const key = db.prepare("SELECT id FROM api_keys WHERE platform = 'custom'").get() as { id: number };
     const customModelIds = (db.prepare("SELECT id FROM models WHERE platform = 'custom'").all() as { id: number }[]).map(r => r.id);
@@ -202,7 +202,7 @@ describe('Custom Provider Endpoints', () => {
     expect(fc).toBeDefined();
   });
 
-  it('surfaces a clear error when the custom endpoint speaks NDJSON, not OpenAI (#189)', async () => {
+  it('surfaces a clear error when the custom endpoint speaks NDJSON, not OpenAI', async () => {
     // Real upstream that answers like Ollama's native /api/chat: HTTP 200,
     // newline-delimited JSON documents — res.json() in the provider would die
     // with "Unexpected non-whitespace character after JSON at position …".
@@ -242,10 +242,10 @@ describe('Custom Provider Endpoints', () => {
     expect(JSON.stringify(body)).not.toMatch(/Unexpected non-whitespace/);
   });
 
-  // #212: adding a second custom provider used to overwrite the first one's
+  // adding a second custom provider used to overwrite the first one's
   // endpoint — one shared key row held THE base_url. Now each endpoint gets
   // its own key row and models bind to their endpoint via models.key_id.
-  describe('multiple custom providers (#212)', () => {
+  describe('multiple custom providers', () => {
     beforeAll(async () => {
       // Sweep custom state left by the tests above for a deterministic start.
       const db = getDb();
@@ -313,9 +313,9 @@ describe('Custom Provider Endpoints', () => {
     });
   });
 
-  // #281: one submit can bind several model ids to a single endpoint, instead
+  // one submit can bind several model ids to a single endpoint, instead
   // of forcing one POST per model.
-  describe('multiple models per endpoint (#281)', () => {
+  describe('multiple models per endpoint', () => {
     beforeAll(() => {
       const db = getDb();
       db.prepare("DELETE FROM fallback_config WHERE model_db_id IN (SELECT id FROM models WHERE platform = 'custom')").run();
@@ -364,7 +364,7 @@ describe('Custom Provider Endpoints', () => {
     // The dashboard's custom form always posts the plural `models`, even for a
     // single id, and puts the name it collected in the top-level displayName.
     // That name used to be bound to the singular `model` alone, so the field
-    // was a no-op and the row landed named after its model id (#704).
+    // was a no-op and the row landed named after its model id.
     it('applies the top-level displayName to a lone model sent as a models array', async () => {
       const { status, body } = await post(app, '/api/keys/custom', {
         baseUrl: 'http://127.0.0.1:9998/v1',
@@ -422,7 +422,7 @@ describe('Custom Provider Endpoints', () => {
       expect(row.display_name).toBe(modelId);
     });
 
-    // "Fetch models" (#488) re-posts bare ids for everything the endpoint
+    // "Fetch models" re-posts bare ids for everything the endpoint
     // serves, including models already registered. Leaving the name out must
     // mean "no opinion", not "reset it" — the same rule the capability flags
     // already follow.
@@ -463,10 +463,10 @@ describe('Custom Provider Endpoints', () => {
     });
   });
 
-  // #470: custom models used to register with supports_tools = 0, so agentic
+  // custom models used to register with supports_tools = 0, so agentic
   // clients that send `tools` matched zero of them and hit a false "all models
   // exhausted" error. Registration now defaults tools on, vision off.
-  describe('capability defaults (#470)', () => {
+  describe('capability defaults', () => {
     beforeAll(() => {
       const db = getDb();
       db.prepare("DELETE FROM fallback_config WHERE model_db_id IN (SELECT id FROM models WHERE platform = 'custom')").run();

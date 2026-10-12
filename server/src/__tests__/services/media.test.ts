@@ -441,7 +441,7 @@ describe('media service', () => {
     it('Hugging Face: refuses a result URL that points at a blocked address class', async () => {
       // The result URL is the one URL in this adapter that comes out of an
       // upstream JSON body, so it goes through the same guard custom-provider
-      // base URLs do (#440) instead of being fetched and streamed back.
+      // base URLs do instead of being fetched and streamed back.
       addMedia(
         'huggingface',
         'Lightricks/LTX-Video-0.9.5',

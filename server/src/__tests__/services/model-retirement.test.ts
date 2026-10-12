@@ -9,7 +9,7 @@ import {
 import { getCatalogModelTombstone, recordCatalogModelTombstone } from '../../services/model-state.js';
 import { applyCatalog } from '../../services/catalog-sync.js';
 
-// #634: NVIDIA retires a model upstream ("has reached its end of life"), and
+// NVIDIA retires a model upstream ("has reached its end of life"), and
 // every subsequent request burns a fallback slot on the corpse because nothing
 // persisted the 404/410. These tests lock the two halves of the fix: a
 // conservative end-of-life CLASSIFIER (transient 404s must never match), and a
@@ -51,7 +51,7 @@ function routeFor(modelDbId: number, modelId = MODEL_ID) {
   return { modelDbId, platform: PLATFORM, modelId };
 }
 
-// The exact NVIDIA body from issue #634.
+// The exact NVIDIA body.
 const NVIDIA_EOL = Object.assign(
   new Error(
     "NVIDIA NIM API error 410: The model 'minimaxai/minimax-m2.7' has reached its end of life "
@@ -69,7 +69,7 @@ const TRANSIENT_404 = Object.assign(
   { status: 404 },
 );
 
-describe('modelRetirementSignal (conservative end-of-life detection — #634)', () => {
+describe('modelRetirementSignal (conservative end-of-life detection —)', () => {
   it('treats an explicit 410 / end-of-life body as definitive', () => {
     expect(modelRetirementSignal(NVIDIA_EOL)).toBe('definitive');
     expect(modelRetirementSignal(Object.assign(new Error('Gone'), { status: 410 }))).toBe('definitive');
@@ -135,7 +135,7 @@ describe('modelRetirementSignal (conservative end-of-life detection — #634)', 
   });
 });
 
-describe('noteModelRetirementSignal (auto-disable with a reason — #634)', () => {
+describe('noteModelRetirementSignal (auto-disable with a reason —)', () => {
   beforeEach(() => {
     resetModelRetirementObservations();
     getDb().prepare("DELETE FROM catalog_model_tombstones WHERE model_id LIKE 'eol-test-%'").run();
@@ -205,7 +205,7 @@ describe('noteModelRetirementSignal (auto-disable with a reason — #634)', () =
   });
 });
 
-describe('catalog sync vs. upstream retirement (#634)', () => {
+describe('catalog sync vs. upstream retirement', () => {
   function catalogWith(modelId: string, enabled: boolean) {
     return {
       version: '2099.01.01',

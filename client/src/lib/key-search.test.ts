@@ -6,12 +6,12 @@ import { keyMatchesQuery } from './key-search'
 // renders. A custom endpoint row prints its baseUrl; before this the filter
 // only knew label and masked key, so searching a relay's host — the one
 // identifier visible for a keyless relay with no label — found nothing,
-// which is exactly what #1056 fixed for the fallback table.
+// which is exactly what fixed for the fallback table.
 
 const key = (over: Partial<ApiKey> = {}) =>
   ({ id: 1, platform: 'custom', label: null, maskedKey: '****abcd', baseUrl: 'https://api.unorouter.com/v1', ...over }) as ApiKey
 
-describe('keyMatchesQuery (#1056 applied to /keys)', () => {
+describe('keyMatchesQuery (applied to /keys)', () => {
   it('matches the endpoint host the row displays', () => {
     expect(keyMatchesQuery(key(), 'unorouter')).toBe(true)
     expect(keyMatchesQuery(key(), 'API.UnoRouter.com')).toBe(true)

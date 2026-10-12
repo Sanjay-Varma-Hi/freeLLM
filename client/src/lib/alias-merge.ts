@@ -1,4 +1,4 @@
-// Editing helpers for the model-detail alias merges (issue #790).
+// Editing helpers for the model-detail alias merges.
 //
 // The unify overrides store merges as `{ into, keys[] }` entries over the WHOLE
 // catalog, while the model detail page only ever shows the entries pointing at

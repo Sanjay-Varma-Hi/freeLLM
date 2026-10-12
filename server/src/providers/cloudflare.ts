@@ -19,7 +19,7 @@ import { providerTimeoutMs } from '../lib/provider-timeout.js';
 // Workers AI hosts reasoning models (@cf/zai-org/glm-4.7-flash) that spend
 // well over the 15s fetch default before the first byte (live sweep
 // 2026-07-11: repeated 15s aborts). Matches zhipu/agnes/ollama bumps.
-// PROVIDER_TIMEOUT_CLOUDFLARE overrides (#547).
+// PROVIDER_TIMEOUT_CLOUDFLARE overrides.
 const CHAT_TIMEOUT_MS = providerTimeoutMs('cloudflare', 60_000);
 const GLM_47_FLASH_TIMEOUT_MS = 200_000;
 
@@ -151,7 +151,7 @@ export class CloudflareProvider extends BaseProvider {
       throw providerHttpError(res, `Cloudflare API error ${res.status}: ${(err as any).error?.message ?? (err as any).errors?.[0]?.message ?? res.statusText}`, err);
     }
 
-    // First-byte grace (#584): reuse the per-model chat timeout (GLM 4.7
+    // First-byte grace: reuse the per-model chat timeout (GLM 4.7
     // Flash's 200s included) as the budget for the first stream read.
     yield* this.readSseStream(res, { firstByteTimeoutMs: this.timeoutFor(modelId, options?.timeoutMs) });
   }
@@ -164,7 +164,7 @@ export class CloudflareProvider extends BaseProvider {
     // Account-scoped Workers AI tokens 403 on /user/tokens/verify; they can only
     // self-verify via /accounts/{id}/tokens/verify. User-scoped tokens are the
     // opposite. Try the self-verify endpoint first, then fall back to the
-    // account-scoped one before treating an auth failure as a bad key. (#297)
+    // account-scoped one before treating an auth failure as a bad key.
     const userResult = await this.verifyAt(
       'https://api.cloudflare.com/client/v4/user/tokens/verify',
       token,

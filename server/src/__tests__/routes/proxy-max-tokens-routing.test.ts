@@ -41,7 +41,7 @@ const GOOD_RESULT = {
   usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 },
 };
 
-describe('routingReserveTokens (#470)', () => {
+describe('routingReserveTokens', () => {
   it('caps the reserved output at OUTPUT_RESERVE_CAP', () => {
     expect(routingReserveTokens(32000)).toBe(OUTPUT_RESERVE_CAP);
     expect(routingReserveTokens(50)).toBe(50);
@@ -52,7 +52,7 @@ describe('routingReserveTokens (#470)', () => {
   });
 });
 
-describe('max_tokens no longer starves routing (#470)', () => {
+describe('max_tokens no longer starves routing', () => {
   let app: Express;
   let key: string;
 

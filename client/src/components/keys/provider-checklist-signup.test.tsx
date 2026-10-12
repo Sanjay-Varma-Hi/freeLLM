@@ -9,7 +9,7 @@ import { ProviderChecklistSection } from './provider-checklist-section'
 
 vi.mock('@/lib/api', () => ({ apiFetch: vi.fn() }))
 
-// #1225: each unconfigured provider chip must carry a direct link to the
+// each unconfigured provider chip must carry a direct link to the
 // provider's signup/key page, not only the add-key dialog.
 
 const providers = [
@@ -77,7 +77,7 @@ async function renderExpanded() {
   })
 }
 
-describe('provider checklist signup links (#1225)', () => {
+describe('provider checklist signup links', () => {
   it('renders a signup link on unconfigured keyed chips pointing at the platform URL', async () => {
     await renderExpanded()
     const link = Array.from(container.querySelectorAll('a')).find(a =>

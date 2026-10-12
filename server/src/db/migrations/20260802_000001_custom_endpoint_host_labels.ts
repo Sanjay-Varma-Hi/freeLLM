@@ -1,9 +1,9 @@
-// Migration: rename legacy 'Custom' endpoint labels to their host (#704)
+// Migration: rename legacy 'Custom' endpoint labels to their host
 // Created: 2026-08-02
 //
 // DOWN: reversible (see below)
 //
-// Custom endpoints registered before #705 all took the literal label 'Custom',
+// Custom endpoints registered all took the literal label 'Custom',
 // so every panel that identifies a key by its label alone — analytics,
 // cooldowns, quota signals, the models list — showed a column of identical
 // rows once more than one relay was configured. New endpoints now default to

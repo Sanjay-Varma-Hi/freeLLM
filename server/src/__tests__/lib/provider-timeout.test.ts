@@ -7,7 +7,7 @@ import {
   streamStallTimeoutMs,
 } from '../../lib/provider-timeout.js';
 
-// Per-provider timeout overrides (issue #547, reworked from PR #509).
+// Per-provider timeout overrides (reworked).
 
 afterEach(() => {
   delete process.env.PROVIDER_TIMEOUT_NVIDIA;
@@ -72,7 +72,7 @@ describe('streamStallTimeoutMs', () => {
     expect(streamStallTimeoutMs()).toBe(0);
   });
 
-  // Per-platform stall override (issue #584): symmetric with
+  // Per-platform stall override: symmetric with
   // PROVIDER_TIMEOUT_<PLATFORM>; per-platform wins over global wins over default.
   it('PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM> wins over the global value', () => {
     process.env.PROVIDER_STREAM_STALL_TIMEOUT_MS = '240000';

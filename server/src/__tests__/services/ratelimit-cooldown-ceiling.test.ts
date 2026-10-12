@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 
-// #952 / #1049: an operator ceiling on the router's OWN cooldown guesses. Relay
+// an operator ceiling on the router's OWN cooldown guesses. Relay
 // endpoints emit "busy" / "insufficient balance" for transient reasons, and a
 // few of those per key used to walk a whole pool onto 24h benches. The ceiling
 // caps the escalation ladder and the day-long 402/403 benches, but must never
@@ -44,7 +44,7 @@ beforeAll(() => {
 beforeEach(() => setCooldownCeilingMs(null));
 afterEach(() => setCooldownCeilingMs(null));
 
-describe('cooldown ceiling (#952)', () => {
+describe('cooldown ceiling', () => {
   it('is unset by default and leaves the ladder and day benches untouched', () => {
     expect(getCooldownCeilingMs()).toBeNull();
     const r = route();

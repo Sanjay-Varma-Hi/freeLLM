@@ -193,12 +193,12 @@ export async function runInboundChat(
   const state = newFallbackState();
   const attemptLog: AttemptRecord[] = [];
   const wantsTools = (input.tools?.length ?? 0) > 0;
-  // Lets the failover loop learn which models reject tool calls (#1230).
+  // Lets the failover loop learn which models reject tool calls.
   state.wantsTools = wantsTools;
   const imageRequest = hasImages(input.messages);
-  // Capped reserve (#470); threaded to the router separately because it is an
+  // Capped reserve; threaded to the router separately because it is an
   // exact count and must not be inflated by the context-window safety margin
-  // (#956 review).
+  //
   const outputReserve = routingReserveTokens(maxTokens);
   const estimatedTotal = estimatedInputTokens + outputReserve;
   const schemas = toolSchemaMap(input.tools);
@@ -231,7 +231,7 @@ export async function runInboundChat(
     logIdentity: { surface: 'inbound chat', requestedModel: input.model ?? 'auto' },
     clientGone: () => clientGone,
     route: () => {
-      // #507: after the first 413 / context-length rejection the parser
+      // after the first 413 / context-length rejection the parser
       // latches the provider-reported REQUESTED size onto state. Inflate the
       // routing estimate on the next attempt so low-tpm / small-window models
       // are skipped by the existing gates in router.ts instead of re-firing.
@@ -263,14 +263,14 @@ export async function runInboundChat(
         let toolCalls = message?.tool_calls ?? [];
         // Reasoning-only is an empty turn to the caller — coding agents stall
         // on a blank reply — so it fails over like an empty completion,
-        // mirroring the Anthropic surface's non-streaming check (#1184).
+        // mirroring the Anthropic surface's non-streaming check.
         if (!text && toolCalls.length === 0) {
           throw Object.assign(
             new Error(`empty completion from ${route.displayName}`),
             result.choices?.[0]?.finish_reason === 'length' ? { skipBench: true } : {},
           );
         }
-        // #809: a bare "safe"/"unsafe" classification word from a relay is an
+        // a bare "safe"/"unsafe" classification word from a relay is an
         // upstream filter, not the requested model — fail over like an empty
         // completion.
         if (isUpstreamClassificationOutput(text, route.platform) && toolCalls.length === 0) {
@@ -359,7 +359,7 @@ export async function runInboundChat(
       const toolAcc = new Map<number, { id?: string; name: string; args: string; thoughtSignature?: string }>();
       let dialectMode: 'undecided' | 'passthrough' | 'dialect' = 'undecided';
       let heldText = '';
-      // Thinking deltas held until something commit-worthy arrives (#1184) —
+      // Thinking deltas held until something commit-worthy arrives —
       // the same buffer the Anthropic surface keeps: a stream that produces
       // ONLY reasoning stays uncommitted through to stream end and fails over
       // invisibly, instead of locking the ladder on a blank reply. Flushed in
@@ -421,7 +421,7 @@ export async function runInboundChat(
               wire.sendReasoningDelta?.(res, route, deltaReasoning);
             } else {
               // Hold rather than commit: thinking alone is not proof the turn
-              // will produce a usable answer (#1184).
+              // will produce a usable answer.
               heldReasoning += deltaReasoning;
             }
           }
@@ -494,7 +494,7 @@ export async function runInboundChat(
             0,
           ) / 4);
         }
-        // Reasoning-only is an empty turn to the caller (#1184) — same rule as
+        // Reasoning-only is an empty turn to the caller — same rule as
         // the non-streaming path above; nothing was committed, so the failover
         // hop is invisible to the client.
         if (!text && toolCalls.length === 0) {
@@ -504,7 +504,7 @@ export async function runInboundChat(
             finishReason === 'length' ? { skipBench: true } : {},
           );
         }
-        // #809: bare "safe"/"unsafe" classification output from a relay is an
+        // bare "safe"/"unsafe" classification output from a relay is an
         // upstream filter, not the requested model — fail over like an empty
         // completion.
         if (isUpstreamClassificationOutput(text, route.platform) && toolCalls.length === 0) {

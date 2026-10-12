@@ -5,7 +5,7 @@ import { getDb } from '../db/index.js';
 import { encrypt, decrypt, maskKey } from '../lib/crypto.js';
 import { mintClientProfileKey, hashClientProfileKey } from '../lib/system-prompt.js';
 
-// Client-profile CRUD (#411), mounted under /api/client-profiles behind the
+// Client-profile CRUD, mounted under /api/client-profiles behind the
 // dashboard session gate like every other admin route. The full `sk-cp-...`
 // key is returned exactly once — from create and rotate; the list endpoint
 // only ever shows the masked form (rendered from the encrypted copy, since

@@ -125,7 +125,7 @@ describe('Model unification (group the same model across providers)', () => {
     expect(headers.get('x-routed-via')).toContain('cerebras');
   });
 
-  it('a group-pinned non-streaming session sticks to the last successful provider next turn (#341 sticky-key)', async () => {
+  it('a group-pinned non-streaming session sticks to the last successful provider next turn (sticky-key)', async () => {
     const db = getDb();
     const realFetch = global.fetch;
     const sess = { ...authHeaders(), 'x-session-id': 'sticky-test-1' };
@@ -212,7 +212,7 @@ describe('Model unification (group the same model across providers)', () => {
     expect(body.choices).toBeUndefined(); // no answer from any model
   });
 
-  it('pinning "platform:model_id" hard-pins that provider — no cross-provider failover (#580)', async () => {
+  it('pinning "platform:model_id" hard-pins that provider — no cross-provider failover', async () => {
     const orig = global.fetch;
     vi.spyOn(global, 'fetch').mockImplementation(async (url: any, init?: any) => {
       const u = String(url);
@@ -247,7 +247,7 @@ describe('Model unification (group the same model across providers)', () => {
     expect(unknown.status).toBe(404);
   });
 
-  it('PUT /api/settings/unify splits override un-merges one provider copy (the dashboard opt-out, #580)', async () => {
+  it('PUT /api/settings/unify splits override un-merges one provider copy (the dashboard opt-out)', async () => {
     const put = await request(app, 'PUT', '/api/settings/unify', {
       overrides: { merges: [], splits: [{ member: 'groq:tum-groq' }] },
     });

@@ -4,7 +4,7 @@ import { createApp } from '../../app.js';
 import { initDb, getDb } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #705: the dashboard only ever renders a masked key, and reading one back meant
+// the dashboard only ever renders a masked key, and reading one back meant
 // exporting every key to a file. Revealing ONE key is the same privilege, so it
 // carries the same gate: the session is not enough, the password is re-checked.
 
@@ -37,7 +37,7 @@ async function addKey(key = 'gsk_testkey123') {
   return body.id;
 }
 
-describe('Reveal one key — password re-verification (#705)', () => {
+describe('Reveal one key — password re-verification', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

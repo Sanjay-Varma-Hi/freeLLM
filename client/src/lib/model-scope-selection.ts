@@ -1,6 +1,6 @@
 // Pure logic behind the post-add model picker on the Keys page.
 //
-// A freshly pasted provider key serves EVERY model of its platform (#657:
+// A freshly pasted provider key serves EVERY model of its platform (
 // `model_scope_json` NULL = no scope). That is right for most people and wrong
 // for anyone holding a relay-station key that only pays for a couple of model
 // groups — and the only way to find out used to be a stream of 401s at routing

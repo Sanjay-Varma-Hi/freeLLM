@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-// #870: RPM/RPD/TPM/TPD were bare acronyms sharing one generic hint
+// RPM/RPD/TPM/TPD were bare acronyms sharing one generic hint
 // ("Leave blank for no limit."), so nothing on screen said what they stood
 // for. Each field now carries its own tooltip that spells the acronym out.
 const here = path.dirname(fileURLToPath(import.meta.url))

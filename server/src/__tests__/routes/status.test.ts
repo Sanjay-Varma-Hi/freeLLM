@@ -30,7 +30,7 @@ function insertHealthyKey(platform: string) {
 
 // These tests share one in-memory DB and run top-to-bottom: the "no upstreams"
 // assertions must precede the key insert.
-describe('status & interop endpoints (#433)', () => {
+describe('status & interop endpoints', () => {
   let app: Express;
   let unifiedKey = '';
 

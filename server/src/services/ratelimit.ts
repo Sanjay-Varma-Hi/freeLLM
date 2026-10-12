@@ -355,7 +355,7 @@ export function canUseTokens(
   return true;
 }
 
-// ── Window utilization for the routing guardrail (#899) ──────────────────────
+// ── Window utilization for the routing guardrail ──────────────────────
 // Everything above answers a yes/no question on the hot path: may THIS key
 // serve THIS request. The router also needs a graded one — "how much of its
 // window quota has this model already burned" — so it can steer traffic away
@@ -504,7 +504,7 @@ function keyWindowPressure(usage: KeyWindowUsage, limits: WindowLimits): number 
  * window limits, has no routable key to measure, or the database is unreachable.
  *
  * Which key's numbers to report matters, and the answer is the same one the
- * dashboard's usage badge settled on (#921): the guardrail asks "how close is
+ * dashboard's usage badge settled on: the guardrail asks "how close is
  * this model to being unroutable", so it must follow the key the router would
  * pick NEXT, not the worst key on the account. A platform with one exhausted
  * key and one idle key routes perfectly well, so we take the ELIGIBLE key with
@@ -548,7 +548,7 @@ export function modelWindowUsedFraction(
   return Math.min(1, best);
 }
 
-// ── Provider-wide daily request caps (#162) ──
+// ── Provider-wide daily request caps ──
 // Some providers enforce one daily REQUEST quota across the WHOLE account,
 // shared by every model — not per model. OpenRouter's free tier is the classic
 // case: ~1000 requests/day total (50/day if you've bought <10 credits) no
@@ -562,7 +562,7 @@ const DEFAULT_PROVIDER_DAILY_REQUEST_CAPS: Record<string, number> = {
   openrouter: 1000,
   // ModelScope's free tier is 2000 requests/day across the whole account (all
   // models share it). 1800 leaves margin for validation probes and for drift
-  // between our ledger and the provider's own daily boundary (#581).
+  // between our ledger and the provider's own daily boundary.
   modelscope: 1800,
   // Requesty's free tier is 200 requests/day per account, shared by every free
   // model (requesty.ai/free-models, no card). The catalog rows each carry
@@ -880,7 +880,7 @@ const COOLDOWN_DURATIONS = [
   DAY,          // 4th and beyond
 ];
 
-// ── Operator ceiling on automatic cooldowns (#952, #1049) ────────────────────
+// ── Operator ceiling on automatic cooldowns ────────────────────
 // The ladder above and the day-long 402/403 benches below assume a provider
 // whose failures mean what they say. Relay endpoints often don't: a "busy" or
 // "insufficient balance" blip clears in minutes, yet a handful of them per key
@@ -959,7 +959,7 @@ const UNKNOWN_LIMIT_MAX_COOLDOWN_MS = 10 * MINUTE;
 // on the next 402 after expiry if still unpaid; a restart re-benches on first hit.
 export const PAYMENT_REQUIRED_COOLDOWN_MS = DAY;
 
-/** The 402 bench with the operator ceiling applied (#952). */
+/** The 402 bench with the operator ceiling applied. */
 export function getPaymentRequiredCooldownMs(): number {
   return capCooldownMs(PAYMENT_REQUIRED_COOLDOWN_MS);
 }
@@ -969,10 +969,10 @@ export function getPaymentRequiredCooldownMs(): number {
 // 403 means this key's tier can't reach this specific model (e.g. gpt-4o on
 // GitHub Models' free tier, subscription-only models on Cloudflare). That won't
 // change within a minute window, so bench this model+key for a full day and let
-// the router fail over to a model the key can actually serve. See issue #256.
+// the router fail over to a model the key can actually serve..
 export const MODEL_FORBIDDEN_COOLDOWN_MS = DAY;
 
-/** The 403 tier bench with the operator ceiling applied (#952). */
+/** The 403 tier bench with the operator ceiling applied. */
 export function getModelForbiddenCooldownMs(): number {
   return capCooldownMs(MODEL_FORBIDDEN_COOLDOWN_MS);
 }
@@ -1039,7 +1039,7 @@ export interface CooldownDecision {
   source: CooldownSource;
 }
 
-// ── Local-endpoint exemption (#592) ──────────────────────────────────────────
+// ── Local-endpoint exemption ──────────────────────────────────────────
 // A key whose base_url points at this machine or the LAN (custom-platform
 // Ollama / llama.cpp / LM Studio) has no provider quota to protect: every
 // cooldown longer than a few seconds just strands what is usually the user's
@@ -1050,7 +1050,7 @@ export interface CooldownDecision {
 export const LOCAL_ENDPOINT_COOLDOWN_MS = 5_000;
 
 // base_url is immutable per key id (routes/keys.ts matches custom rows ON
-// base_url — a new endpoint gets a new row, #212), so the verdict can be
+// base_url — a new endpoint gets a new row), so the verdict can be
 // cached for the life of the process. Built-in platforms have base_url NULL
 // → non-local. A DB that isn't ready yet is NOT cached, so a later call can
 // still decide properly.
@@ -1081,7 +1081,7 @@ export interface CooldownLimitOptions {
    *  429 / rate-limit-classified error — see isRateLimitSignal in
    *  lib/error-classify.ts). Timeouts, 5xx and transport errors are retryable
    *  but carry no quota information, so they must not feed the null-limits
-   *  exhaustion heuristic below (#592) — they get the short transient bench.
+   *  exhaustion heuristic below — they get the short transient bench.
    *  Defaults to true: legacy callers without error context (fusion's
    *  empty-completion benches) keep their pre-#592 behavior. */
   quotaSignal?: boolean;
@@ -1133,7 +1133,7 @@ export function getCooldownDecisionForLimit(
   // last hour is treated as effectively daily-exhausted. This unsticks
   // providers that publish no daily cap (ollama, cloudflare, etc.) from the
   // 90s-cooldown-loop without requiring operator-side limit seeding.
-  // Gated on quotaSignal (#592): only a REAL 429/rate-limit error is evidence
+  // Gated on quotaSignal: only a REAL 429/rate-limit error is evidence
   // of quota exhaustion. Timeouts and 5xx used to feed this counter too, so
   // two slow generations on a null-limits route escalated 2m→10m→…→24h.
   const unknownLimits = limits.rpd === null && limits.tpd === null;
@@ -1352,7 +1352,7 @@ export function clearCooldownsForKey(keyId: number): number {
 /**
  * Drop EVERY cooldown (all keys, all models), the escalation-ladder counters
  * and the null-limits hit windows — the "my whole pool is stuck" escape hatch
- * (#952). Returns how many active benches were lifted. Penalties and the
+ * Returns how many active benches were lifted. Penalties and the
  * model-failure windows live elsewhere; services/penalty-inspector.ts
  * composes all three into one clear.
  */
@@ -1423,7 +1423,7 @@ export function clearCooldownEarly(platform: string, modelId: string, keyId: num
 /**
  * Soonest moment any active cooldown expires, in ms since epoch, or null when
  * nothing is cooling down. Used to tell an exhausted caller roughly when to
- * retry (#423) instead of the bare "wait for rate limits to reset".
+ * retry instead of the bare "wait for rate limits to reset".
  */
 export function getSoonestCooldownExpiry(now = Date.now()): number | null {
   return withDb(db => {

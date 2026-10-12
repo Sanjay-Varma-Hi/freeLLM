@@ -5,9 +5,9 @@ import { initDb } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 import { getAppVersion, resetAppVersionCache } from '../../lib/app-version.js';
 
-// #703: the dashboard had no way to show which release it is. The number users
-// know the app by lives in desktop/package.json — server/package.json (0.2.x)
-// and the OpenAPI spec (0.4.x) both track something else and would be wrong.
+// the dashboard had no way to show which release it is. The product
+// version lives in the root package.json — server/package.json (0.2.x) and the
+// OpenAPI spec (0.4.x) both track something else and would be wrong.
 
 describe('app version resolution', () => {
   const saved = process.env.FREEAPI_VERSION;
@@ -23,7 +23,7 @@ describe('app version resolution', () => {
     else process.env.FREEAPI_VERSION = saved;
   });
 
-  it('prefers FREEAPI_VERSION — the desktop shell states its own version', () => {
+  it('prefers FREEAPI_VERSION — a deployment can state its own version', () => {
     process.env.FREEAPI_VERSION = '9.9.9';
     expect(getAppVersion()).toBe('9.9.9');
   });
@@ -38,11 +38,11 @@ describe('app version resolution', () => {
   it('falls back to the release manifest, and never to the server workspace version', async () => {
     const version = getAppVersion();
     expect(version).toMatch(/^\d+\.\d+\.\d+/);
-    const desktopPkg = JSON.parse(
+    const rootPkg = JSON.parse(
       await import('node:fs/promises').then(fs =>
-        fs.readFile(new URL('../../../../desktop/package.json', import.meta.url), 'utf8')),
+        fs.readFile(new URL('../../../../package.json', import.meta.url), 'utf8')),
     ) as { version: string };
-    expect(version).toBe(desktopPkg.version);
+    expect(version).toBe(rootPkg.version);
 
     const serverPkg = JSON.parse(
       await import('node:fs/promises').then(fs =>
@@ -50,7 +50,7 @@ describe('app version resolution', () => {
     ) as { version: string };
     // Guards the whole point of this resolver: if these ever coincide the test
     // still passes, but it fails loudly if someone repoints it at the server's.
-    if (serverPkg.version !== desktopPkg.version) {
+    if (serverPkg.version !== rootPkg.version) {
       expect(version).not.toBe(serverPkg.version);
     }
   });

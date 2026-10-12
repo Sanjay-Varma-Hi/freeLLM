@@ -1,5 +1,5 @@
 // Header-value sanitizer for the diagnostics headers built out of provider and
-// model names (#619).
+// model names.
 //
 // Node validates every outgoing header value against RFC 7230's field-value
 // grammar and throws ERR_INVALID_CHAR ("Invalid character in header content")

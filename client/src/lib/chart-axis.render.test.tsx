@@ -2,7 +2,7 @@
 //
 // The prop-shape tests next door prove `categoryAxisProps()` returns the right
 // numbers. They cannot prove those numbers change what recharts draws — the
-// original #890 fix would have passed them even if the props had been spread
+// original fix would have passed them even if the props had been spread
 // onto the wrong element. So this file mounts a real recharts <BarChart> and
 // counts the <text> ticks that come out, both with and without our props.
 //
@@ -85,7 +85,7 @@ function renderTicks(node: ReactElement, axisSelector: string): string[] {
   return ticks
 }
 
-describe('category XAxis rendering (#890)', () => {
+describe('category XAxis rendering', () => {
   it('drops most provider labels with recharts defaults', () => {
     const ticks = renderTicks(
       <BarChart width={CHART_WIDTH} height={CHART_HEIGHT} data={platforms}>
@@ -131,7 +131,7 @@ describe('category XAxis rendering (#890)', () => {
   })
 })
 
-describe('category YAxis rendering, layout="vertical" (#890)', () => {
+describe('category YAxis rendering, layout="vertical"', () => {
   it('drops error-category labels with recharts defaults', () => {
     const ticks = renderTicks(
       <BarChart width={CHART_WIDTH} height={CHART_HEIGHT} data={errorCategories} layout="vertical">

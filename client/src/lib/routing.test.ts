@@ -17,7 +17,7 @@ import {
 } from './routing'
 
 // Per-endpoint identity must be INVISIBLE until two endpoints actually serve the
-// same model id (#651). The server sends `endpointScope` / `qualifiedModelId` on
+// same model id. The server sends `endpointScope` / `qualifiedModelId` on
 // every custom row — including the only relay of a one-endpoint install — so any
 // gate written against those fields alone leaks the user's own base URL. These
 // cases pin the gate to the collision itself.
@@ -92,7 +92,7 @@ describe('two endpoints serving one model id', () => {
 })
 
 
-// Display name is presentation, never identity (#651). Renaming one relay's copy
+// Display name is presentation, never identity. Renaming one relay's copy
 // moves it into a different display-name group, but the two rows still share
 // (platform, model_id) — so the disambiguation must key on that pair and nothing
 // else, and the split/merge override must name ONE relay's row.
@@ -173,7 +173,7 @@ describe('pre-#651 split overrides stay undoable', () => {
   })
 })
 
-// ── Group-level rate-limit badge (#876, #921 follow-up) ──────────────────────
+// ── Group-level rate-limit badge ──────────────────────
 // The badge means "how close is this logical model to being unusable". A model
 // is unusable only when EVERY provider serving it is out of headroom, so the
 // group number follows the BEST member. Taking the worst member painted a
@@ -267,10 +267,10 @@ describe('tightestRateLimit', () => {
   })
 })
 
-// #1056: a relay added as a custom endpoint carries platform 'custom', so
+// a relay added as a custom endpoint carries platform 'custom', so
 // searching the provider's name ("unorouter") found nothing even though the
 // table prints the endpoint host on the row.
-describe('groupMatchesQuery (#1056)', () => {
+describe('groupMatchesQuery', () => {
   const member = (over: Record<string, unknown> = {}) => ({
     platform: 'custom', modelId: 'glm-5.1', displayName: 'GLM 5.1',
     source: 'custom' as const, keyLabel: null,
@@ -305,10 +305,10 @@ describe('groupMatchesQuery (#1056)', () => {
   })
 })
 
-// #1015: models whose time-window quota is used up gray out and sink to the
+// models whose time-window quota is used up gray out and sink to the
 // bottom of the table, so operators see healthy capacity first. The fold is
 // score-mode-only: manual mode is the operator's drag-arranged ladder.
-describe('depleted rows (#1015)', () => {
+describe('depleted rows', () => {
   function chainRow(modelDbId: number, over: Partial<Row> = {}): Row {
     return {
       modelDbId,
@@ -403,7 +403,7 @@ describe('depleted rows (#1015)', () => {
   })
 })
 
-describe('clampRankToIndex (#1317)', () => {
+describe('clampRankToIndex', () => {
   const N = 10
   it('maps a typed 1-based rank to the 0-based index', () => {
     expect(clampRankToIndex(1, N)).toBe(0)

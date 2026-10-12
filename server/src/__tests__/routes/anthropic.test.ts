@@ -234,7 +234,7 @@ describe('Anthropic-compatible /v1/messages', () => {
     expect(body.content[0]).toEqual({ type: 'text', text: 'It is sunny and 35C in Karachi.' });
   });
 
-  it('preserves Gemini thought_signature across an Anthropic tool loop (#487)', async () => {
+  it('preserves Gemini thought_signature across an Anthropic tool loop', async () => {
     const db = getDb();
     db.prepare('DELETE FROM api_keys').run();
     const addGoogle = await request(app, '/api/keys',
@@ -439,7 +439,7 @@ describe('Anthropic-compatible /v1/messages', () => {
     }
   });
 
-  // #880: Claude Desktop fetched the whole catalog over HTTP 200 and still
+  // Claude Desktop fetched the whole catalog over HTTP 200 and still
   // reported "found 0 models", because it only accepts Claude-family ids. The
   // listing now carries one id per family, and each one routes.
   it('GET /v1/models lists a Claude-family id that /v1/messages then serves', async () => {
@@ -524,13 +524,13 @@ describe('Anthropic-compatible /v1/messages', () => {
     expect(body.map).toEqual({ default: 'auto', opus: 'auto', sonnet: 'auto', haiku: 'auto' });
   });
 
-  // ── Same-model cross-provider failover (#932) ────────────────────────────
+  // ── Same-model cross-provider failover ────────────────────────────
   // Reported by stephenzwj: a pinned /v1/messages request preferred exactly ONE
   // catalog row, so when that provider rate-limited, the fallback loop walked
   // the rest of the chain and answered with a DIFFERENT model. Every other
   // surface already routes a pinned id over its unified model group as a strict
   // chain; these tests hold /v1/messages to the same contract.
-  describe('same-model cross-provider failover (#932)', () => {
+  describe('same-model cross-provider failover', () => {
     const SHARED = 'shared-fallback-model';
     const UNRELATED = 'unrelated-test-model';
     let enabledBefore: number[] = [];

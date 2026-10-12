@@ -27,7 +27,7 @@ describe('provider-identity', () => {
     it('names a custom endpoint by its base_url so relays never collide', () => {
       expect(providerIdFor('custom', 'https://relay-a.example.com/v1')).toBe('custom:https://relay-a.example.com/v1');
       expect(providerIdFor('custom', 'https://relay-b.example.com/v1')).toBe('custom:https://relay-b.example.com/v1');
-      // Two distinct relays → two distinct ids (the #889 collision).
+      // Two distinct relays → two distinct ids (the collision).
       expect(providerIdFor('custom', 'https://relay-a.example.com/v1'))
         .not.toBe(providerIdFor('custom', 'https://relay-b.example.com/v1'));
     });
@@ -66,7 +66,7 @@ describe('provider-identity', () => {
     it('keeps the path when it, not the host, is what tells endpoints apart', () => {
       // One gateway fronting two tenants: the host is identical, so a
       // host-only name would collide and the operator could not tell the rows
-      // apart — #889 all over again, one level down.
+      // apart — all over again, one level down.
       const a = providerDisplayName('custom', 'https://gw.example.com/tenant-a/v1');
       const b = providerDisplayName('custom', 'https://gw.example.com/tenant-b/v1');
       expect(a).toBe('gw.example.com/tenant-a/v1');

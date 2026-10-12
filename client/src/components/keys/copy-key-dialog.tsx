@@ -10,7 +10,7 @@ import { copyText } from '@/lib/clipboard'
 import { useI18n } from '@/i18n'
 import { toast } from '@/lib/toast'
 
-// #786: the desktop build has no user-set password (its machine user's
+// the desktop build has no user-set password (its machine user's
 // password is random and never shown), so the re-verification dialog would
 // lock desktop users out of copying a full key. The desktop server skips
 // re-auth (FREEAPI_DESKTOP) for local requests, so here we just hide the
@@ -20,7 +20,7 @@ import { toast } from '@/lib/toast'
 const isDesktopApp = typeof window !== 'undefined'
   && (window as Window & { __FREEAPI_DESKTOP__?: boolean }).__FREEAPI_DESKTOP__ === true
 
-// #705: the list only ever shows a masked key, and the sole way to read one
+// the list only ever shows a masked key, and the sole way to read one
 // back was to export every key to a file. This narrows that to one key, behind
 // the same password re-verification the export uses: a live session is not
 // enough to turn a stored credential back into plaintext.
@@ -51,12 +51,12 @@ export function CopyKeyDialog({
     try {
       const { key } = await apiFetch<{ key: string }>(`/api/keys/${keyId}/reveal`, {
         method: 'POST',
-        // The desktop server skips re-auth for this local request (#786); the
+        // The desktop server skips re-auth for this local request; the
         // web build still needs it.
         headers: isDesktopApp ? undefined : { 'x-reauth-password': password },
       })
       // A plain-HTTP LAN origin has no Clipboard API at all, so this falls back
-      // to execCommand rather than throwing (#734). If even that fails the key
+      // to execCommand rather than throwing. If even that fails the key
       // has already been revealed — show it instead of discarding it, or the
       // password round trip was for nothing.
       if (!await copyText(key)) {

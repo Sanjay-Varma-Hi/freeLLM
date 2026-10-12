@@ -25,7 +25,7 @@ export interface ModelOption {
   platforms: string[]  // every provider serving this model (for the "N providers" affordance)
   providerCount: number
   // Sort axes for "by intelligence": the catalog's intelligence_rank is per-
-  // provider, not global (issue #135), so the dashboard orders by size tier
+  // provider, not global, so the dashboard orders by size tier
   // first, then rank within the tier — mirroring the server's intelligence
   // preset. For a group these hold the BEST (most capable) member's values.
   sizeTier: number     // Frontier=1, Large=2, Medium=3, Small=4, unknown=5

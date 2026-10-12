@@ -5,7 +5,7 @@ import {
   resetServedModelObservations,
 } from '../../lib/served-model.js';
 
-// Served-model drift guard (#534 follow-up): the proxy overwrites the
+// Served-model drift guard: the proxy overwrites the
 // upstream `model` field before the caller sees it, which also destroys the
 // only evidence when a provider silently serves a DIFFERENT model than the
 // one requested (kilo-auto/small serving Gemma, etc.). This module compares
@@ -91,7 +91,7 @@ describe('observeServedModel', () => {
     expect(observeServedModel({ platform: 'reka', requestedModel: 'reka-flash-3', servedModel: null })).toBeNull();
     expect(observeServedModel({ platform: 'reka', requestedModel: 'reka-flash-3', servedModel: undefined })).toBeNull();
     // Reka returns the literal placeholder "default" for every concrete model
-    // (#568) — it names no model, so it is no evidence of drift.
+    // — it names no model, so it is no evidence of drift.
     expect(observeServedModel({ platform: 'reka', requestedModel: 'reka-flash-3', servedModel: 'default' })).toBeNull();
     expect(observeServedModel({ platform: 'reka', requestedModel: 'reka-flash-3', servedModel: '  ' })).toBeNull();
     expect(console.warn).not.toHaveBeenCalled();

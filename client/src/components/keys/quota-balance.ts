@@ -1,7 +1,7 @@
 import type { ProviderQuotaState } from '../../../../shared/types'
 import { sqliteUtcToIso } from '@/lib/utils'
 
-// #1403 phase 3: the provider-reported balance to show on a key row. A key can
+//  phase 3: the provider-reported balance to show on a key row. A key can
 // hold several quota pools (requests vs tokens, per account); the one with the
 // lowest remaining fraction is what runs dry first and starts sending traffic
 // around the key, so that's the pool the row should surface. States with no

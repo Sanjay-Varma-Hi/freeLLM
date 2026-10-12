@@ -34,12 +34,12 @@ function stubHttpsRequest() {
   }) as any);
 }
 
-// #590: a key exists behind its own proxy precisely because the provider is
+// a key exists behind its own proxy precisely because the provider is
 // unreachable (or geo-blocked) without it. Validating such a key on the direct
 // path would fail three checks in a row and auto-disable a perfectly good
 // credential, so health checks and cooldown probes go through the key's proxy
 // exactly like its traffic does.
-describe('Key health — per-key proxy override (#590)', () => {
+describe('Key health — per-key proxy override', () => {
   let nextId = 7000;
 
   beforeAll(() => {

@@ -8,7 +8,7 @@ import {
 } from '../../services/router.js';
 import { encrypt } from '../../lib/crypto.js';
 
-// A slug-only match is a FALLBACK, not an equal candidate (#651). The router
+// A slug-only match is a FALLBACK, not an equal candidate. The router
 // re-orders whatever chain it is handed by live score, so the tier has to be
 // expressed as something orderChain honours as a TIER — otherwise a
 // coincidental slug sibling with better recent numbers silently answers a

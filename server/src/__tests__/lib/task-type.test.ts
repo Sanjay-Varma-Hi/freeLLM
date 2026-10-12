@@ -61,7 +61,7 @@ describe('deriveTaskType', () => {
     }
   });
 
-  it('does not mistake ordinary prose for code (#1127)', () => {
+  it('does not mistake ordinary prose for code', () => {
     // The derivation is silent, so it has to err toward chat: these all matched
     // the first revision's bare-word markers (function/class/cargo/docker/=>).
     const proseSamples = [

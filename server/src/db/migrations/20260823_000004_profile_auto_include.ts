@@ -5,7 +5,7 @@ function hasColumn(db: Db, table: string, column: string): boolean {
   return columns.some((candidate) => candidate.name === column);
 }
 
-/** Per-chain opt-out from the catalog-sync backfill (#895).
+/** Per-chain opt-out from the catalog-sync backfill.
  *
  *  Every profile used to be a copy of the whole catalog, and `ensureAllModelsInProfiles`
  *  put each newly synced model into every profile. That is right for a chain

@@ -3,12 +3,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-// #891: the capability-tier tooltip claimed an unrecognized tier "scores 0" and
+// the capability-tier tooltip claimed an unrecognized tier "scores 0" and
 // is "never auto-routed". tierValue does floor an unknown label at 0, but that
 // is one term of a weighted sum — combineScore gives intelligence 0.25 under
 // the default preset — so no model is ever excluded from routing, and custom
 // models are deliberately seeded at the catalog median tier so they route
-// (custom-model-seed.ts, #488). The reworded tooltip drops the score claim
+// (custom-model-seed.ts). The reworded tooltip drops the score claim
 // entirely, which is also what makes a stale locale detectable here: every
 // pre-#891 translation carried that literal "0" and none of the current ones
 // do. The first fix shipped in six locales only; these tests hold all 60.

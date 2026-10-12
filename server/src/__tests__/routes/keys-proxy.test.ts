@@ -30,11 +30,11 @@ async function request(app: Express, method: string, path: string, body?: any) {
 
 const PROXY_WITH_CREDS = 'socks5h://alice:hunter2@proxy.internal:1080';
 
-// Per-key proxy override (#590). The URL is a credential in its own right —
+// Per-key proxy override. The URL is a credential in its own right —
 // `user:pass@` is the norm for commercial proxies — so it is stored with the
 // same AES-256-GCM treatment as the API key on the row, never echoed back in
 // the clear, and only accepted on schemes the proxy layer can dispatch through.
-describe('Keys API — per-key proxy override (#590)', () => {
+describe('Keys API — per-key proxy override', () => {
   let app: Express;
 
   beforeAll(() => {

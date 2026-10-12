@@ -247,7 +247,7 @@ describe('custom model sync', () => {
     expect(customModelIds()).toEqual(['model-a']);
   });
 
-  it('skips discovered media/embedding models instead of registering them as chat (#1051)', async () => {
+  it('skips discovered media/embedding models instead of registering them as chat', async () => {
     addCustomEndpoint('http://localhost:9999');
     (discoverEndpointModels as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
       { id: 'glm-chat-mini', ownedBy: null },

@@ -73,14 +73,14 @@ healthRouter.post('/check/:keyId', async (req: Request, res: Response) => {
 });
 
 // Check all keys. Forced: someone pressed the button and wants an answer about
-// every key now, so the scheduled pass' recency skip and provider spacing (#553)
+// every key now, so the scheduled pass' recency skip and provider spacing
 // don't apply.
 healthRouter.post('/check-all', async (_req: Request, res: Response) => {
   await checkAllKeys({ force: true });
   res.json({ success: true });
 });
 
-// Poll one key's provider-reported balance now (#1403). The health pass only
+// Poll one key's provider-reported balance now. The health pass only
 // piggybacks the quota probe at most once per 15 minutes; this is the manual
 // override — an operator adding a key wants the balance immediately instead
 // of waiting for the next healthy pass after the throttle. Returns what the

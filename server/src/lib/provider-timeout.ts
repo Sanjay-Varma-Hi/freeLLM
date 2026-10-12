@@ -1,4 +1,4 @@
-// Per-provider HTTP timeout overrides (issue #547, reworked from PR #509).
+// Per-provider HTTP timeout overrides (reworked).
 //
 // PROVIDER_TIMEOUT_<PLATFORM>=<milliseconds> overrides the platform's built-in
 // chat timeout (e.g. PROVIDER_TIMEOUT_NVIDIA=300000). 0 disables the timeout
@@ -6,15 +6,15 @@
 // platforms that means process start, so a change requires a restart.
 //
 // PROVIDER_STREAM_STALL_TIMEOUT_MS is the streaming counterpart for the
-// mid-stream inactivity watchdog (issue #553): how long an SSE stream may go
+// mid-stream inactivity watchdog: how long an SSE stream may go
 // without a single byte before the gateway gives up on it.
-// PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM> (issue #584) overrides it for one
+// PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM> overrides it for one
 // platform; precedence is per-platform > global > built-in default (90s).
 //
 // The stall watchdog does NOT bound time-to-first-byte: the FIRST read of a
 // stream gets a grace budget derived from the platform's chat timeout (the
 // PROVIDER_TIMEOUT_<PLATFORM> knob above), floored at the stall budget — see
-// BaseProvider.readSseStream. Before #584 the stall budget also bounded the
+// BaseProvider.readSseStream. the stall budget also bounded the
 // first byte, which killed healthy long prefills (NVIDIA NIM sends SSE headers
 // instantly, then prefills 100k-token prompts for minutes) at 90s.
 
@@ -59,7 +59,7 @@ export function streamStallTimeoutEnvName(platform: string): string {
 }
 
 /** Effective mid-stream inactivity timeout, 0 disables. Resolved per call so
- * tests can vary the env. Precedence (#584): the per-platform
+ * tests can vary the env. Precedence: the per-platform
  * PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM> when a platform is given and the
  * var is set and valid, else the global PROVIDER_STREAM_STALL_TIMEOUT_MS,
  * else the built-in 90s default. */

@@ -8,7 +8,7 @@ import { createUser } from '../../services/auth.js';
 // (desktop/src/server-host.ts). That address has no TLD, so while /login shared
 // the signup schema's z.email() every sign-in on a desktop install was rejected
 // with "A valid email is required" before the password was ever checked — which
-// also made the reset-then-sign-in-from-a-browser workaround in #807 impossible.
+// also made the reset-then-sign-in-from-a-browser workaround impossible.
 // Logging in is a lookup, so the address is matched, not validated.
 
 function app(): Express {

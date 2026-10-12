@@ -65,7 +65,7 @@ const SUSPENDED = () => Object.assign(
   new Error('NavyAI API error 403: The Free plan is temporarily disabled due to abuse. You can purchase a plan at [redacted-url] to continue using the API.'),
   { status: 403 },
 );
-// A model-tier 403 behind an otherwise-valid key (#256): stays per-model.
+// A model-tier 403 behind an otherwise-valid key: stays per-model.
 const TIER_403 = () => Object.assign(
   new Error('Groq API error 403: model llama-guard is not available on the free tier'),
   { status: 403 },
@@ -147,7 +147,7 @@ describe('a suspended account benches the whole key, not one model', () => {
   });
 
 
-  // #952: the bench is one of the router's OWN guesses, so an operator ceiling
+  // the bench is one of the router's OWN guesses, so an operator ceiling
   // caps it like the 402/403 benches it borrows its duration from.
   it('honours the operator cooldown ceiling', () => {
     setCooldownCeilingMs(10 * 60_000);
@@ -167,14 +167,14 @@ describe('a suspended account benches the whole key, not one model', () => {
   });
 });
 
-// A stale CATALOG misses on every sibling model in a row (#1218): the per-model
+// A stale CATALOG misses on every sibling model in a row: the per-model
 // skip can't see the pattern (each miss is a different model), so from
 // MODEL_NOT_FOUND_PLATFORM_LIMIT distinct model_not_found hops on one platform
 // — within one request — the whole platform is ruled out for the rest of it.
 describe('distinct model_not_found hops short-circuit the platform within one request', () => {
   // Plain phrasing that the EXISTING isModelNotFoundError substring checks
   // already match — this PR is independent of the quoted-id regex widening
-  // (#1219); together the two cover NavyAI's exact wording.
+  // together the two cover NavyAI's exact wording.
   const notFoundErr = () => Object.assign(
     new Error('NavyAI API error 400: model does not exist'),
     { status: 400 },

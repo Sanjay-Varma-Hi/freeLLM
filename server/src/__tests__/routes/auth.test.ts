@@ -22,7 +22,7 @@ async function call(app: Express, method: string, path: string, body?: any, toke
 
 // Tests run in definition order against one shared in-memory DB, mirroring the
 // real bootstrap sequence: needs-setup → setup → gated access → login → logout.
-describe('Dashboard auth (#35)', () => {
+describe('Dashboard auth', () => {
   let app: Express;
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);

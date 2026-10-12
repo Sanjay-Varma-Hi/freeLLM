@@ -270,7 +270,7 @@ describe('X-Fallback-Detail value safety', () => {
   });
 
   it('encodes a control-laden model id instead of letting it inject a header line', () => {
-    // #619: a non-ASCII or control-laden id used to make Node throw
+    // a non-ASCII or control-laden id used to make Node throw
     // ERR_INVALID_CHAR after a successful upstream call, and the throw was then
     // booked as a provider failure.
     const value = headersFor([record({ modelId: 'bad\r\nX-Injected: yes' })])['X-Fallback-Detail'];

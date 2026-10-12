@@ -3,7 +3,7 @@ import { getQuotaStateForKeys, inferPoolForPlatform } from './provider-quota.js'
 import { getDb } from '../db/index.js';
 import type { Platform } from '@freellmapi/shared/types.js';
 
-// Daily free-tier balance forecast (#1104). Free tiers reset on a per-account
+// Daily free-tier balance forecast. Free tiers reset on a per-account
 // window (usually UTC midnight) and the only way to know how much headroom is
 // left before that reset is to read what the providers themselves reported.
 // This is a pure aggregation over `getQuotaStateForKeys()` — no new tables, no
@@ -52,7 +52,7 @@ export interface QuotaForecastEntry {
   /** Seconds until reset_at, or null when reset_at is unknown/expired. */
   seconds_until_reset: number | null;
 
-  // --- estimated-exhaustion fields (the #1104 extension) ---
+  // --- estimated-exhaustion fields (the extension) ---
 
   /** Observed request rate in the last `RATE_OBSERVATION_WINDOW_MINUTES` minutes,
    *  or null when there is not enough recent request volume to estimate honestly.

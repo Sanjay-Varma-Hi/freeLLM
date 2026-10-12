@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-// Durable per-attempt routing traces (P2 #15): the fallback loop records every
+// Durable per-attempt routing traces (P2): the fallback loop records every
 // dispatched attempt — failures AND the successful final one — with timing and
 // outcome, and persists them to `request_attempts` keyed to the terminal
 // `requests` row, in one insert batch after the response finishes. Children
@@ -128,7 +128,7 @@ describe('per-attempt routing traces', () => {
     }
   });
 
-  it('snapshots the operator-facing key label per attempt, and leaves it null for unlabeled keys (#869)', async () => {
+  it('snapshots the operator-facing key label per attempt, and leaves it null for unlabeled keys', async () => {
     const routes = [
       fakeRoute({ platform: 'groq', modelId: 'llama-x', keyLabel: 'work laptop' }),
       fakeRoute({ platform: 'groq', modelId: 'llama-x', keyLabel: null }),

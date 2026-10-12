@@ -48,7 +48,7 @@ export interface Config {
   nodeEnv: string;
   serveStaticAssets: boolean;
   /**
-   * Express `trust proxy` setting, parsed from TRUST_PROXY (#1024).
+   * Express `trust proxy` setting, parsed from TRUST_PROXY.
    * - false:        do not trust forwarded headers (default; direct callers
    *                 cannot spoof X-Forwarded-For).
    * - true:         trust all proxies (with a security warning).
@@ -58,7 +58,7 @@ export interface Config {
    */
   trustProxy: boolean | number | string[];
   /**
-   * Tri-state override for the CSP `upgrade-insecure-requests` directive (#682).
+   * Tri-state override for the CSP `upgrade-insecure-requests` directive.
    * - undefined: auto — emit the directive only when the request arrived over
    *   TLS (or behind an HTTPS reverse proxy that forwarded X-Forwarded-Proto).
    * - true:      always emit (force HTTPS upgrade even on plain HTTP).
@@ -71,7 +71,7 @@ export function loadConfig(): Config {
   return {
     port: process.env.PORT ?? 3001,
     // Dual-stack ('::') by default so the dashboard is reachable over both IPv4
-    // and IPv6 (e.g. IPv6-enabled Docker networks — #180). Hosts with IPv6
+    // and IPv6 (e.g. IPv6-enabled Docker networks —). Hosts with IPv6
     // disabled fall back to IPv4-only below; HOST overrides the default outright.
     host: process.env.HOST ?? '::',
     dbPath: process.env.FREEAPI_DB_PATH?.trim() || null,
@@ -92,7 +92,7 @@ export function loadConfig(): Config {
   };
 }
 
-// Parse TRUST_PROXY (#1024). unset/empty/false → false (do not trust forwarded
+// Parse TRUST_PROXY. unset/empty/false → false (do not trust forwarded
 // headers); true → trust all proxies; a non-negative integer → that many hops
 // from the socket peer (so `TRUST_PROXY=1` means "one proxy in front", the
 // Express idiom, not "trust everything"); otherwise a comma-separated list of

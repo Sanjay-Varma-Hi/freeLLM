@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// #1102: request analytics gain a `caller` dimension ('http' | 'mcp' | 'web')
+// request analytics gain a `caller` dimension ('http' | 'mcp' | 'web')
 // so self-hosters can tell which gateway pathway produced a request. The
 // migration adds the column; logRequest writes it; NULL for legacy callers.
 
@@ -24,7 +24,7 @@ function latestRequest(): RequestRow | undefined {
   ).get() as RequestRow | undefined;
 }
 
-describe('logRequest caller dimension (#1102)', () => {
+describe('logRequest caller dimension', () => {
   beforeEach(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

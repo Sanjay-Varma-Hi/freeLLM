@@ -163,7 +163,7 @@ describe('custom speech-to-text endpoint, end to end', () => {
     expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE_URL}/audio/transcriptions`);
   });
 
-  it('keyless endpoint (auth off) reaches the box with no Authorization header (#1331)', async () => {
+  it('keyless endpoint (auth off) reaches the box with no Authorization header', async () => {
     expect((await registerStt(app, { apiKey: undefined })).status).toBe(201);
     const fetchMock = vi.fn(async () => jsonResponse({ text: 'no auth needed' }));
     globalThis.fetch = fetchMock as any;

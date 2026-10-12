@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 // The chain manager is the dashboard surface for named fallback chains
-// (#960/#895). Two things about it are easy to break by accident and are
+// Two things about it are easy to break by accident and are
 // pinned here: every string it renders has to exist in all 60 locales, and it
 // has to stay a secondary panel on the Fallback page rather than growing into
 // its own nav entry — one chain is all most installs ever use.
@@ -75,7 +75,7 @@ describe('chain manager', () => {
     expect(source).toContain('setCreateError')
   })
 
-  it('renames a chain through the profile update endpoint, with a confirm (#1179)', () => {
+  it('renames a chain through the profile update endpoint, with a confirm', () => {
     // A chain's name is the address clients route with (auto:<name>), so the
     // rename goes through PUT /api/profiles/:id — where the creation rules
     // are enforced and protected chains get a real 403 — and must warn about
@@ -90,11 +90,11 @@ describe('chain manager', () => {
 })
 
 // Switching the active chain has to change what the rest of the dashboard is
-// looking at (#1021). Both of these were silently wrong: the routing table read
+// looking at. Both of these were silently wrong: the routing table read
 // one unscoped cache entry, so a switch re-rendered the previous chain's rows
 // and a save wrote them into the new chain; and the Playground could only ever
 // send 'auto', so a chain you had just built was untestable from the dashboard.
-describe('chains reach the rest of the dashboard (#1021)', () => {
+describe('chains reach the rest of the dashboard', () => {
   it('scopes the fallback table and its staged edits to the active chain', () => {
     expect(fallbackPage).toContain("queryKey: ['profiles', 'active']")
     expect(fallbackPage).toContain("queryKey: ['fallback', 'chain', activeProfileId]")

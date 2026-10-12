@@ -6,7 +6,7 @@
 # client/index.html, and serves it in the CSP `script-src` directive. A CRLF
 # checkout changes those bytes, so the hash no longer matches the script it is
 # meant to authorize — the browser blocks the bootstrap and dark-mode users get
-# the white flash that #682 fixed. csp-inline-bootstrap.test.ts catches it, but
+# the white flash this prevents. csp-inline-bootstrap.test.ts catches it, but
 # only after a Windows clone already fails two tests out of the box.
 *               text=auto eol=lf
 

@@ -15,7 +15,7 @@ import { scopeCandidates, shouldOfferModelPicker, type ScopeCandidate } from '@/
 import { GetKeyLink, PLATFORMS } from './shared'
 
 /** A key that just landed, plus the models the picker should offer for it.
- *  Only produced when the picker is actually worth showing (#657) — otherwise
+ *  Only produced when the picker is actually worth showing — otherwise
  *  the add stays as silent as it has always been. */
 export interface AddedKeyScopeOffer {
   keyId: number
@@ -41,13 +41,13 @@ export function AddKeyForm({ onSuccess, initialPlatform }: { onSuccess: (offer?:
   const [accountId, setAccountId] = useState('')
   const [label, setLabel] = useState('')
   const [addAttempted, setAddAttempted] = useState(false)
-  // Several credentials for one provider in one go (#705). Pooling keys is the
+  // Several credentials for one provider in one go. Pooling keys is the
   // point of this app, and the only bulk path was the file importer, so anyone
   // holding five Groq keys reopened this dialog five times. Off by default: the
   // single-key field masks what you type, and a textarea cannot.
   const [several, setSeveral] = useState(false)
 
-  // #707: the platform dropdown had no search and no way to skip providers that
+  // the platform dropdown had no search and no way to skip providers that
   // already have keys, which is painful at thirty-odd entries. The shared
   // ModelCombobox already does search + arrow keys, so this reuses it and only
   // supplies the options. PLATFORMS keeps its curated order — it is sorted by
@@ -61,7 +61,7 @@ export function AddKeyForm({ onSuccess, initialPlatform }: { onSuccess: (offer?:
   const addedPlatforms = useMemo(() => new Set(keys.map(k => k.platform)), [keys])
   const [hideAdded, setHideAdded] = useState(false)
 
-  // #657 post-add scope picker: the platform's model list. This is the same
+  //  post-add scope picker: the platform's model list. This is the same
   // ['fallback'] query the Models page, the fallback chain and the command
   // palette already run — react-query dedupes it, so opening this pane costs at
   // most one GET that the rest of the dashboard was going to make anyway. That
@@ -81,7 +81,7 @@ export function AddKeyForm({ onSuccess, initialPlatform }: { onSuccess: (offer?:
     const provider = PLATFORMS.find(p => p.value === added)
     // An anonymous row on a key-optional gateway is excluded from scope editing
     // on the key row too: no credential means nothing was bought per model
-    // group. A real key saved there is an ordinary key (#1331).
+    // group. A real key saved there is an ordinary key.
     if (!provider || (provider.keyless && !key.trim())) return undefined
     const candidates = scopeCandidates(catalog, added)
     if (!shouldOfferModelPicker(candidates)) return undefined
@@ -112,7 +112,7 @@ export function AddKeyForm({ onSuccess, initialPlatform }: { onSuccess: (offer?:
       queryClient.invalidateQueries({ queryKey: ['keys-providers'] })
       toast.success(t('keys.keyAdded'))
       // Server notice when the key is for a platform with no models in the
-      // current catalog tier yet (#438) — surfaced as a toast now that the
+      // current catalog tier yet — surfaced as a toast now that the
       // dialog closes on success.
       if (data?.notice) toast.info(data.notice)
       onSuccess(scopeOffer(data?.id, variables.platform, variables.key))
@@ -138,7 +138,7 @@ export function AddKeyForm({ onSuccess, initialPlatform }: { onSuccess: (offer?:
 
   const needsAccountId = platform === 'cloudflare'
   // Key-optional providers (Kilo, OVH, AI Horde) work anonymously, but accept a
-  // real key too (#1331): the field stays editable and may be left blank.
+  // real key too: the field stays editable and may be left blank.
   const isKeyless = PLATFORMS.find(p => p.value === platform)?.keyless ?? false
   // Cloudflare pairs each token with an account id, and a key-optional
   // provider keeps a single anonymous row, so neither takes a list.

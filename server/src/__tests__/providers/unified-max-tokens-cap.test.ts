@@ -159,7 +159,7 @@ describe('the unified cap reaches every adapter', () => {
 });
 
 describe('the cap applies to values the client never sent', () => {
-  it("clamps cloudflare's platform default (#553) when the cap is lower", async () => {
+  it("clamps cloudflare's platform default when the cap is lower", async () => {
     const cfDefault = defaultMaxTokensFor('cloudflare')!;
     setSetting(UNIFIED_MAX_TOKENS_SETTING, String(cfDefault - 1));
     const cap = captureBody(openAiJsonResponse);

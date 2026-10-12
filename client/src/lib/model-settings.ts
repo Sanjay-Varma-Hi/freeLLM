@@ -1,4 +1,4 @@
-// Per-provider model settings edited on the model detail page (#551).
+// Per-provider model settings edited on the model detail page.
 //
 // The form holds every numeric field as a string (that is what an <input>
 // gives us), so parsing, validation and the PATCH body are pure functions

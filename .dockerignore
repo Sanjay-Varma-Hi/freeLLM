@@ -17,5 +17,4 @@ dist
 .encryption-key
 .DS_Store
 npm-debug.log*
-repo-assets
 free-ai-apis.pdf

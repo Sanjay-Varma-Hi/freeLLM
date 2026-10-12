@@ -36,7 +36,7 @@ const createSchema = z.object({
   color: z.string().default('#6366f1'),
   sourceProfileId: z.number().optional(),
   // Start the chain with nothing in it instead of a copy of the whole catalog
-  // (#895). The point of a named chain is usually "these three models, in this
+  // The point of a named chain is usually "these three models, in this
   // order" — starting from 200 rows means deleting 197 of them by hand. An
   // empty chain also opts out of the catalog-sync backfill, so it stays as
   // small as the user built it.
@@ -223,7 +223,7 @@ profilesRouter.put('/:id', (req: Request, res: Response) => {
 
   // A chain's name is the address clients route with (auto:<name>), and the
   // built-in names are fixed in docs and client configs. Say so with a 403
-  // rather than silently dropping the rename (#1179); an unchanged name sent
+  // rather than silently dropping the rename; an unchanged name sent
   // along with other fields still passes.
   if (isProtected && parsed.data.name !== undefined && parsed.data.name !== profile.name) {
     res.status(403).json({ error: { message: 'Built-in chains cannot be renamed' } });

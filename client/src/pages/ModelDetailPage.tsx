@@ -79,7 +79,7 @@ export default function ModelDetailPage() {
     queryKey: ['unify'],
     queryFn: () => apiFetch('/api/settings/unify'),
   })
-  // Time-window rate-limit usage (#876), the same shared query the Models table
+  // Time-window rate-limit usage, the same shared query the Models table
   // uses — one poll for the page, read per row from a map.
   const { data: rateLimitUsage } = useQuery<RateLimitUsageData>({
     queryKey: ['fallback', 'rate-limit-usage'],
@@ -136,7 +136,7 @@ export default function ModelDetailPage() {
     },
   })
 
-  // #790: merge a custom provider's model alias into THIS unified model, so a
+  // merge a custom provider's model alias into THIS unified model, so a
   // request for the primary model id is served through the alias too. Same
   // whole-overrides PUT as splits; only the merges list changes.
   const [aliasInput, setAliasInput] = useState('')
@@ -158,7 +158,7 @@ export default function ModelDetailPage() {
   const splits = unify?.overrides.splits ?? []
   // New splits are written against ONE row: an unqualified "platform:modelId"
   // matches every relay that serves the id, so splitting one relay's card used
-  // to move both (#651). Reading accepts the plain form too, so a split saved
+  // to move both. Reading accepts the plain form too, so a split saved
   // before that is still recognised — and still undoable.
   function splitActionFor(m: Row, memberCount: number): SplitAction | undefined {
     if (!unify) return undefined
@@ -191,7 +191,7 @@ export default function ModelDetailPage() {
   // Endpoint disambiguation keys on (platform, model_id) across EVERY configured
   // row — a relay whose copy was renamed sits in a DIFFERENT display group, so
   // `members` is not a complete sibling set and scoping to it would hide the
-  // endpoint exactly when two relays collide (#651).
+  // endpoint exactly when two relays collide.
   const siblings: Row[] = entries as Row[]
 
   function handleToggle(modelDbId: number, enabled: boolean) {
@@ -207,7 +207,7 @@ export default function ModelDetailPage() {
   const vision = members.some(m => m.supportsVision)
   const tools = members.some(m => m.supportsTools)
 
-  // #790: the aliases merged INTO this group. Every edit is expressed against
+  // the aliases merged INTO this group. Every edit is expressed against
   // the full overrides list (see lib/alias-merge) — the visible rows are only
   // this group's slice, so editing by row position would hit other groups.
   const merges = useMemo(() => unify?.overrides.merges ?? [], [unify])
@@ -251,8 +251,7 @@ export default function ModelDetailPage() {
           <>
             {/* Summary badges. The canonical (unified) model id leads: it is the
                 id callers actually put in a request body, and it was previously
-                only reachable via the hover copy button in the Models table
-                (#725, #708). */}
+                only reachable via the hover copy button in the Models table. */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex min-w-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-foreground">
                 <code className="min-w-0 truncate font-mono">{canonicalId}</code>
@@ -320,7 +319,7 @@ export default function ModelDetailPage() {
               </div>
             </div>
 
-            {/* #790: merge a custom provider's model alias into this unified
+            {/* merge a custom provider's model alias into this unified
                 model, so requests for the primary model id are served through
                 the alias too. Same overrides store as the split control. */}
             <div className="rounded-2xl border bg-card p-4">
@@ -387,7 +386,7 @@ function ProviderSettingsRow({
 }: {
   model: Row
   // Which provider this card is for. Carries the endpoint too, but only when
-  // two custom endpoints serve the same model id (#651).
+  // two custom endpoints serve the same model id.
   endpointLabel: string
   // Hover text for that label, set only when there was a collision to resolve.
   endpointTitle?: string
@@ -419,7 +418,7 @@ function ProviderSettingsRow({
   const canSave = dirty && patch !== null && !saving && !deleting
   const sourceLabel = model.source === 'custom'
     ? t('models.customModel')
-    // #1348: fetched from the provider's own model list, not the catalog.
+    // fetched from the provider's own model list, not the catalog.
     : model.source === 'discovered' ? t('models.discoveredModel') : t('models.catalogModel')
   // Fields whose effective value comes from a local override instead of the
   // catalog. Custom models are never catalog-managed, so this stays empty.
@@ -514,10 +513,9 @@ function ProviderSettingsRow({
 
       {/* Router inputs: the two ranks feed the scoring axes, the four limits
           feed rate-limit accounting. Editable because the catalog can be wrong
-          for a given account, or silent about a brand-new model (#551). The
+          for a given account, or silent about a brand-new model. The
           capability tier sets the intelligence axis — a custom model without
-          a recognized tier sits at the floor of it, so it gets a picker here
-          (#685). */}
+          a recognized tier sits at the floor of it, so it gets a picker here. */}
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-7">
         {/* Full-width on the 2/3-column layouts so the six number fields
             below still tile evenly; one row of seven on desktop. */}

@@ -58,7 +58,7 @@ register(new OpenAICompatProvider({
 // Responses objects back to Chat Completions and handles flex-only models.
 // Sail grants $5 in free credits every month when a payment method is attached;
 // usage beyond that grant is pay-as-you-go. Live-tested 2026-09-01. Model rows
-// stay in Oracle so the existing Premium-now / Free-after-30-days gate applies.
+// come from the catalog, not from migrations.
 register(new SailProvider());
 register(new AclideProvider());
 register(new SpekaProvider());
@@ -72,8 +72,8 @@ register(new MoondreamProvider());
 register(new ElectronHubProvider());
 register(new ExperientialProvider());
 // Router9 has shared monthly credits; Septor's zero-price models share daily
-// quota (its signup credit is one-time). Model rows live only in Oracle so
-// the existing Premium-now / Free-after-30-days gate remains authoritative.
+// quota (its signup credit is one-time). Model rows come only from the
+// catalog.
 register(new Router9Provider());
 register(new SeptorProvider());
 register(new ClodProvider());
@@ -99,13 +99,13 @@ register(new OpenAICompatProvider({
 // AnyAPI - OpenAI-compatible gateway (anyapi.ai). Free tier (checked against
 // anyapi.ai/pricing 2026-08-10): $0, no card, recurring — but the binding limit
 // is 100K TOKENS PER DAY, and only "free and basic" models are in scope. AnyAPI
-// publishes no RPM/RPD numbers at all; the 20 RPM / 200 RPD figures in #732 are
+// publishes no RPM/RPD numbers at all; the 20 RPM / 200 RPD figures are
 // OpenRouter's, not AnyAPI's, so nothing here asserts a request rate.
 //
 // Model rows are NOT seeded here or in migrations — they are authored in the
 // hosted catalog and arrive via catalog-sync once the platform is registered
 // (see services/catalog-sync.ts, which gates on hasProvider). The ids proposed
-// in #732 (meta-llama/llama-3.3-70b-instruct:free, qwen/qwen3-coder:free,
+// (meta-llama/llama-3.3-70b-instruct:free, qwen/qwen3-coder:free,
 // nvidia/nemotron-3-ultra-550b-a55b:free, google/gemma-4-26b-a4b-it:free) came
 // from a third-party list and are UNVERIFIED against the live /v1/models, which
 // needs a key; treat them as candidates for catalog authoring, where a bad id
@@ -136,12 +136,12 @@ register(new OpenAICompatProvider({
 
 // NVIDIA NIM - OpenAI-compatible. Several NIM models reject parallel tool calls
 // ("This model only supports single tool-calls at once!"), so pin
-// parallel_tool_calls to false when tools are present. See issue #255.
+// parallel_tool_calls to false when tools are present..
 // Reasoning models (deepseek-v4-pro, llama-4-maverick, llama-3.1/3.3-70b) take
 // 30-60s on cold start; the default 15s false-flags them as broken. 180s:
 // NIM sends SSE headers instantly, then prefills 100k-token prompts for
 // minutes before the first byte, and this value doubles as the streaming
-// first-byte grace budget (#584). Env-tunable via PROVIDER_TIMEOUT_NVIDIA.
+// first-byte grace budget. Env-tunable via PROVIDER_TIMEOUT_NVIDIA.
 register(new OpenAICompatProvider({
   platform: 'nvidia',
   name: 'NVIDIA NIM',
@@ -166,7 +166,7 @@ register(new OpenAICompatProvider({
     'HTTP-Referer': 'http://localhost:3001',
     'X-Title': 'FreeLLMAPI',
   },
-  // #1403: OpenRouter reports the key's real credit balance and hard limit on
+  // OpenRouter reports the key's real credit balance and hard limit on
   // its key-info endpoint (outside /api/v1). limit/remaining are USD amounts
   // when set; null means the key is on the free tier with no credit cap, so
   // the probe records whatever pair the endpoint actually fills.
@@ -261,7 +261,7 @@ register(new OpenAICompatProvider({
 // Dedicated PollinationsProvider (not plain OpenAICompatProvider) because
 // GET /v1/models is public — it answers 200 for a revoked key — so validation
 // probes the authenticated /account/key instead; see providers/pollinations.ts
-// and issue #608.
+// and.
 register(new PollinationsProvider());
 
 // LLM7.io — OpenAI-compatible aggregator. 100 req/hr free; anonymous access
@@ -280,10 +280,10 @@ register(new OpenAICompatProvider({
 // (no card required — billing only applies to paid models). The free roster is
 // trial-only and prompts/outputs may be used to improve the models, so we seed
 // just the docs-confirmed free IDs (migrateModelsV18) with conservative limits.
-// Since 2026-09 the free roster is locked to the OpenCode client (#1249): every
+// Since 2026-09 the free roster is locked to the OpenCode client: every
 // free model answers 403 FreeTierError "OpenCode's free tier can only be used
 // from within OpenCode" on a valid key, and sending the OpenCode client headers
-// (#1204, reverted) does not change that. The catalog disables the free rows;
+// (reverted) does not change that. The catalog disables the free rows;
 // the provider stays registered for keys on OpenCode's paid models.
 register(new OpenAICompatProvider({
   platform: 'opencode',
@@ -314,7 +314,7 @@ register(new OpenAICompatProvider({
 // "during this period"), and there is a paid Token/Unlimited subscription
 // underneath, so watch for reversion to paid. ~30 concurrent requests succeed
 // before 429s (no documented RPM/RPD). Free key from platform.agnes-ai.com,
-// no card. Catalog rows live in the catalog (premium → age into free); not
+// no card. Catalog rows live in the catalog; not
 // shipped as freeapi model migrations.
 // agnes-2.0-flash reasons before answering (live-probed 20s TTFB on a
 // one-word completion, 2026-07-11), so the default 15s timeout aborted it;
@@ -332,14 +332,14 @@ register(new OpenAICompatProvider({
 // non-zero balance, which conflicts with the project's no-card criterion.
 
 // Reka — OpenAI-compatible (api.reka.ai/v1). No longer free for new accounts
-// (#1202): Reka's FAQ now requires prepaid credits and a $0 balance answers
+// Reka's FAQ now requires prepaid credits and a $0 balance answers
 // P001 Insufficient Balance. Accounts that still hold credit keep working
 // (both models answered 200 on 2026-09-17), so the provider stays registered;
 // the old `reka-flash` id 404s and is disabled in the catalog.
 // The OpenAI-compatible /v1/models lists two models:
 // reka-flash-3 (text reasoning) and reka-edge-2603 (natively multimodal —
 // accepts image/video input). Balance is dashboard-only (no credits API).
-// Catalog rows live in the catalog (premium → age into free); they are NOT
+// Catalog rows live in the catalog; they are NOT
 // shipped as freeapi model migrations.
 register(new OpenAICompatProvider({
   platform: 'reka',
@@ -351,12 +351,12 @@ register(new OpenAICompatProvider({
 // for its FREE generative-media models (FLUX.1-schnell image, CosyVoice2 TTS),
 // which route via services/media.ts; OpenAI-compatible chat is supported too.
 // Key from siliconflow.com, no card; validateKey uses GET /v1/models (200 with
-// a valid key). Catalog rows live in the catalog (premium → age into free).
+// a valid key). Catalog rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'siliconflow',
   name: 'SiliconFlow',
   baseUrl: 'https://api.siliconflow.com/v1',
-  // #1403: SiliconFlow reports the account's credit balance on
+  // SiliconFlow reports the account's credit balance on
   // GET /v1/user/info (data.balance = gift credit, data.totalBalance = gift +
   // charge; values arrive as numeric strings in CNY). There is no limit field,
   // so the probe records remaining only — a real number beats parseBudget's 0
@@ -375,7 +375,7 @@ register(new OpenAICompatProvider({
 // 20 rpm / 200 rpd, but a live test on 2026-06-26 observed a stricter 5 rpm).
 // Cloudflare in front rejects non-browser User-Agents with error 1010, so a
 // browser-style UA is required. Free key from routeway.ai (no card). Catalog
-// rows live in the catalog (premium → age into free).
+// rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'routeway',
   name: 'Routeway',
@@ -401,7 +401,7 @@ register(new OpenAICompatProvider({
 // Advertises a recurring ~10M tokens/month free allocation (no card), though
 // its own pages disagree on scale; treat the quota as unverified until a real
 // account confirms it. Bearer auth works (X-API-Key also accepted). Catalog
-// rows live in the catalog (premium → age into free).
+// rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'ainative',
   name: 'AINative Studio',
@@ -409,8 +409,7 @@ register(new OpenAICompatProvider({
 }));
 
 // Aion Labs — OpenAI-compatible aggregator (api.aionlabs.ai/v1). Free key from
-// aionlabs.ai (no card); recurring free availability is catalog-managed so
-// premium users see rows immediately and free users get them after 30 days.
+// aionlabs.ai (no card); recurring free availability is catalog-managed.
 register(new OpenAICompatProvider({
   platform: 'aion',
   name: 'Aion Labs',
@@ -442,8 +441,7 @@ register(new OpenAICompatProvider({
 // requires a no-card API key plus Telegram channel/link verification. Live
 // probed 2026-07-09: `mistral-large`, `mistral-medium-3-5`, and `tencent-hy3`
 // answered 200 with a zero-balance account; the rest of /v1/models was
-// credit- or plan-gated. Catalog rows live in the Oracle catalog (premium now,
-// free after the 30-day model-age gate).
+// credit- or plan-gated. Catalog rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'nara',
   name: 'NaraRouter',
@@ -452,8 +450,7 @@ register(new OpenAICompatProvider({
 
 // SEA-LION (AI Singapore) — OpenAI-compatible first-party API (api.sea-lion.ai/v1).
 // Free key from sea-lion.ai (Google sign-in, no card, no region wall); recurring
-// free tier at 10 RPM. Catalog rows live in the Oracle catalog (premium now, free
-// after the 30-day model-age gate).
+// free tier at 10 RPM. Catalog rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'sealion',
   name: 'SEA-LION',
@@ -465,8 +462,7 @@ register(new OpenAICompatProvider({
 // aliases at $0 (`*-free` ids plus the `orcarouter/free` auto route); limits
 // are intentionally unpublished (429 on cap) and free routes never fall back
 // to paid models, so a 429 is a clean quota signal, not a wallet risk.
-// Live-verified 2026-08-15. Catalog rows live in the Oracle catalog (premium
-// now, free after the 30-day model-age gate).
+// Live-verified 2026-08-15. Catalog rows live in the catalog.
 register(new OpenAICompatProvider({
   platform: 'orcarouter',
   name: 'OrcaRouter',
@@ -484,8 +480,7 @@ register(new OpenAICompatProvider({
 // key) is a real check; no validateUrl override needed. A burst of parallel
 // requests trips an account-wide 429 on every :free model for several
 // minutes, which is why provider-quota pools the platform as one allowance.
-// Catalog rows live in the hosted catalog (premium now, free after the 30-day
-// model-age gate).
+// Catalog rows live in the hosted catalog.
 register(new OpenAICompatProvider({
   platform: 'unorouter',
   name: 'UnoRouter',
@@ -502,9 +497,8 @@ register(new OpenAICompatProvider({
 // catalog), so the default /v1/models key validation would be a false
 // positive — validateUrl points at /v1/usage instead, which 401s on a missing
 // or invalid ClientApiKey ("Invalid or disabled ClientApiKey"). Accepts
-// Authorization: Bearer or x-api-key. Catalog rows live in the hosted catalog
-// (premium now, free after the 30-day model-age gate); the ids in #947 are
-// unverified against a live account and are candidates for catalog authoring,
+// Authorization: Bearer or x-api-key. Catalog rows live in the hosted catalog;
+// candidate ids are unverified against a live account and are left to catalog authoring,
 // where a bad id is caught by the health check instead of shipped as a default.
 register(new OpenAICompatProvider({
   platform: 'xkiro',
@@ -523,7 +517,7 @@ register(new OpenAICompatProvider({
 // answers 200 even for garbage tokens, so key validation needs a 1-token chat
 // probe instead — see providers/modelscope.ts.
 //
-// RETIRED-model gotcha (#581): ModelScope answers requests for retired models
+// RETIRED-model gotcha: ModelScope answers requests for retired models
 // with `429 insufficient balance (1008)`. isPaymentRequiredError
 // (lib/error-classify.ts) reads "insufficient balance" as out-of-credits and
 // benches the key ~24h — intentionally NOT special-cased in the shared
@@ -532,13 +526,12 @@ register(new OpenAICompatProvider({
 // provider-quota.ts keys on response headers, never on that message text.
 register(new ModelScopeProvider());
 
-// ── Chinese domestic providers (#922/#923/#924) ─────────────────────────────
+// ── Chinese domestic providers ─────────────────────────────
 // Plain OpenAI-compatible Bearer endpoints, so no dedicated provider class is
 // needed. Every one of these requires Chinese real-name verification on the
 // cloud account before a key serves traffic (LongCat aside — it takes an email
 // signup from outside mainland China). Catalog rows live in the hosted catalog,
-// never in a migration, so a free user cannot pick them up from a binary
-// upgrade ahead of the premium window.
+// never in a migration. Use Fetch models on a key to pick models directly.
 
 // Baidu Qianfan (百度千帆). ERNIE-Speed / ERNIE-Lite / ERNIE-Tiny are free via
 // pay-as-you-go billing, bounded by rate limits rather than a token balance.
@@ -579,7 +572,7 @@ register(new OpenAICompatProvider({
 // reported as kudos (synthesized into token counts), and calls can take tens of
 // seconds (120s timeout, no upstream streaming). Registered keyless so it
 // auto-configures and works anonymously (key 0000000000, lowest queue
-// priority); a registered aihorde.net key raises priority. See issue #345.
+// priority); a registered aihorde.net key raises priority..
 register(new AIHordeProvider());
 
 // Placeholder so getProvider('custom')/hasProvider('custom')/getAllProviders()

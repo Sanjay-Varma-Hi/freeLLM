@@ -197,7 +197,7 @@ function sanitizeSchema(schema: unknown, insidePropertiesMap: boolean, ctx: Sani
 
 // Gemini's Schema proto models `items` as a single Schema message and requires
 // it on every ARRAY: an array without `items` 400s with "…items: missing
-// field" (#1334 — Claude Code's nested tuple params lose their element schema
+// field" (— Claude Code's nested tuple params lose their element schema
 // once `prefixItems` is stripped), and a JSON Schema tuple (`items: [...]`)
 // 400s with "Proto field is not repeating". Tuples become an `anyOf` over their
 // members, and an array with no usable element schema gets `items: {}`, which

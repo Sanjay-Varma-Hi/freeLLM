@@ -4,7 +4,7 @@ import * as ratelimit from '../../services/ratelimit.js';
 import { getDb, initDb } from '../../db/index.js';
 import { addToActiveChain } from '../helpers/chain.js';
 
-// Per-key scoring inside one model (#580): with the group merge, several keys
+// Per-key scoring inside one model: with the group merge, several keys
 // (and formerly several providers' identically-named models) share one routing
 // bucket. Key selection must not be blind round-robin — a key with a bad track
 // record (expired, quota-drained, region-blocked) should be picked less than a

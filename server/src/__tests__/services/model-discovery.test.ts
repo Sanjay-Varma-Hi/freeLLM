@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseModelCatalog, readCappedBody, MAX_CATALOG_BYTES, MAX_DISCOVERED_MODELS, ModelDiscoveryError } from '../../services/model-discovery.js';
 
-// #488: relays that speak "OpenAI-compatible" agree on the chat route and then
+// relays that speak "OpenAI-compatible" agree on the chat route and then
 // each invent their own /models envelope. Parsing has to be tolerant or the
 // Fetch-models button reads as broken against half the endpoints people use.
 
-describe('parseModelCatalog tolerance (#488)', () => {
+describe('parseModelCatalog tolerance', () => {
   it('reads the canonical OpenAI envelope', () => {
     expect(parseModelCatalog({
       object: 'list',
@@ -62,11 +62,11 @@ describe('parseModelCatalog tolerance (#488)', () => {
     expect(byId.get('d')).toBeNull();
   });
 
-  // #685 details are aimed at OpenRouter first — it is what people actually
+  //  details are aimed at OpenRouter first — it is what people actually
   // point a custom base_url at — so the fixtures below are shaped like the real
   // /api/v1/models rows: prices are STRINGS of USD per TOKEN, and the modality
   // signal is buried one level down under `architecture`.
-  it('reads an OpenRouter row: per-token string prices and nested modalities (#685)', () => {
+  it('reads an OpenRouter row: per-token string prices and nested modalities', () => {
     const [m] = parseModelCatalog({
       data: [
         {
@@ -92,7 +92,7 @@ describe('parseModelCatalog tolerance (#488)', () => {
     });
   });
 
-  it('calls an OpenRouter zero-priced model free rather than "$0" (#685)', () => {
+  it('calls an OpenRouter zero-priced model free rather than "$0"', () => {
     const [m] = parseModelCatalog({
       data: [
         {
@@ -113,7 +113,7 @@ describe('parseModelCatalog tolerance (#488)', () => {
     });
   });
 
-  it('accepts a relay that ships ctx_len and a plain "free" price string (#685)', () => {
+  it('accepts a relay that ships ctx_len and a plain "free" price string', () => {
     // A generic relay, not Ollama: real /api/tags ships neither field.
     const [m] = parseModelCatalog({
       models: [{ name: 'qwen3-4b', ctx_len: 32768, price: 'Free' }],
@@ -121,7 +121,7 @@ describe('parseModelCatalog tolerance (#488)', () => {
     expect(m).toEqual({ id: 'qwen3-4b', ownedBy: null, contextWindow: 32768, priceNote: 'free', isFree: true });
   });
 
-  it('caps a chatty price string so it cannot crowd out the model id (#685)', () => {
+  it('caps a chatty price string so it cannot crowd out the model id', () => {
     const [m] = parseModelCatalog({
       data: [{ id: 'chatty', price: 'promo: $0.15 per million in, $0.60 per million out' }],
     });
@@ -130,7 +130,7 @@ describe('parseModelCatalog tolerance (#488)', () => {
     expect(m.isFree).toBe(false);
   });
 
-  it('keeps a minimal envelope shape when details are absent (#685)', () => {
+  it('keeps a minimal envelope shape when details are absent', () => {
     const [m] = parseModelCatalog({ data: [{ id: 'bare' }] });
     expect(m).toEqual({ id: 'bare', ownedBy: null });
     expect(Object.keys(m).sort()).toEqual(['id', 'ownedBy']);
@@ -158,7 +158,7 @@ describe('parseModelCatalog tolerance (#488)', () => {
   });
 });
 
-describe('readCappedBody (#488)', () => {
+describe('readCappedBody', () => {
   it('reads a normal body', async () => {
     const res = new Response('{"data":[]}', { headers: { 'content-type': 'application/json' } });
     expect(await readCappedBody(res)).toBe('{"data":[]}');
@@ -188,10 +188,10 @@ describe('readCappedBody (#488)', () => {
   });
 });
 
-// #1051: an upstream that returns bare ids gives visionOf nothing to read, so
+// an upstream that returns bare ids gives visionOf nothing to read, so
 // a VL model arrives looking exactly like a chat one. The id is the only
 // signal left.
-describe('vision inferred from the model id (#1051)', () => {
+describe('vision inferred from the model id', () => {
   it('flags a VL model an upstream ships with no modality metadata', () => {
     expect(parseModelCatalog({
       data: [{ id: 'Qwen/Qwen2.5-VL-72B-Instruct' }],
@@ -248,11 +248,11 @@ describe('vision inferred from the model id (#1051)', () => {
   });
 });
 
-// #1051, the non-vision half: SiliconFlow-style upstreams answer /v1/models
+// the non-vision half: SiliconFlow-style upstreams answer /v1/models
 // with bare ids, so a diffusion, whisper or video model used to register as a
 // chat model and 404 forever. The id (or explicit type metadata) now yields a
 // `kind`; absent kind still means "chat as far as anyone can tell".
-describe('non-chat kind inferred from the model id (#1051)', () => {
+describe('non-chat kind inferred from the model id', () => {
   const kindOf = (id: string) => parseModelCatalog({ data: [{ id }] })[0]!.kind;
 
   it('classifies the SiliconFlow ids from the issue', () => {

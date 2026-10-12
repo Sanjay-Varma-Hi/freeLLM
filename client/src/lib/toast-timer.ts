@@ -1,4 +1,4 @@
-// Pausable countdown behind a toast's auto-dismiss (#586). The Toaster pauses
+// Pausable countdown behind a toast's auto-dismiss. The Toaster pauses
 // it while the pointer is over the toast and while the window is blurred, so
 // reading a message never races the timer. Pauses are counted, not boolean:
 // hover and blur can overlap, and the timer only runs when every hold has

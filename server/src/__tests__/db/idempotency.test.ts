@@ -192,7 +192,7 @@ describe('Migration idempotency', () => {
     ]);
   });
 
-  it('caps GitHub GPT-4.1 at the routable free-tier context window (#426)', () => {
+  it('caps GitHub GPT-4.1 at the routable free-tier context window', () => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     const db = initDb(':memory:');
 

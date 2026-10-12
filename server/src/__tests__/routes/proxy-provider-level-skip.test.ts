@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import type { Express } from 'express';
 
-// #788: a provider-level failure (5xx, timeout, dead socket) is about the
+// a provider-level failure (5xx, timeout, dead socket) is about the
 // PROVIDER, not the key that happened to catch it. Failover used to burn one
 // hop per sibling key — and then one per sibling MODEL of the same sick
 // platform — before it ever reached the next provider. The router now honors a
@@ -98,7 +98,7 @@ function setup(): void {
   }
 }
 
-describe('provider-level failures skip the whole platform (#788)', () => {
+describe('provider-level failures skip the whole platform', () => {
   let app: Express;
   let key: string;
 

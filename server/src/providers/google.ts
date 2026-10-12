@@ -22,7 +22,7 @@ const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 function googleHttpError(res: Response, body: any) {
   const err = providerHttpError(res, `Google API error ${res.status}: ${body?.error?.message ?? res.statusText}`, body);
   // Gemini's human-readable message can omit the quota window. Keep only the
-  // daily signal from QuotaFailure, not the complete upstream payload (#1339).
+  // daily signal from QuotaFailure, not the complete upstream payload.
   const details = body?.error?.details;
   if (res.status === 429 && Array.isArray(details)) {
     err.dailyQuotaExhausted = details.some(detail =>
@@ -172,11 +172,11 @@ function systemInstructionText(systemInstruction: { parts?: Array<{ text?: strin
 
 // Gemma models on the Gemini API historically 400 with "Developer instruction
 // is not enabled", so system prompts fold into the first user turn instead of
-// riding systemInstruction (#500). Older Gemma 3.x still rejects system
+// riding systemInstruction. Older Gemma 3.x still rejects system
 // instructions and users can register those ids, so the fold stays. Tools and
 // functionCall/functionResponse history are deliberately NOT touched here
 // anymore: Gemma 4 supports native function calling, and stripping them made
-// the dashboard supports_tools toggle a no-op (#582).
+// the dashboard supports_tools toggle a no-op.
 function contentsForModel(
   modelId: string,
   contents: GeminiContent[],
@@ -228,7 +228,7 @@ function toGeminiFinishReason(finishReason?: string): string {
 // OpenAI clients can't express Gemini's native Google Search grounding, so we
 // treat a tool named `google_search` (a few spellings) as the signal to enable
 // it. It maps to Gemini's `{ google_search: {} }` tool rather than a function
-// declaration, and can ride alongside real function tools in the same array. (#59)
+// declaration, and can ride alongside real function tools in the same array.
 const GROUNDING_TOOL_NAMES = new Set(['google_search', 'googlesearch', 'google_search_retrieval']);
 
 // reasoning_effort → Gemini thinkingBudget (tokens). The low/medium/high
@@ -557,7 +557,7 @@ export class GoogleProvider extends BaseProvider {
 
   constructor(opts: GoogleProviderOptions = {}) {
     super();
-    // PROVIDER_TIMEOUT_GOOGLE wins over the registration default (#547).
+    // PROVIDER_TIMEOUT_GOOGLE wins over the registration default.
     this.timeoutMs = providerTimeoutMs('google', opts.timeoutMs ?? 15000);
   }
 
@@ -583,7 +583,7 @@ export class GoogleProvider extends BaseProvider {
       },
       tools,
       // functionCallingConfig is only valid when real function tools are present;
-      // a grounding-only request (just google_search) must omit it. (#59)
+      // a grounding-only request (just google_search) must omit it.
       toolConfig: hasFunctionDeclarations(tools) ? toGeminiToolConfig(options?.tool_choice) : undefined,
     };
     if (request.systemInstruction) body.systemInstruction = request.systemInstruction;
@@ -703,10 +703,10 @@ export class GoogleProvider extends BaseProvider {
 
     const seenToolCallKeys = new Set<string>();
 
-    // Same mid-stream inactivity watchdog as readSseStream (#553): this adapter
+    // Same mid-stream inactivity watchdog as readSseStream: this adapter
     // parses Gemini's own frame format, so it reads the body itself and used to
     // have no bound at all on a stalled read. Same first-byte grace as
-    // readSseStream too (#584): the chat timeout that bounded the headers also
+    // readSseStream too: the chat timeout that bounded the headers also
     // budgets the first read, floored at the stall budget.
     const inactivityTimeoutMs = streamStallTimeoutMs(this.platform);
     const firstByteMs = this.firstByteBudgetMs(options?.timeoutMs ?? this.timeoutMs, inactivityTimeoutMs);
@@ -726,7 +726,7 @@ export class GoogleProvider extends BaseProvider {
 
         for (const line of lines) {
           const trimmed = line.trim();
-          // `data:` with or without the space, same as BaseProvider (#1087).
+          // `data:` with or without the space, same as BaseProvider.
           if (!trimmed || !trimmed.startsWith('data:')) continue;
           const raw = trimmed.slice(5).replace(/^ /, '');
           if (raw === '[DONE]') {
@@ -854,7 +854,7 @@ export class GoogleProvider extends BaseProvider {
     });
     if (res.ok) return true;
 
-    // Google's error taxonomy is NOT the usual 401/403-means-bad-key (#268):
+    // Google's error taxonomy is NOT the usual 401/403-means-bad-key:
     //   - bad/expired key            → HTTP 400 INVALID_ARGUMENT / reason API_KEY_INVALID
     //   - API not enabled on project → HTTP 403 PERMISSION_DENIED / reason SERVICE_DISABLED
     //   - IP / referrer / API-key restriction, or empty key → HTTP 403 PERMISSION_DENIED

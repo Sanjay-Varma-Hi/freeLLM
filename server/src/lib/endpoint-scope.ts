@@ -1,10 +1,10 @@
-// ── Endpoint identity for custom relay models (#651) ────────────────────────
+// ── Endpoint identity for custom relay models ────────────────────────
 //
 // Every custom relay is stored under platform = 'custom', so two relays that
 // both offer `deepseek-v3.1` used to collapse into ONE `models` row: one
 // enabled flag, one reliability/speed bucket, one binding anchor. Disabling the
 // model because relay A was broken disabled it for relay B too, and relay A's
-// timeouts dragged down the copy relay B served just fine (#619).
+// timeouts dragged down the copy relay B served just fine.
 //
 // The discriminator is `models.endpoint_scope`: the normalized base_url of the
 // endpoint the row belongs to, '' for every catalog platform. Uniqueness is
@@ -12,11 +12,11 @@
 // (platform, model_id) semantics — '' is the same value for all of them — while
 // two relays can each hold their own row for the same model id.
 //
-// Why base_url and not key_id: #640 settled that an endpoint is a base_url
+// Why base_url and not key_id: settled that an endpoint is a base_url
 // holding a POOL of credentials, and a model rotates across that pool. Keying
 // identity on key_id would split one relay's model into one row per credential
 // and undo that. Why a TEXT token and not a foreign key: the scope is opaque to
-// everything except this module, so the per-key model groups of #657 can later
+// everything except this module, so the per-key model groups can later
 // refine it (`<base_url>#<group>`) without a second identity migration.
 
 import type { Db } from '../db/types.js';

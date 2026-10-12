@@ -18,7 +18,7 @@ const options: ModelOption[] = [
   opt('deepseek-v3', 'DeepSeek V3', 'DeepSeek', ['DeepSeek', 'NVIDIA']),
 ]
 
-describe('filterFusionModels (#872)', () => {
+describe('filterFusionModels', () => {
   it('keeps everything when query and provider are empty', () => {
     expect(filterFusionModels(options, '', null)).toHaveLength(3)
   })
@@ -49,7 +49,7 @@ describe('filterFusionModels (#872)', () => {
   })
 })
 
-describe('fusionProviders (#872)', () => {
+describe('fusionProviders', () => {
   it('collects and sorts every distinct provider name', () => {
     expect(fusionProviders(options)).toEqual(['Anthropic', 'DeepSeek', 'NVIDIA', 'OpenAI'])
   })

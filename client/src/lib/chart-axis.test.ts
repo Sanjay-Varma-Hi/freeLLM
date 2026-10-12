@@ -16,7 +16,7 @@ const NARROW_PLOT_WIDTH = 280
 
 const sin = (deg: number) => Math.sin((Math.abs(deg) * Math.PI) / 180)
 
-describe('categoryAxisProps (#890)', () => {
+describe('categoryAxisProps', () => {
   it('forces every tick so recharts never skips a provider label', () => {
     // recharts' default interval is 'preserveEnd', which is exactly what hid
     // the middle provider names; 0 means "render a tick for every category".
@@ -109,7 +109,7 @@ describe('truncateAxisLabel', () => {
   })
 })
 
-describe('verticalCategoryAxisProps (#890, errors-by-category)', () => {
+describe('verticalCategoryAxisProps (errors-by-category)', () => {
   it('forces every tick on the category (Y) axis of a vertical bar chart', () => {
     // implicitYAxis defaults to 'preserveEnd' just like the X one, so the
     // horizontal "errors by category" chart dropped labels the same way.

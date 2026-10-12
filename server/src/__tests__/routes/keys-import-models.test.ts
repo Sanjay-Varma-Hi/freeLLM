@@ -5,7 +5,7 @@ import { createApp } from '../../app.js';
 import { initDb, getDb } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #382, remaining gap: an imported custom endpoint can carry the models it
+// remaining gap: an imported custom endpoint can carry the models it
 // serves. Chat ids go through the same registration POST /custom runs;
 // ids that look like embedding models go through the embeddings path, probing
 // the endpoint for dimensions only when the model is not already on record.
@@ -63,7 +63,7 @@ function customEmbeddings() {
   ).all() as Array<{ model_id: string; family: string; dimensions: number; key_id: number }>;
 }
 
-describe('POST /api/keys/import-selected — model lists (#382)', () => {
+describe('POST /api/keys/import-selected — model lists', () => {
   let app: Express;
 
   beforeAll(() => {

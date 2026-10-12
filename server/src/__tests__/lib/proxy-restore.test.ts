@@ -16,7 +16,7 @@ import {
   encodeFetchRelayToken,
 } from '../../lib/proxy.js';
 
-// #838 reads the OS-wide proxy (scutil/reg/gsettings) as a last-resort
+//  reads the OS-wide proxy (scutil/reg/gsettings) as a last-resort
 // fallback when neither the env nor the DB configures one. A developer
 // machine can genuinely have that set (macOS System Settings → Proxies),
 // which fails every "no proxy configured" case below for the same reason
@@ -28,7 +28,7 @@ vi.mock('node:child_process', async (importOriginal) => ({
   execFileSync: () => '',
 }));
 
-// #949: the desktop embedder builds the app without server/src/index.ts, so
+// the desktop embedder builds the app without server/src/index.ts, so
 // the proxy state it starts with is whatever the module defaults are — an
 // empty URL. The URL the user saved through PUT /api/settings/proxy sits in
 // the settings table, ignored until the next re-save. restoreProxySettings()
@@ -63,7 +63,7 @@ afterAll(() => {
   }
 });
 
-describe('restoreProxySettings (desktop embedder hydration, #949)', () => {
+describe('restoreProxySettings (desktop embedder hydration)', () => {
   it('loads a saved proxy URL, enabled flag and bypass list from the settings table', () => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -155,7 +155,7 @@ describe('restoreProxySettings (desktop embedder hydration, #949)', () => {
 // only moment they are consulted on a desktop start: the embedder hydrates
 // once and then nothing re-reads the environment. A regression that skipped a
 // tier here would strand a user who has only ever exported HTTPS_PROXY.
-describe('restoreProxySettings + the standard env fallbacks (#353 x #949)', () => {
+describe('restoreProxySettings + the standard env fallbacks (x)', () => {
   function freshDb(): void {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -243,7 +243,7 @@ describe('restoreProxySettings + the standard env fallbacks (#353 x #949)', () =
 // desktop path it is parsed exactly once: during restore. If restore stopped
 // going through applyProxyUrl the saved URL might still land while the direct
 // list silently emptied, quietly proxying hosts the user excluded.
-describe('restoreProxySettings + NO_PROXY (#949)', () => {
+describe('restoreProxySettings + NO_PROXY', () => {
   function freshDb(): void {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

@@ -9,7 +9,7 @@ import type { ChatMessage } from '@freellmapi/shared/types.js';
 import type { ChatCompletionChunk } from '@freellmapi/shared/types.js';
 
 /**
- * First-byte grace period for streaming (issue #584).
+ * First-byte grace period for streaming.
  *
  * The stream stall watchdog (readWithStallTimeout, default 90s) also bounded
  * TIME-TO-FIRST-BYTE: on streaming requests the per-platform chat timeout is
@@ -80,8 +80,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('first-byte grace period (issue #584)', () => {
-  it('a stream silent past the stall timeout, then delivering, succeeds under the chat-timeout grace (the #584 repro)', async () => {
+describe('first-byte grace period', () => {
+  it('a stream silent past the stall timeout, then delivering, succeeds under the chat-timeout grace (the repro)', async () => {
     // Stall budget 100ms; chat timeout (= first-byte grace) 1500ms. The
     // upstream sends nothing for 400ms — over the stall budget, within the
     // grace — then a normal completion. Pre-fix this died at the stall budget.
@@ -235,7 +235,7 @@ describe('google adapter first-byte grace (own stream reader)', () => {
   });
 });
 
-describe('client abort composition under the grace period (#601 non-regression)', () => {
+describe('client abort composition under the grace period (non-regression)', () => {
   it('a client abort while waiting for the first byte rejects promptly with the marked reason, not a timeout', async () => {
     // Real loopback upstream: undici's signal wiring is the behavior under
     // test. SSE headers arrive instantly, then no body bytes — the consumer is

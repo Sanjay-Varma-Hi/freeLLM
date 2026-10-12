@@ -5,7 +5,7 @@ import { initDb, getDb } from '../../db/index.js';
 import { proxyFetch } from '../../lib/proxy.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// SSRF guard (#440): the custom-provider base_url is the only user-supplied
+// SSRF guard: the custom-provider base_url is the only user-supplied
 // outbound target. Metadata/link-local addresses must be rejected at save
 // time (POST /api/keys/custom) and again at request time (proxyFetch).
 
@@ -28,7 +28,7 @@ async function post(app: Express, path: string, body: unknown) {
   return { status: res.status, body: data };
 }
 
-describe('POST /api/keys/custom SSRF guard (#440)', () => {
+describe('POST /api/keys/custom SSRF guard', () => {
   let app: Express;
 
   beforeAll(() => {
@@ -74,7 +74,7 @@ describe('POST /api/keys/custom SSRF guard (#440)', () => {
   });
 });
 
-describe('proxyFetch request-time SSRF guard (#440)', () => {
+describe('proxyFetch request-time SSRF guard', () => {
   it('blocks custom-platform requests to metadata addresses even when already saved', async () => {
     const spy = vi.spyOn(global, 'fetch');
     await expect(

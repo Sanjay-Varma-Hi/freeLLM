@@ -1,19 +1,13 @@
 import fs from 'fs';
 import { z } from 'zod';
 import type { Db } from '../db/types.js';
-import { getDb, getSetting, setSetting } from '../db/index.js';
+import { getDb } from '../db/index.js';
 import { encrypt } from '../lib/crypto.js';
 import { resolveProvider } from '../providers/index.js';
 import { setCustomWeights, setRoutingStrategy, setKeySelectionStrategy } from './router.js';
 import { ensureModelInProfiles } from './profile-models.js';
 import { customModelSeed } from './custom-model-seed.js';
 import { createUser, userCount } from './auth.js';
-import {
-  SETTING_LICENSE_KEY,
-  refreshLicenseStatus,
-  syncCatalog,
-  validateLicenseKey,
-} from './catalog-sync.js';
 import { endpointRefMatches, endpointScopeForBaseUrl } from '../lib/endpoint-scope.js';
 import {
   clearCatalogModelTombstone,
@@ -57,7 +51,7 @@ const modelSchema = z.object({
   platform: z.string().min(1),
   modelId: z.string().min(1),
   // Which custom endpoint this entry means, when several serve the same model
-  // id (#651). Accepts the endpoint URL or its short handle. Ignored for
+  // id. Accepts the endpoint URL or its short handle. Ignored for
   // catalog platforms, where (platform, modelId) is already unique.
   endpoint: z.string().min(1).optional(),
   displayName: z.string().min(1).optional(),
@@ -97,9 +91,9 @@ const adminSchema = z.object({
 
 const declarativeConfigSchema = z.object({
   admin: adminSchema.optional(),
-  // Premium license key (freellmapi.co). Same minimum as the dashboard's
-  // POST /api/premium/key length gate.
-  license: z.string().min(8).optional(),
+  // Accepted only so older configs that still carry a `license` entry keep
+  // parsing; it has no effect and is reported as a warning.
+  license: z.string().optional(),
   keys: z.array(keySchema).optional(),
   customProviders: z.array(customProviderSchema).optional(),
   models: z.array(modelSchema).optional(),
@@ -111,7 +105,7 @@ const declarativeConfigSchema = z.object({
       speed: z.number().nonnegative(),
       intelligence: z.number().nonnegative(),
     }).optional(),
-    // Which key of a platform to reach for (#919); orthogonal to `strategy`,
+    // Which key of a platform to reach for; orthogonal to `strategy`,
     // which ranks models. Omitted leaves the persisted value alone.
     keySelectionStrategy: z.enum(['auto', 'least-remaining']).optional(),
   }).optional(),
@@ -124,14 +118,12 @@ export interface DeclarativeConfigResult {
   source?: string;
   /** True when the `admin` entry created the first dashboard account. */
   admin: boolean;
-  /** True when a `license` entry was handed to background activation. */
-  license: boolean;
   keys: number;
   customModels: number;
   models: number;
   fallback: number;
   routing: boolean;
-  /** Per-entry problems that were degraded to a skip instead of failing the apply (#600). */
+  /** Per-entry problems that were degraded to a skip instead of failing the apply. */
   warnings: string[];
 }
 
@@ -163,8 +155,8 @@ function encryptedKey(raw: string) {
   return { encrypted, iv, authTag };
 }
 
-// Boot-time skip guard for `keys` entries (#600). When a platform stops being
-// keyless (pollinations lost `keyless: true` in #573), a legacy declarative
+// Boot-time skip guard for `keys` entries. When a platform stops being
+// keyless (pollinations lost `keyless: true`), a legacy declarative
 // config still carries an entry with no `key` — applyDeclarativeConfigFromEnv()
 // runs in main(), so throwing here used to brick the whole install at startup.
 // Such entries degrade to a warning + skip; the rest of the config still
@@ -261,11 +253,11 @@ function registerCustomProvider(db: Db, input: z.infer<typeof customProviderSche
     baseUrl: input.baseUrl,
     enabled: true,
   });
-  // Same median seeding as the dashboard's custom-model path (#488): an
+  // Same median seeding as the dashboard's custom-model path: an
   // undeclared rank means "unknown", not "worst". An explicitly declared rank
   // always wins.
   const seed = customModelSeed(db);
-  // Model identity is per endpoint (#651): declaring the same model id under a
+  // Model identity is per endpoint: declaring the same model id under a
   // second base_url adds a row for that endpoint instead of stealing the first
   // one's.
   const endpointScope = endpointScopeForBaseUrl(input.baseUrl);
@@ -339,7 +331,7 @@ interface DeclaredModelRow {
  *
  * For catalog platforms this is the old lookup: (platform, model_id) is unique,
  * so nothing changes. For 'custom' two relays can hold the same model id
- * (#651), and `SELECT ... LIMIT 1` would patch whichever row the query happened
+ * and `SELECT... LIMIT 1` would patch whichever row the query happened
  * to return — silently editing the wrong relay. So an ambiguous entry is
  * refused, and the config author gets the endpoints to choose from.
  */
@@ -474,7 +466,6 @@ export function applyDeclarativeConfig(input: unknown, source = 'inline'): Decla
     applied: true,
     source,
     admin: false,
-    license: false,
     keys: 0,
     customModels: 0,
     models: 0,
@@ -525,57 +516,22 @@ export function applyDeclarativeConfig(input: unknown, source = 'inline'): Decla
   });
   apply();
 
-  // License activation needs the license service — network I/O has no place in
-  // the synchronous DB apply. It runs detached so a slow or unreachable
-  // service never delays boot; a failure logs a warning and leaves settings
-  // untouched, the same contract as the dashboard's POST /api/premium/key.
-  if (parsed.data.license) {
-    result.license = true;
-    void activateConfiguredLicense(parsed.data.license);
+  if (parsed.data.license !== undefined) {
+    result.warnings.push('license: no longer used — the entry was ignored');
   }
   return result;
-}
-
-/**
- * Activate a Premium license key from declarative config. Idempotent across
- * boots: a stored key identical to the configured one short-circuits before
- * any network call, while a different key re-activates (rotation). Exported
- * for tests.
- */
-export async function activateConfiguredLicense(key: string): Promise<void> {
-  const trimmed = key.trim();
-  try {
-    if (getSetting(SETTING_LICENSE_KEY) === trimmed) return;
-    const result = await validateLicenseKey(trimmed);
-    if (result === null) {
-      console.warn('[config] license: could not reach the license service — key left unconfigured');
-      return;
-    }
-    if (!result.valid) {
-      console.warn(`[config] license: key rejected (${result.reason ?? 'invalid'}) — left unconfigured`);
-      return;
-    }
-    setSetting(SETTING_LICENSE_KEY, trimmed);
-    await refreshLicenseStatus();
-    // Live-tier sync kicks off right away so the upgrade is visible within
-    // seconds; its own catch-all logs failures.
-    void syncCatalog(true);
-    console.log('[config] license activated — live catalog sync started');
-  } catch (err) {
-    console.warn(`[config] license activation failed: ${err instanceof Error ? err.message : err}`);
-  }
 }
 
 export function applyDeclarativeConfigFromEnv(): DeclarativeConfigResult {
   const loaded = readConfigFromEnv();
   if (!loaded) {
-    return { applied: false, admin: false, license: false, keys: 0, customModels: 0, models: 0, fallback: 0, routing: false, warnings: [] };
+    return { applied: false, admin: false, keys: 0, customModels: 0, models: 0, fallback: 0, routing: false, warnings: [] };
   }
   const result = applyDeclarativeConfig(loaded.value, loaded.source);
   console.log(
     `[config] applied ${loaded.source}: ${result.keys} keys, ${result.customModels} custom models, ` +
       `${result.models} model edits, ${result.fallback} fallback rows${result.routing ? ', routing' : ''}` +
-      `${result.admin ? ', admin account created' : ''}${result.license ? ', license activation started' : ''}` +
+      `${result.admin ? ', admin account created' : ''}` +
       `${result.warnings.length > 0 ? `, ${result.warnings.length} entries skipped` : ''}`,
   );
   return result;

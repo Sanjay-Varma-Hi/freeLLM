@@ -36,7 +36,7 @@ function candidates(...ids: string[]): ScopeCandidate[] {
   return ids.map(modelId => ({ modelId, displayName: modelId, sizeLabel: null, contextWindow: null }))
 }
 
-describe('scopeCandidates (#657 post-add picker)', () => {
+describe('scopeCandidates (post-add picker)', () => {
   const entries = [
     entry('groq', 'llama-3.3-70b'),
     entry('cerebras', 'qwen-3-32b'),

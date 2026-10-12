@@ -12,8 +12,8 @@ function checkModel(requested: string, returned: unknown): void {
   if (returned !== requested) throw upstreamError('returned a different or missing model identity');
 }
 
-/** Hosted BYOK API, not self-hosted weights. Model rows belong exclusively in
- * the signed catalog to preserve Premium-now / Free-after-30-days delivery. */
+/** Hosted BYOK API, not self-hosted weights. Model rows come from the signed
+ * catalog (or Fetch models), never from migrations. */
 export class MoondreamProvider extends BaseProvider {
   readonly platform: Platform = 'moondream';
   readonly name = 'Moondream';

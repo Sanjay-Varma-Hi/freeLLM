@@ -74,8 +74,8 @@ export interface TokenBudgetResult {
 // max_tokens≈99000 verbatim, and providers that validate max_tokens against
 // the model's context/completion limit 400'd a request that previously worked —
 // on every candidate in the chain, since the same value rode every retry.
-// Routing only reserves a capped ~2000 tokens for output (routingReserveTokens,
-// #470), so it never protects against this. A client that genuinely wants a
+// Routing only reserves a capped ~2000 tokens for output (routingReserveTokens)
+// so it never protects against this. A client that genuinely wants a
 // bigger completion can always set max_tokens explicitly; the budget then only
 // validates, never rewrites.
 export const TOKEN_BUDGET_OUTPUT_CAP = 4096;

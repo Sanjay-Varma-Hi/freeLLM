@@ -227,11 +227,11 @@ const HEADER_SPECS: Partial<Record<Platform, HeaderSpec[]>> = {
   ],
   // ModelScope reportedly returns `modelscope-ratelimit-*`-style headers on
   // authenticated responses. UNCONFIRMED: no real token exists for this
-  // platform yet (auth needs an Alibaba Cloud cn-site binding, #581), and the
+  // platform yet (auth needs an Alibaba Cloud cn-site binding), and the
   // keyless probes we could run (401s, unauthenticated /v1/models) carry no
   // ratelimit headers at all. Absent headers are a no-op in
   // maybeAddObservation, so a wrong guess here costs nothing; community
-  // testers should dump response headers (see the #581 tester guide) and
+  // testers should dump response headers (see the tester guide) and
   // correct these names.
   modelscope: [
     { metric: 'requests', limit: 'modelscope-ratelimit-requests-limit', remaining: 'modelscope-ratelimit-requests-remaining', reset: 'modelscope-ratelimit-requests-reset', strategy: 'provider_reported' },
@@ -549,7 +549,7 @@ export function getQuotaStateForKeys(options: { normalizeExpired?: boolean } = {
       pqs.platform,
       pqs.key_id AS keyId,
       -- The panel identifies a row by its key. A bare "key #7" says nothing, so
-      -- carry the operator's own name for it (#705).
+      -- carry the operator's own name for it.
       k.label AS keyLabel,
       pqs.quota_pool_key AS quotaPoolKey,
       pqs.metric,

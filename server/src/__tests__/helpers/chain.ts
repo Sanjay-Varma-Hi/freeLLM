@@ -7,7 +7,7 @@ import { getActiveProfileId } from '../../services/profile-models.js';
  * A fixture that seeds `models` + `fallback_config` by hand has only built half
  * an install: on a real one every catalog model is mirrored into the active
  * profile's chain (services/profile-models.ts), and that chain — not the global
- * table — is what the router walks (#1021). No-op when nothing is active, which
+ * table — is what the router walks. No-op when nothing is active, which
  * is the legacy shape where `fallback_config` IS the chain.
  */
 export function addToActiveChain(modelDbId: number, priority: number, enabled = true): void {

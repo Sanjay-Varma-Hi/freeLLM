@@ -1,7 +1,7 @@
 import { tierValue, TIER_VALUE } from './scoring.js';
 import type { Db } from '../db/types.js';
 
-// ── Seeding a custom model's routing ranks (#488) ───────────────────────────
+// ── Seeding a custom model's routing ranks ───────────────────────────
 //
 // A model registered against a user's own endpoint carries no catalog metadata:
 // nobody has benchmarked "whatever bynara.id is proxying today". The old
@@ -9,7 +9,7 @@ import type { Db } from '../db/types.js';
 // intelligenceComposite scores it below every real model) plus rank 50 — and
 // the bandit's intelligence axis duly handed it 0. Every routing strategy
 // except Manual then ignored the endpoint completely, which is exactly the
-// complaint in #488: "all of the added models by custom providers have the same
+// complaint: "all of the added models by custom providers have the same
 // default weights … this makes them literally unusable with Routing Strategies".
 //
 // "Unknown" is not "worst", it is "no opinion", so seed at the catalog MEDIAN

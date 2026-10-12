@@ -13,7 +13,7 @@ import { resolveMaxTokens } from '../lib/sampling-params.js';
 /**
  * AI Horde — free, community-powered inference served by volunteer workers and
  * exposed through an OpenAI-compatible proxy at https://oai.aihorde.net/v1
- * (issue #345).
+ *
  *
  * It is deliberately NOT a plain OpenAICompatProvider: the proxy diverges from
  * the OpenAI contract in ways that would otherwise 422 or corrupt analytics,
@@ -43,7 +43,7 @@ import { resolveMaxTokens } from '../lib/sampling-params.js';
 const ANON_KEY = '0000000000';
 const MIN_MAX_TOKENS = 16;
 const DEFAULT_MAX_TOKENS = 512;
-// PROVIDER_TIMEOUT_AIHORDE overrides (#547).
+// PROVIDER_TIMEOUT_AIHORDE overrides.
 const HORDE_TIMEOUT_MS = providerTimeoutMs('aihorde', 120000);
 
 /** Rough token estimate (~4 chars/token) used only to fill usage when the proxy

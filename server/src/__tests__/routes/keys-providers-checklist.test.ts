@@ -27,7 +27,7 @@ function addKey(platform: string) {
   `).run(platform, secret.encrypted, secret.iv, secret.authTag);
 }
 
-describe('GET /api/keys/providers — provider checklist (#543)', () => {
+describe('GET /api/keys/providers — provider checklist', () => {
   let app: Express;
 
   beforeAll(() => {

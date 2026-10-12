@@ -5,7 +5,7 @@ import type { Db } from '../types.js';
  * speak the tool-call protocol, but early custom-model registration seeded
  * supports_tools = 0. Agentic clients that send `tools` (Trae, Cline, and the
  * like) then matched zero custom models and hit a false "all models exhausted"
- * error (#470).
+ * error.
  *
  * Backfill existing custom rows to tool-capable. The trade is deliberate: a
  * wrong tools = 1 only surfaces a recoverable upstream error the user can turn

@@ -163,7 +163,7 @@ function benchKeyAcrossPlatform(
 // The first attempt always runs, and so does the FIRST retry: when
 // attempt 0 alone consumes the whole budget (a slow-failing model), refusing
 // attempt 1 would make failover structurally impossible for exactly the
-// requests that need it (#751). The budget stops attempts >= 2 only.
+// requests that need it. The budget stops attempts >= 2 only.
 // 0 disables the budget entirely.
 // Precedence mirrors the response cache: the settings-table value wins when
 // present (runtime-tunable), then the env var, then the default.
@@ -198,11 +198,11 @@ export function getFallbackTimeBudgetMs(): number {
 // recordRetryableFailure / recordAuthFailure. skipKeys entries are
 // "platform:modelId:keyId"; skipModels holds model_db_ids ruled out for the
 // rest of this request; skipPlatforms holds platforms ruled out wholesale
-// (#788) — every model and every key of them — for the rest of this request.
+// — every model and every key of them — for the rest of this request.
 // observedTotalTokens is the provider-reported REQUESTED size parsed from the
 // first 413 / context-length body of this request, used to inflate the
 // routing estimate on the next attempt so models whose tpm_limit /
-// context_window can't fit it are skipped before they fire (#507). All four
+// context_window can't fit it are skipped before they fire. All four
 // are request-scoped only: nothing here outlives the response, so a provider
 // that blipped once is a fresh candidate on the very next request.
 export interface FallbackState {
@@ -214,7 +214,7 @@ export interface FallbackState {
   // reading is the same request, not a smaller one.
   observedTotalTokens?: number;
   observedInputTokens?: number;
-  // The request carries `tools` (#1230). Set by the surface right after
+  // The request carries `tools`. Set by the surface right after
   // newFallbackState(); lets the failure/success paths learn which models
   // reject tool calls in practice. Unset means "not a tool request".
   wantsTools?: boolean;
@@ -222,7 +222,7 @@ export interface FallbackState {
   // tool request. Counted once per request however many keys were tried.
   toolRejects?: Set<string>;
   // Per-request tally of DISTINCT models that answered model_not_found, keyed
-  // by platform (#1218): a stale catalog misses on every sibling model in a
+  // by platform: a stale catalog misses on every sibling model in a
   // row, and the per-model skip can't see the pattern. From
   // MODEL_NOT_FOUND_PLATFORM_LIMIT distinct misses the platform joins
   // skipPlatforms for the rest of the request.
@@ -245,7 +245,7 @@ export function newFallbackState(): FallbackState {
 // DISTINCT model_not_found hops on one platform, within one request, before the
 // whole platform is ruled out: a healthy catalog never misses three different
 // models in a single failover chain — a stale/broken one does it routinely
-// (NavyAI: 24 models tried in one session, 0 ok, #1218). 3 keeps one fluke
+// (NavyAI: 24 models tried in one session, 0 ok). 3 keeps one fluke
 // removal from condemning a provider.
 export const MODEL_NOT_FOUND_PLATFORM_LIMIT = 3;
 
@@ -281,8 +281,8 @@ export function msUntilNextPacificMidnight(now = Date.now()): number {
  * The one true cooldown-duration selection after a retryable upstream failure:
  *   - 402 out-of-credits  → a full day (PAYMENT_REQUIRED_COOLDOWN_MS)
  *   - 403 model-not-on-tier → a full day (MODEL_FORBIDDEN_COOLDOWN_MS), because a
- *     tier/subscription gate won't clear on the next minute window (issue #256).
- *     Both honour the operator's cooldown ceiling (#952): relay endpoints emit
+ *     tier/subscription gate won't clear on the next minute window.
+ *     Both honour the operator's cooldown ceiling: relay endpoints emit
  *     these for transient reasons, and a day is then far too long.
  *   - a 429 that says the DAILY free allocation is spent (Cloudflare "used up
  *     your daily free allocation of 10,000 neurons") → benched until the next
@@ -314,13 +314,13 @@ export function cooldownDecisionForError(route: RouteResult, err: any): Cooldown
   if (isPaymentRequiredError(err)) return { durationMs: getPaymentRequiredCooldownMs(), source: 'credit' };
   // Before the model-forbidden check: a suspended account is a 403 too, but
   // it is the KEY that is out, for as long as an empty balance would be — and
-  // under the same operator ceiling (#952).
+  // under the same operator ceiling.
   if (isAccountSuspendedError(err)) return { durationMs: getPaymentRequiredCooldownMs(), source: 'credit' };
   if (isModelAccessForbiddenError(err)) return { durationMs: getModelForbiddenCooldownMs(), source: 'tier' };
   if (isDailyQuotaExhaustedError(err)) {
     if (route.platform === 'google') {
       // RetryInfo can describe a simultaneous per-minute violation. It cannot
-      // reopen a daily allowance before the Pacific reset (#1339).
+      // reopen a daily allowance before the Pacific reset.
       return { durationMs: Math.max(msUntilNextPacificMidnight(), err?.retryAfterMs ?? 0), source: 'authoritative' };
     }
     return { durationMs: err?.retryAfterMs ?? msUntilNextUtcMidnight(), source: 'authoritative' };
@@ -333,12 +333,12 @@ export function cooldownDecisionForError(route: RouteResult, err: any): Cooldown
     err?.retryAfterMs,
     // Only a real 429/rate-limit error may feed the null-limits exhaustion
     // heuristic; a timeout or 5xx is retryable but says nothing about quota,
-    // so it stays on the short transient bench instead of the ladder (#592).
+    // so it stays on the short transient bench instead of the ladder.
     { quotaSignal: isRateLimitSignal(err) },
   );
 }
 
-// ── Truncated-stream streak (#1218) ──────────────────────────────────────────
+// ── Truncated-stream streak ──────────────────────────────────────────
 // A stream that answers 200, sends partial SSE, then dies without [DONE] /
 // finish_reason ("stream ended unexpectedly") is retried normally — one
 // truncation is common on flaky free gateways. But the same route producing
@@ -355,7 +355,7 @@ export function resetTruncationStreaks(): void {
   truncationStreaks.clear();
 }
 
-// ── Empty-completion streak (issue #751) ─────────────────────────────────────
+// ── Empty-completion streak ─────────────────────────────────────
 // The skipBench exemption below assumes an empty 'length' completion is
 // REQUEST behavior (this turn's max_tokens spent on hidden reasoning). A
 // model+key that produces them consecutively is broken, not unlucky — with an
@@ -379,7 +379,7 @@ export function resetModelFailureWindows(): void {
   modelFailureTimestamps.clear();
 }
 
-/** Operator clear (#952): drop every model's failure window and report how many
+/** Operator clear: drop every model's failure window and report how many
  *  models were mid-streak. The benches those streaks produced are ordinary
  *  cooldown rows and go with clearAllCooldowns. */
 export function clearModelFailureWindows(): number {
@@ -411,11 +411,11 @@ function consumeSkipBenchExemption(route: RouteResult, err: any): boolean {
  * retryable failure:
  *   - rule out the WHOLE model for the rest of the request on a 404 (removed
  *     upstream) or 403 (off this key's tier) — a sibling key would fail it the
- *     same way (PR #111 / issue #256);
+ *     same way;
  *   - bench this model+key via cooldownForError;
  *   - demote the model in the scorer ONLY when the failure exhausted it — i.e.
- *     no sibling key can still serve it (#454 gate). skipKeys already contains
- *     the just-failed key here, preserving #479's "count budget across keys"
+ *     no sibling key can still serve it (gate). skipKeys already contains
+ *     the just-failed key here, preserving the "count budget across keys"
  *     semantics: hasOtherUsableKey excludes both the failed key and skipKeys;
  *   - learn a provider-reported ceiling (e.g. a Groq 413 "TPM: Limit 30000")
  *     from the error body so the next pre-check fails over before the 413.
@@ -426,7 +426,7 @@ function consumeSkipBenchExemption(route: RouteResult, err: any): boolean {
  * request — but is NOT a provider-health signal, so no cooldown, no model
  * penalty, and no limit-learning are recorded. Benching those was costing
  * healthy models a 90s cooldown + a scorer penalty per truncated turn. The
- * exemption is streak-bounded (#751): from the EMPTY_COMPLETION_STREAK_LIMITth
+ * exemption is streak-bounded: from the EMPTY_COMPLETION_STREAK_LIMITth
  * consecutive empty completion on the same model+key it stops applying, until
  * a success (or a normally-penalized failure) resets the streak.
  *
@@ -448,14 +448,14 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
   }
   // A stale CATALOG (not a single dead model) answers model-not-found on every
   // sibling model in a row: NavyAI served 24 models over one session, 0 ok,
-  // each re-paying a 2.5–10s round trip (#1218). The per-model skip above
+  // each re-paying a 2.5–10s round trip. The per-model skip above
   // can't see the pattern — each miss is a different model. Count DISTINCT
   // model_not_found hops per platform within one request; from the threshold,
   // rule the whole platform out for the rest of the request: the catalog (or
   // the key's access to it) is broken, and the next PROVIDER is the better
-  // hop. Same request-scoped lifetime as skipModels (#111/#256 semantics).
+  // hop. Same request-scoped lifetime as skipModels.
   // Custom relays are exempt: every relay shares the one platform id 'custom'
-  // (#651), so three misses spread over three different relays would rule out
+  // so three misses spread over three different relays would rule out
   // every healthy relay too. Their misses stay per-model.
   if (isModelNotFoundError(err) && !route.endpointScope) {
     const seen = state.modelNotFoundPlatforms.get(route.platform) ?? new Set<number>();
@@ -467,11 +467,11 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
   }
   // A model-level 404/410 that says the model is GONE (not merely missing right
   // now) outlives this request: persist it once the evidence is strong enough,
-  // or the retired model burns a fallback slot on every request forever (#634).
+  // or the retired model burns a fallback slot on every request forever.
   // The trace object identifies the request, so one request's failover across
   // sibling keys counts as the single observation it is.
   noteModelRetirementSignal(route, err, getRequestTrace());
-  // Provider-reported request size (#507): if the just-failed attempt was a
+  // Provider-reported request size: if the just-failed attempt was a
   // size-related rejection that names the request's real token count, latch it
   // onto the request state. The route() closure on the next attempt picks it
   // up and feeds it as the routing estimate, so the existing tpm_limit /
@@ -490,7 +490,7 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
     }
   }
   state.skipKeys.add(`${route.platform}:${route.modelId}:${route.keyId}`);
-  // #788: provider-level failures (5xx / timeout / transport / degraded) mean
+  // provider-level failures (5xx / timeout / transport / degraded) mean
   // the PROVIDER is sick, not this key — every key AND every model of that
   // platform would fail identically. Rule out the whole platform for this
   // request so the loop moves to the NEXT provider instead of burning one
@@ -533,7 +533,7 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
   // A truncated stream (200 + partial SSE, no [DONE]/finish_reason) on the
   // SAME route repeatedly is a sick edge, not bad luck — but a single one is
   // common enough on flaky free gateways that benching on first sight would
-  // over-fire. Streak-bounded like empty completions (#751): N truncations in
+  // over-fire. Streak-bounded like empty completions: N truncations in
   // a row on this platform+model+key bench the route for one cooldown window;
   // a success resets the streak (recordUpstreamSuccess).
   if (isStreamTruncatedError(err)) {
@@ -552,7 +552,7 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
     truncationStreaks.delete(`${route.platform}:${route.modelId}:${route.keyId}`);
   }
   // A 400 "bad request" answer to a request that carries `tools` is how a
-  // model that does not really support tool calling shows up (#1230). The 90s
+  // model that does not really support tool calling shows up. The 90s
   // transient cooldown above forgets it, so remember it per model+endpoint;
   // after a few distinct requests the router tries that model last for tool
   // requests (lib/tool-capability.ts). Only the final classification counts:
@@ -578,7 +578,7 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
     state.skipPlatforms.add(route.platform);
     benchKeyAcrossPlatform(route, decision.durationMs, decision.source, state, 'reports the account suspended');
   } else if (isPaymentRequiredError(err)) {
-    // A 402 is the ACCOUNT's balance, not one model's (#1239: one broke
+    // A 402 is the ACCOUNT's balance, not one model's (one broke
     // HuggingFace key answered three different models with 402 in a single
     // request, three hops spent rediscovering the same empty wallet). Bench
     // the key on every model of the platform for the credit window. Unlike a
@@ -589,7 +589,7 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
   // Model-level failure benching: a model failing across keys (or repeatedly on
   // one key) must sink out of routing instead of being re-picked every request.
   noteModelFailure(route, now);
-  // Model-level penalty only when no sibling key can still serve (#454).
+  // Model-level penalty only when no sibling key can still serve.
   if (!hasOtherUsableKey(route.modelDbId, route.keyId, state.skipKeys)) {
     // Hard limit signals (429/402) carry the heavier demotion; ordinary
     // upstream failures (5xx/timeout/empty stream) get a lighter one so the
@@ -649,7 +649,7 @@ export function recordAuthFailure(route: RouteResult, state: FallbackState): voi
  * (the provider's usage.total_tokens for non-stream, an estimate for stream).
  */
 export function recordUpstreamSuccess(route: RouteResult, rateLimitTokens: number, state?: FallbackState): void {
-  // A tool-carrying request that was served proves two things (#1230): this
+  // A tool-carrying request that was served proves two things: this
   // model does handle tools, and the request itself was well-formed, so the
   // models that answered it with a 400 earlier in this chain are the ones at
   // fault. Defer those for tool requests without waiting for more evidence.
@@ -662,10 +662,10 @@ export function recordUpstreamSuccess(route: RouteResult, rateLimitTokens: numbe
   recordTokens(route.platform, route.modelId, route.keyId, rateLimitTokens);
   recordSuccess(route.modelDbId);
   // A served request proves the model+key can complete: the empty-completion
-  // streak (#751) starts over.
+  // streak starts over.
   emptyCompletionStreaks.delete(`${route.platform}:${route.modelId}:${route.keyId}`);
   // A served request is the strongest evidence the route's edge is alive:
-  // the truncated-stream streak (#1218) starts over too.
+  // the truncated-stream streak starts over too.
   truncationStreaks.delete(`${route.platform}:${route.modelId}:${route.keyId}`);
   // A served request is the strongest possible evidence the model works, so
   // clear any model-level failure streak that could bench it later.
@@ -715,7 +715,7 @@ export function classifyAttemptError(err: any): AttemptErrorClass {
   // "API error 400: This model's maximum context length is …", which the
   // generic provider_bad_request rule would otherwise swallow.
   if (isContextTooLargeError(err)) return 'context_too_large';
-  // A DEGRADED-function 400 (NVIDIA NIM, #522) is provider health, not request
+  // A DEGRADED-function 400 (NVIDIA NIM) is provider health, not request
   // shape — keep it out of provider_bad_request so the trail reads honestly.
   if (isProviderDegradedError(err)) return 'upstream_error';
   if (isProviderBadRequestError(err)) return 'provider_bad_request';
@@ -814,7 +814,7 @@ export function formatAttemptTrail(attempts: AttemptRecord[]): string {
  * eventually succeeded gave no hint that it burned five hops first, which is
  * exactly the case an operator wants to notice. Values go through
  * safeHeaderValue so a non-ASCII or control-laden model id can neither inject
- * header lines nor make Node reject the response outright (#619).
+ * header lines nor make Node reject the response outright.
  *
  * When EXPOSE_FALLBACK_DETAIL_SETTING is on, X-Fallback-Detail joins them with
  * per-hop timings and the redacted provider message. Every caller runs inside
@@ -936,7 +936,7 @@ const UNAVAILABLE_UNTIL_KNOWN_TIME: ReadonlySet<AttemptErrorClass> = new Set([
  *     model has been removed upstream everywhere we route it. (No 410 — the
  *     catalog keeps no removal tombstones, so "verifiably existed before" is
  *     not determinable here.)
- *   - A chain that died on a DEGRADED-function 400 (NVIDIA NIM, #522) → 503:
+ *   - A chain that died on a DEGRADED-function 400 (NVIDIA NIM) → 503:
  *     provider capacity, not a bad request.
  *   - A request every routed provider rejected as invalid → 400
  *     invalid_request_error, not a misleading rate-limit exhaustion.
@@ -999,7 +999,7 @@ export function exhaustedRetryError(lastError: any, maxRetries?: number, ctx?: E
     };
   }
 
-  // A chain that died on a DEGRADED-function 400 (NVIDIA NIM, #522) is a
+  // A chain that died on a DEGRADED-function 400 (NVIDIA NIM) is a
   // provider-capacity outage, not a bad request: render 503 so clients retry
   // later instead of "fixing" a request that was never broken.
   if (isProviderDegradedError(lastError)) {
@@ -1018,7 +1018,7 @@ export function exhaustedRetryError(lastError: any, maxRetries?: number, ctx?: E
   // trail — stale models, an empty wallet, a rate limit, and one bad-request
   // hop that happened to come last — is not evidence the caller's request is
   // invalid, and rendering it as one sent users debugging their own payload
-  // (#1239: 5× provider_bad_request + 3× out_of_credits read as "All routed
+  // (5× provider_bad_request + 3× out_of_credits read as "All routed
   // providers rejected the request as invalid"). Those fall through to the
   // mixed 502 below, whose message names the class breakdown.
   if (isProviderBadRequestError(lastError) && (attempts.length === 0 || everyAttempt('provider_bad_request'))) {
@@ -1334,7 +1334,7 @@ export interface FallbackHooks {
  * routing — lives in the hooks.
  */
 export async function runFallbackLoop(hooks: FallbackHooks): Promise<void> {
-  // Durable per-attempt trace (P2 #15): every dispatched attempt — including
+  // Durable per-attempt trace (P2): every dispatched attempt — including
   // the successful final one — is recorded with timing and outcome, then
   // persisted as one insert batch into `request_attempts`, keyed to the
   // terminal `requests` row of this ladder. The trace rides AsyncLocalStorage
@@ -1434,7 +1434,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
     const budgetMs = attempt > 1
       ? getEndpointTimeBudgetMs(baseBudgetMs, route.platform, route.endpointScope)
       : baseBudgetMs;
-    // Attempt 0 and the first retry remain exempt (#751). Routing reserves a
+    // Attempt 0 and the first retry remain exempt. Routing reserves a
     // lease, so even a candidate rejected here must pass through finally.
     if (attempt > 1 && budgetMs > 0 && Date.now() - startedAt >= budgetMs) {
       hooks.onExhausted(
@@ -1475,7 +1475,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
     // Fallback-v2 hedging: arm a timer for the remaining wall-clock budget so a
     // STALLED attempt is aborted mid-flight (abortInFlight) instead of only
     // refusing to start the next retry behind it. Mirrors the loop-top budget
-    // check — attempt 0 and the first retry always run (#751).
+    // check — attempt 0 and the first retry always run.
     //
     // The timer only covers the silent window. dispatch calls ctx.disarmHedge()
     // as soon as the attempt proves it is alive (first byte / headers flushed),
@@ -1499,7 +1499,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
     }
     let outcome: DispatchOutcome;
     try {
-      // #590 (per-key proxy): if THIS key carries its own proxy URL, route the
+      //  (per-key proxy): if THIS key carries its own proxy URL, route the
       // attempt through it (withKeyProxy → proxyFetch reads the ALS store);
       // otherwise the global proxy / direct path applies as before. The URL
       // arrives already decrypted on the route (services/router.ts), so an
@@ -1515,7 +1515,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
       if (isClientAbortError(err)) {
         const elapsedMs = Date.now() - startedAt;
         console.log(`[FallbackLoop] client disconnected mid-attempt on ${route.platform}/${route.modelId} — upstream canceled, stopping without benching`);
-        // Visibility row (#752): a pure abort used to leave NOTHING in the
+        // Visibility row: a pure abort used to leave NOTHING in the
         // requests table, so the dashboard showed no trace of the request.
         // Status 'canceled' is neither success nor failure — every stats/
         // scoring query excludes it — and this row is also the parent the
@@ -1575,7 +1575,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
       if (isRetryableError(err)) {
         const exempt = recordRetryableFailure(route, err, hooks.state);
         // An in-band provider error that arrives only after the attempt has
-        // silently consumed most of the operator's whole budget (#1218 Gap 3:
+        // silently consumed most of the operator's whole budget (Gap 3:
         // nvidia ran 140.7s before surfacing "Service temporarily overloaded",
         // leaving scraps for the next hop) behaved like a stall for its entire
         // window — the hedge-abort bench would have fired had the abort landed
@@ -1591,7 +1591,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
           && Date.now() - attemptStartedAt >= budgetMs * HEDGE_BENCH_MIN_SILENT_FRACTION
         ) {
           setCooldown(route.platform, route.modelId, route.keyId, TRUNCATION_BENCH_MS, 'heuristic');
-          console.warn(`[FallbackLoop] ${route.platform}/${route.modelId}: in-band provider error after ${((Date.now() - attemptStartedAt) / 1000).toFixed(1)}s silent — benching the route ${Math.round(TRUNCATION_BENCH_MS / 1000)}s (#1218 Gap 3)`);
+          console.warn(`[FallbackLoop] ${route.platform}/${route.modelId}: in-band provider error after ${((Date.now() - attemptStartedAt) / 1000).toFixed(1)}s silent — benching the route ${Math.round(TRUNCATION_BENCH_MS / 1000)}s`);
         }
         const errorClass = classifyAttemptError(err);
         attempts.push({ platform: route.platform, modelId: route.modelId, keyOrdinal: keyOrdinal(route), errorClass });
@@ -1603,7 +1603,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
         // and it must not count toward the "pool looks unhealthy" breaker
         // either: three prose answers to a json_schema request say nothing
         // about whether candidate four is up. Once the empty-completion streak
-        // lifts the exemption (#751), the failure counts everywhere.
+        // lifts the exemption, the failure counts everywhere.
         if (!exempt && stopIfBreakerTripped()) return;
         continue;
       }

@@ -1,7 +1,7 @@
 import type { Db } from '../types.js';
 
 /**
- * Per-key proxy override (#590): a key can carry its own proxy URL
+ * Per-key proxy override: a key can carry its own proxy URL
  * (http/https/socks4/socks4a/socks5/socks5h) so the same provider can be
  * reached from different exit IPs while the global proxy stays the default.
  *

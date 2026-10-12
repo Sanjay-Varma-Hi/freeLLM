@@ -267,7 +267,7 @@ describe('Rate Limiter', () => {
     });
   });
 
-  describe('provider-wide daily request cap (#162)', () => {
+  describe('provider-wide daily request cap', () => {
     const ENV = 'PROVIDER_DAILY_REQUEST_CAP_OPENROUTER';
     let original: string | undefined;
 
@@ -280,7 +280,7 @@ describe('Rate Limiter', () => {
     it('defaults to OpenRouter ~1000/day and allows env override / disable', () => {
       delete process.env[ENV];
       expect(getProviderDailyRequestCap('openrouter')).toBe(1000);
-      // ModelScope: 2000/day account-wide upstream, shipped as 1800 for margin (#581).
+      // ModelScope: 2000/day account-wide upstream, shipped as 1800 for margin.
       expect(getProviderDailyRequestCap('modelscope')).toBe(1800);
       // Requesty: 200/day across all free models, shipped as 180 for margin.
       expect(getProviderDailyRequestCap('requesty')).toBe(180);

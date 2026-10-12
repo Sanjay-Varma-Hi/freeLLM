@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Moon,
   Search,
-  Sparkles,
   SquareTerminal,
   Zap,
 } from 'lucide-react'
@@ -38,7 +37,7 @@ interface Command {
 
 // Copy and report what actually happened: on an insecure origin (a plain-HTTP
 // LAN install) the copy can fail, and a success toast over an empty clipboard
-// is worse than no toast at all (#734).
+// is worse than no toast at all.
 async function copyAndToast(value: string, success: string, failure: string) {
   if (await copyText(value)) toast.success(success)
   else toast.error(failure)
@@ -116,7 +115,6 @@ export function CommandPalette() {
       { id: 'p-keys', group: 'pages', label: t('nav.keys'), keywords: 'keys providers api tokens', icon: KeyRound, run: go('/keys') },
       { id: 'p-agents', group: 'pages', label: t('nav.agents'), keywords: 'agents claude codex cline ollama gemini', icon: Bot, run: go('/agents') },
       { id: 'p-analytics', group: 'pages', label: t('nav.analytics'), keywords: 'analytics usage stats savings latency', icon: ChartColumn, run: go('/analytics') },
-      { id: 'p-premium', group: 'pages', label: t('nav.premium'), keywords: 'premium catalog license subscription', icon: Sparkles, run: go('/premium') },
     ]
     const actions: Command[] = [
       {

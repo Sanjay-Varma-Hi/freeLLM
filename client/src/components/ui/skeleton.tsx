@@ -33,7 +33,7 @@ function TableSkeleton({ rows = 6 }: { rows?: number }) {
   )
 }
 
-// Card-shaped placeholder for the section/card lists (Embeddings, Media, Premium).
+// Card-shaped placeholder for the section/card lists (Embeddings, Media).
 function CardSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn('rounded-3xl border bg-card p-5', className)}>

@@ -49,7 +49,7 @@ type TimeRange = '24h' | '7d' | '30d' | '90d'
 const TIME_RANGES: TimeRange[] = ['24h', '7d', '30d', '90d']
 
 // The range toggle sticks: whichever window you last looked at is the one the
-// tab opens with next time, instead of always snapping back to 7d (#711).
+// tab opens with next time, instead of always snapping back to 7d.
 const RANGE_KEY = 'analytics.range'
 
 function storedRange(): TimeRange {
@@ -162,7 +162,7 @@ interface CacheStatsResponse {
 interface ByPlatformRow {
   platform: string
   // Stable identity for the filter dropdown. For a catalog platform it equals
-  // `platform`; for a custom endpoint it is `custom:<base_url>` (#889), so each
+  // `platform`; for a custom endpoint it is `custom:<base_url>`, so each
   // relay is filterable on its own instead of collapsing into 'custom'.
   providerId: string
   // Human display name. Catalog: the platform id. Custom: the endpoint host
@@ -200,7 +200,7 @@ interface TimelineBucket {
 
 interface ByModelRow {
   platform: string
-  // Endpoint identity of the row (#889). The same model id served by two
+  // Endpoint identity of the row. The same model id served by two
   // custom relays is two rows, one per relay, so the name has to say which.
   // Same id/name pair /by-platform returns for that endpoint.
   providerId?: string
@@ -230,7 +230,7 @@ interface ByKeyRow {
 interface ErrorDistribution {
   byCategory: Array<{ category: string; count: number }>
   // One entry per provider — per custom ENDPOINT, not one pooled 'custom'
-  // entry (#889); `platform` is kept for the dot coloring.
+  // entry; `platform` is kept for the dot coloring.
   byPlatform: Array<{ platform: string; providerId?: string; endpoint?: string; count: number }>
   detailed: Array<{ platform: string; model_id: string; error_category: string; count: number }>
 }
@@ -239,7 +239,7 @@ interface RecentErrorRow {
   id: number
   platform: string
   // Which endpoint produced the error: the platform slug for catalog
-  // providers, the custom endpoint's host/path for a relay (#889).
+  // providers, the custom endpoint's host/path for a relay.
   providerId?: string
   endpoint?: string
   modelId: string
@@ -262,7 +262,7 @@ interface RecentCallRow {
   clientIp: string | null
   clientUserAgent: string | null
   createdAt: string
-  // #785: custom endpoints all share the generic 'custom' platform id; the
+  // custom endpoints all share the generic 'custom' platform id; the
   // user's key label ("Ollama box") names the real provider. Null when the
   // key was deleted or never labelled.
   keyLabel: string | null
@@ -282,7 +282,7 @@ interface RequestAttempt {
   platform: string
   modelId: string
   keyOrdinal: number
-  // Operator-facing key label captured at attempt time (#869); null when the
+  // Operator-facing key label captured at attempt time; null when the
   // key had no label. Shown in a tooltip on the key badge so a multi-key
   // provider's ladder says WHICH key was tried, not just key1/key2.
   keyLabel: string | null
@@ -299,7 +299,7 @@ interface RequestDetail extends Omit<RecentCallRow, 'attemptCount'> {
 
 type StatusFilter = 'all' | 'success' | 'error' | 'canceled'
 
-// 'canceled' (#752 — the client hung up mid-request) is neither success nor
+// 'canceled' (— the client hung up mid-request) is neither success nor
 // error: neutral amber, not destructive red.
 function statusTextClass(status: string): string {
   if (status === 'success') return 'text-muted-foreground'
@@ -576,7 +576,7 @@ export default function AnalyticsPage() {
 
   // Friendly display name per providerId: catalog → the platform id, custom →
   // the endpoint host. Used by the filter dropdown so a selected custom relay
-  // shows 'relay.example.com', not 'custom:https://relay.example.com' (#889).
+  // shows 'relay.example.com', not 'custom:https://relay.example.com'.
   const providerDisplay = new Map(byPlatform.map((p) => [p.providerId, p.endpoint ?? p.platform]))
 
   const { data: byClient = [] } = useQuery({
@@ -626,7 +626,7 @@ export default function AnalyticsPage() {
       const params = new URLSearchParams({ range, limit: '100' })
       if (statusFilter !== 'all') params.set('status', statusFilter)
       // provider (not platform) so a selected custom relay filters to itself
-      // instead of every custom endpoint (#889). Catalog ids equal the platform.
+      // instead of every custom endpoint. Catalog ids equal the platform.
       if (platformFilter !== 'all') params.set('provider', platformFilter)
       return apiFetch<RecentCallsResponse>(`/api/analytics/requests?${params}`)
     },
@@ -1050,7 +1050,7 @@ export default function AnalyticsPage() {
 
           {/* Per-provider breakdown: the tabular face of the by-platform data —
               the charts above show volume/latency, this row surfaces the
-              success-rate and error-count numbers (#335). */}
+              success-rate and error-count numbers. */}
           <div className="lg:col-span-2">
             <Panel icon={Network} title={t('analytics.providerBreakdown')}>
               {byPlatform.length === 0 ? (

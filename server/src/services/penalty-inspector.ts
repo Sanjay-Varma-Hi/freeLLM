@@ -103,7 +103,7 @@ export interface RouterPressureClearResult {
 }
 
 /**
- * The "Clear all" action behind the Router pressure panel (#952). One click
+ * The "Clear all" action behind the Router pressure panel. One click
  * releases everything the router accumulated against a pool: cooldowns (and
  * the ladder counters behind them), score penalties, and the model-failure
  * streaks that re-bench a model across keys. Pressure rebuilds from the next

@@ -90,7 +90,7 @@ export function PenaltyInspector() {
   })
   const queryClient = useQueryClient()
 
-  // #878: an escalated cooldown can bench a key for up to 24h off one bad
+  // an escalated cooldown can bench a key for up to 24h off one bad
   // window; once the operator has fixed the cause (proxy, region, quota) the
   // only way back was waiting — offer a manual lift on the spot.
   const resetCooldown = useMutation({
@@ -102,7 +102,7 @@ export function PenaltyInspector() {
     },
   })
 
-  // #952: one bad window can walk a whole pool onto day-long benches; the
+  // one bad window can walk a whole pool onto day-long benches; the
   // per-key reset above then means clicking through every key. Lift every
   // cooldown, penalty and failure streak in one go. Pressure rebuilds from the
   // next live results, so a premature clear costs one more round of failures.

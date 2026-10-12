@@ -302,7 +302,7 @@ describe('custom provider modalities', () => {
 
   // The display name is optional on these routes too: unnamed means "call it
   // after the model id", and a later submit that leaves the field blank must
-  // not reset a name that is already there (#704).
+  // not reset a name that is already there.
   it('leaves an embedding model unnamed as its id, and keeps a name across a blank re-submit', async () => {
     globalThis.fetch = vi.fn(async () => embeddingResponse(3)) as any;
 
@@ -364,7 +364,7 @@ describe('custom provider modalities', () => {
     expect(row.display_name).toBe('My Voice');
   });
 
-  it('classifies mixed ids posted to /api/keys/custom into the right tables (#1051)', async () => {
+  it('classifies mixed ids posted to /api/keys/custom into the right tables', async () => {
     const fetchMock = vi.fn(async () => embeddingResponse(4));
     globalThis.fetch = fetchMock as any;
 
@@ -402,7 +402,7 @@ describe('custom provider modalities', () => {
     expect(body.created).toBe(5);
   });
 
-  it('an explicit capability flag keeps a media-looking id in the chat table (#1051)', async () => {
+  it('an explicit capability flag keeps a media-looking id in the chat table', async () => {
     const { status } = await post(app, '/api/keys/custom', {
       baseUrl: 'http://127.0.0.1:8585/v1',
       apiKey: 'override-secret',

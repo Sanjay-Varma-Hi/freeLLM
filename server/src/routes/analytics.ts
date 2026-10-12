@@ -11,7 +11,7 @@ export const analyticsRouter = Router();
 // when the key is gone or carries none (every catalog key). Custom endpoints
 // all share the platform id 'custom' (services/custom-endpoint.ts), so any
 // view that groups by `platform` alone collapses every relay into one row and
-// the operator cannot tell which endpoint did what (#889) — this expression is
+// the operator cannot tell which endpoint did what — this expression is
 // the second half of the grouping key everywhere that matters.
 //
 // rtrim/trim mirror lib/endpoint-scope.normalizeBaseUrl so the SQL side agrees
@@ -97,7 +97,7 @@ analyticsRouter.get('/summary', (req: Request, res: Response) => {
   // is the source of truth for headline numbers.
   const aggregate = readAggregateSince(since);
   const totalRequests = aggregate.total_requests ?? 0;
-  // Success rate over success+error only: a 'canceled' request (#752 — client
+  // Success rate over success+error only: a 'canceled' request (— client
   // hung up) still counts in the totals but is neither a success nor a
   // failure, so it must not dilute the rate.
   const decidedRequests = (aggregate.success_count ?? 0) + (aggregate.error_count ?? 0);
@@ -215,11 +215,11 @@ analyticsRouter.get('/summary', (req: Request, res: Response) => {
 // The grouping key is (platform, endpoint, model_id), not (platform, model_id):
 // the same model id served by two different custom relays is two different
 // things — different latency, different failure modes — and merging them into
-// one row labelled "custom" is the #889 collision in its most misleading form,
+// one row labelled "custom" is the collision in its most misleading form,
 // because the merged row's numbers describe neither endpoint.
 //
 // The models join is endpoint-scoped for the same reason. `models` is unique on
-// (platform, model_id, endpoint_scope) since #651, so joining on
+// (platform, model_id, endpoint_scope), so joining on
 // (platform, model_id) alone matches ONE row per relay that registered the
 // model and multiplies every request row by that count. Adding endpoint_scope
 // to the ON clause picks the row belonging to the endpoint that actually served
@@ -236,7 +236,7 @@ analyticsRouter.get('/by-model', (req: Request, res: Response) => {
       r.model_id,
       m.display_name,
       COUNT(*) as requests,
-      -- Rate over success+error only: 'canceled' (#752) is neither.
+      -- Rate over success+error only: 'canceled' is neither.
       SUM(CASE WHEN r.status = 'success' THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN r.status <> 'canceled' THEN 1 ELSE 0 END), 0) as success_rate,
       AVG(r.latency_ms) as avg_latency_ms,
       SUM(r.input_tokens) as total_input_tokens,
@@ -281,7 +281,7 @@ analyticsRouter.get('/by-model', (req: Request, res: Response) => {
 // Custom endpoints all share the platform id 'custom' (services/custom-
 // endpoint.ts), so grouping by `platform` alone would collapse every custom
 // relay into one row and the operator could not tell which endpoint did what
-// (#889). We therefore also group by the serving key's base_url — the canonical
+// We therefore also group by the serving key's base_url — the canonical
 // endpoint identity (custom-endpoint.ts pools credentials by base_url, and the
 // router treats every key sharing a base_url as one endpoint). Non-custom keys
 // carry no base_url, so COALESCE(base_url,'') keeps each of them in a single
@@ -531,7 +531,7 @@ analyticsRouter.get('/error-distribution', (req: Request, res: Response) => {
   `).all(since) as any[];
 
   // Errors by provider. Endpoint-scoped like /by-platform: one bar per custom
-  // relay, not one bar pooling every relay's failures under "custom" (#889) —
+  // relay, not one bar pooling every relay's failures under "custom" —
   // a bar the operator cannot act on, because it never says which endpoint is
   // the one failing.
   const byPlatformRows = db.prepare(`
@@ -569,7 +569,7 @@ analyticsRouter.get('/errors', (req: Request, res: Response) => {
 
   // Joined to the serving key so each error names the endpoint it came from.
   // Without it every custom relay's failures read as a bare "custom" in the
-  // panel (#889) and the operator has to guess which one broke.
+  // panel and the operator has to guess which one broke.
   const rows = db.prepare(`
     SELECT r.id, r.platform, ${ENDPOINT_ID_SQL} as base_url, r.model_id, r.error,
            r.latency_ms, r.created_at
@@ -614,7 +614,7 @@ analyticsRouter.get('/requests', (req: Request, res: Response) => {
   }
   // Provider filter. The `provider` param carries the stable row id returned by
   // /by-platform: a platform slug ('groq') or 'custom:<base_url>' for a custom
-  // endpoint (#889 — every custom relay shares the 'custom' platform id, so the
+  // endpoint (— every custom relay shares the 'custom' platform id, so the
   // endpoint's base_url is what actually selects one). The legacy `platform`
   // param still works for old clients. Both are bound parameters, never
   // interpolated, so the only validation needed is shape.
@@ -706,7 +706,7 @@ analyticsRouter.get('/requests', (req: Request, res: Response) => {
       clientUserAgent: r.client_user_agent,
       clientAgent: r.client_agent,
       createdAt: r.created_at_iso,
-      // #785: custom endpoints all share the generic 'custom' platform id, so
+      // custom endpoints all share the generic 'custom' platform id, so
       // the user's key label ("Ollama box") rides along to name the real
       // provider in the recent-calls list. Null when the key was deleted or
       // never labelled.
@@ -759,7 +759,7 @@ analyticsRouter.get('/requests/:id', (req: Request, res: Response) => {
     modelId: r.model_id,
     requestedModel: r.requested_model,
     // Upstream-reported model when it genuinely differed from the routed
-    // model_id (#534 served-model drift guard); null in the healthy case.
+    // model_id (served-model drift guard); null in the healthy case.
     servedModel: r.served_model,
     requestType: r.request_type,
     status: r.status,

@@ -33,13 +33,10 @@ export function up(db: Db): void {
   migrateModelsV23FreeTierAudit(db);
   migrateModelsV24ZenRefresh(db);
   migrateModelsV25ZenDeadPromos(db);
-  // V25 is the LAST model-data migration. Since the Premium live catalog
-  // shipped (June 2026), model/limit DATA is maintained in the published
-  // catalog (served signed by the catalog service) and reaches installs via
-  // catalog-sync — premium on the live tier within ~12h, free at the monthly
-  // promote. Shipping model data as a
-  // migration would hand it to free users on their next binary update,
-  // bypassing the tier gate. Migrations from here on are baseline/code-level
+  // V25 is the LAST model-data migration. Since June 2026, model/limit DATA is
+  // maintained in the published catalog (served signed by the catalog service)
+  // and reaches installs via catalog-sync, so model data no longer ships as a
+  // migration. Migrations from here on are baseline/code-level
   // only (schema, family rules, provider plumbing, quirk-seed corrections).
   // After all model migrations: add/refresh paid-equivalent pricing
   // (drives the realistic "Est. savings" analytics stat).
@@ -157,7 +154,7 @@ function createTables(db: Db) {
       value TEXT NOT NULL
     );
 
-    -- Dashboard accounts (email + password) gating the /api/* admin surface (#35).
+    -- Dashboard accounts (email + password) gating the /api/* admin surface.
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
@@ -261,7 +258,7 @@ function ensureRequestKeyIdColumn(db: Db) {
 }
 
 // `base_url` is the upstream endpoint for the user-configured 'custom' provider
-// (#117). NULL for every built-in platform — they use their hardcoded base URL.
+// NULL for every built-in platform — they use their hardcoded base URL.
 function ensureApiKeysBaseUrlColumn(db: Db) {
   const columns = db.prepare('PRAGMA table_info(api_keys)').all() as { name: string }[];
   if (!columns.some(col => col.name === 'base_url')) {
@@ -270,7 +267,7 @@ function ensureApiKeysBaseUrlColumn(db: Db) {
 }
 
 // `key_id` binds a custom model to the api_keys row that carries ITS endpoint,
-// so several custom providers can coexist (#212). NULL for built-in platforms
+// so several custom providers can coexist. NULL for built-in platforms
 // (any key of the platform serves any of its models).
 function ensureModelsKeyIdColumn(db: Db) {
   const columns = db.prepare('PRAGMA table_info(models)').all() as { name: string }[];
@@ -533,7 +530,7 @@ function migrateModelsV3Ranks(db: Db) {
     [13, 'mistral',     'magistral-medium-latest'],                       // reasoning, not code-tuned
     [14, 'google',      'gemini-2.5-flash'],
     [15, 'zhipu',       'glm-4.5-flash'],
-    // #16 Llama 3.3 70B — identical weights across providers (tie)
+    //  Llama 3.3 70B — identical weights across providers (tie)
     [16, 'groq',        'llama-3.3-70b-versatile'],
     [16, 'sambanova',   'Meta-Llama-3.3-70B-Instruct'],
     [16, 'openrouter',  'meta-llama/llama-3.3-70b-instruct:free'],
@@ -1397,7 +1394,7 @@ function migrateModelsV14(db: Db) {
 /**
  * V15 (May 2026): purge SiliconFlow.
  *
- * SiliconFlow was briefly added (#131) on the belief Qwen/Qwen3-8B was a $0
+ * SiliconFlow was briefly added on the belief Qwen/Qwen3-8B was a $0
  * "free model". Re-verification showed it is PAID ($0.06/M in+out): the
  * account balance dropped 0.9999 -> 0.9998 across ~2.7K tokens, and the
  * official pricing page lists it at $0.06/M. The earlier "zero-cost" read was
@@ -1568,7 +1565,7 @@ function migrateModelsV17IntelligenceTiers(db: Db) {
 }
 
 // ── V18: OpenCode Zen provider (2026-06) ──
-// Adds the OpenCode Zen gateway (#128, originally contributed by @Aldo-f). Zen is
+// Adds the OpenCode Zen gateway (originally contributed by @Aldo-f). Zen is
 // an OpenAI-compatible service whose paid models bill pay-as-you-go but which
 // also exposes a rotating set of *promotional* free models. Access is via a FREE
 // account key from https://opencode.ai/auth — no credit card; billing only
@@ -1873,7 +1870,7 @@ function migrateModelsV23FreeTierAudit(db: Db) {
  *     OpenRouter ultra route (which hangs: 0 tokens in 140s even streaming),
  *     Zen serves it from a dedicated vLLM endpoint in ~2s WITH structured
  *     tool_calls. Currently the biggest usable free model anywhere.
- *   - ADDED minimax-m3-free — requested in #242 (thanks @Naster17). Live
+ *   - ADDED minimax-m3-free — requested (thanks @Naster17). Live
  *     probe: 2s chat, finish_reason:tool_calls. CAVEAT: not in Zen's docs
  *     free table (same undocumented status qwen3.6-plus-free had before its
  *     promo ended), so it may transition without notice — watchlist.
@@ -1948,7 +1945,7 @@ function migrateModelsV25ZenDeadPromos(db: Db) {
 // 5 RPM/30K TPM/1M TPD limits, NVIDIA "free · 40 RPM" labels, LLM7 60-100/hr
 // label) were briefly shipped as a data migration and then MOVED to the
 // published catalog — catalog data is distributed via catalog-sync, never
-// via migrations, so the premium tier gate holds. What remains in code from that audit: the 'ovh'
+// via migrations. What remains in code from that audit: the 'ovh'
 // keyless provider, Pollinations keyless, the V22 north-mini-code tools rule,
 // and the corrected quirk seeds in migrateQuirksV1 (incl. the
 // 'nvidia-credits-based' → 'nvidia-rate-limited' replacement; the stale slug
@@ -2022,7 +2019,7 @@ function migrateEmbeddingsV1(db: Db) {
  * misroute to an image model) and never pollute the chat token budget. This is
  * schema only: per the no-model-data-in-migrations rule (see migrateDbSchema),
  * the rows are maintained in the published catalog and arrive via catalog-sync
- * (premium on the live tier within ~12h, free once each model is 30 days old). `modality`
+ * `modality`
  * is 'image' | 'audio'; `quota_label` mirrors the catalog's display note. The
  * request_type column (added by migrateEmbeddingsV1) tags media traffic 'image'
  * / 'audio' so it stays out of the chat budget math.

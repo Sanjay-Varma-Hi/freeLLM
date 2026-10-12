@@ -70,7 +70,7 @@ describe('OpenAICompatProvider', () => {
     expect(capturedBody.messages[0].role).toBe('user');
   });
 
-  describe('Moonshot assistant `partial` prefill flag (#1038)', () => {
+  describe('Moonshot assistant `partial` prefill flag', () => {
     beforeEach(() => {
       // The custom-platform SSRF guard resolves public hosts before every
       // request; answer with a public address so no real DNS is needed.
@@ -155,7 +155,7 @@ describe('OpenAICompatProvider', () => {
     });
   });
 
-  it('uses a 60s chat timeout by default for OpenAI-compatible providers (#530)', async () => {
+  it('uses a 60s chat timeout by default for OpenAI-compatible providers', async () => {
     const delays: number[] = [];
     const origSetTimeout = global.setTimeout;
     vi.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void, ms?: number) => {
@@ -180,7 +180,7 @@ describe('OpenAICompatProvider', () => {
     expect(delays).not.toContain(15_000);
   });
 
-  it('honors CompletionOptions.timeoutMs for OpenAI-compatible streams (#530)', async () => {
+  it('honors CompletionOptions.timeoutMs for OpenAI-compatible streams', async () => {
     const delays: number[] = [];
     const origSetTimeout = global.setTimeout;
     vi.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void, ms?: number) => {
@@ -250,7 +250,7 @@ describe('OpenAICompatProvider', () => {
     expect(capturedBody.parallel_tool_calls).toBe(true);
   });
 
-  describe('forceSingleToolCall (NVIDIA NIM single-tool-call 400 — issue #255)', () => {
+  describe('forceSingleToolCall (NVIDIA NIM single-tool-call 400 —)', () => {
     const nim = () => new OpenAICompatProvider({
       platform: 'nvidia',
       name: 'NVIDIA NIM',
@@ -302,7 +302,7 @@ describe('OpenAICompatProvider', () => {
     ).rejects.toThrow(/Too many requests/);
   });
 
-  it('explains a non-JSON 200 body instead of surfacing the raw parse error (#189)', async () => {
+  it('explains a non-JSON 200 body instead of surfacing the raw parse error', async () => {
     // e.g. a custom base URL pointing at Ollama's native NDJSON /api endpoint:
     // real fetch's res.json() rejects with "Unexpected non-whitespace character
     // after JSON at position …", which is useless to the user.
@@ -317,7 +317,7 @@ describe('OpenAICompatProvider', () => {
     ).rejects.toThrow(/not OpenAI-compatible/);
   });
 
-  it('distinguishes a truncated 200 body (CDN keepalive) from a wrong-endpoint 200 body (#430)', async () => {
+  it('distinguishes a truncated 200 body (CDN keepalive) from a wrong-endpoint 200 body', async () => {
     // Cloudflare-fronted free-tier upstreams (Kilo routing Nemotron / Poolside Laguna)
     // deliver a partial JSON body when the 600s edge idle-keepalive fires mid-response.
     // Node's JSON.parse surfaces that as "Unexpected end of JSON input" — different from
@@ -343,7 +343,7 @@ describe('OpenAICompatProvider', () => {
     expect(caught!.message).not.toMatch(/not OpenAI-compatible/);
   });
 
-  it('attributes an "after JSON at position" parse error with Content-Type: application/json to CDN truncation (#430)', async () => {
+  it('attributes an "after JSON at position" parse error with Content-Type: application/json to CDN truncation', async () => {
     // Same edge-keepalive case but the body parses far enough to reach a
     // mid-token garbage character before EOF. Content-Type is the only signal
     // that distinguishes this from a real NDJSON upstream (next test).
@@ -360,7 +360,7 @@ describe('OpenAICompatProvider', () => {
     ).rejects.toThrow(/truncated mid-stream/);
   });
 
-  it('does not flag NDJSON Content-Type as a truncation (#430 regression guard)', async () => {
+  it('does not flag NDJSON Content-Type as a truncation (regression guard)', async () => {
     // A real Ollama-style upstream announces NDJSON via Content-Type. Even if
     // the parse error message happens to match the "after JSON at position"
     // substring (NDJSON bodies do — the parser eats one object, then trips
@@ -378,7 +378,7 @@ describe('OpenAICompatProvider', () => {
     ).rejects.toThrow(/not OpenAI-compatible/);
   });
 
-  it('does not classify NDJSON Content-Type as a truncation — explicit not.toThrow (#430)', async () => {
+  it('does not classify NDJSON Content-Type as a truncation — explicit not.toThrow', async () => {
     // Companion to the previous test: explicitly assert the truncation message
     // does NOT appear, so a future refactor can't silently switch the branch.
     const headers = new Headers({ 'content-type': 'application/x-ndjson' });
@@ -459,7 +459,7 @@ describe('OpenAICompatProvider', () => {
     expect(result.choices[0].message.content).toBe('part one part two');
   });
 
-  it('strips internal reasoning/thought fields before sending messages to Mistral (#530)', async () => {
+  it('strips internal reasoning/thought fields before sending messages to Mistral', async () => {
     let body: any = null;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       body = JSON.parse((init as any).body);
@@ -499,7 +499,7 @@ describe('OpenAICompatProvider', () => {
     });
   });
 
-  it('strips assistant reasoning_content before sending messages to Groq (#1070)', async () => {
+  it('strips assistant reasoning_content before sending messages to Groq', async () => {
     let body: any = null;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       body = JSON.parse((init as any).body);
@@ -529,7 +529,7 @@ describe('OpenAICompatProvider', () => {
     expect(body.messages[0]).toEqual({ role: 'assistant', content: 'replayed turn' });
   });
 
-  it('strips assistant reasoning_content before sending messages to Cerebras (#1070)', async () => {
+  it('strips assistant reasoning_content before sending messages to Cerebras', async () => {
     let body: any = null;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       body = JSON.parse((init as any).body);
@@ -730,10 +730,10 @@ describe('OpenAICompatProvider - platform instances', () => {
     expect(body.top_p).toBe(1);
   });
 
-  // #264: Groq (and others) reject a model's inline tool-call dialect with a 400
+  // Groq (and others) reject a model's inline tool-call dialect with a 400
   // `tool_use_failed`, handing back the raw text in `error.failed_generation`.
   // We rescue it into structured tool_calls instead of dead-ending the turn.
-  describe('tool_use_failed rescue (#264)', () => {
+  describe('tool_use_failed rescue', () => {
     let provider: OpenAICompatProvider;
     beforeEach(() => {
       provider = new OpenAICompatProvider({ platform: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1' });
@@ -784,7 +784,7 @@ describe('OpenAICompatProvider - platform instances', () => {
     // The rescue turns a provider 400 into a success. If what it recovered does
     // not satisfy the tool's schema, that success is one the client cannot use —
     // so with the opt-in verdict on, decline the rescue and let the original
-    // error propagate, exactly as it did before #264.
+    // error propagate, exactly as it did.
     it('declines the rescue when the recovered arguments violate the schema', async () => {
       process.env.VALIDATE_TOOL_ARGUMENTS = '1';
       try {
@@ -898,7 +898,7 @@ describe('extended sampling param passthrough', () => {
   });
 });
 
-describe('reasoning: request knob + <think> extraction (P2 #16)', () => {
+describe('reasoning: request knob + <think> extraction (P2)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

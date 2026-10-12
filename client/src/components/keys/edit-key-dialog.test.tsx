@@ -72,7 +72,7 @@ describe('editing provider credentials', () => {
     await submit()
     expect(apiFetch).toHaveBeenCalledWith('/api/keys/7', { method: 'PATCH', body: JSON.stringify({ label: 'Renamed' }) })
   })
-  it('lets the anonymous row of a key-optional provider take a real key (#1331)', async () => {
+  it('lets the anonymous row of a key-optional provider take a real key', async () => {
     mount(<EditKeyDialog apiKey={{ ...key, platform: 'kilo', keyless: true, keyOptional: true }} onOpenChange={onOpenChange} />)
     const input = container.querySelector<HTMLInputElement>('#edit-key-value')!
     expect(input.readOnly).toBe(false)

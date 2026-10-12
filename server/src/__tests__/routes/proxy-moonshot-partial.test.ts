@@ -5,7 +5,7 @@ import { createApp } from '../../app.js';
 import { initDb, getDb, getUnifiedApiKey } from '../../db/index.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// Moonshot's assistant `partial: true` prefill flag (#1038) must survive the
+// Moonshot's assistant `partial: true` prefill flag must survive the
 // whole proxy path — request schema → message build → provider body — when the
 // route lands on Moonshot's own API (a custom endpoint on a Moonshot host), and
 // must be stripped for any other endpoint, even one serving a Kimi model.
@@ -70,7 +70,7 @@ const conversation = [
   { role: 'assistant', content: 'The answer is', partial: true },
 ];
 
-describe('Moonshot `partial` prefill round trip (#1038)', () => {
+describe('Moonshot `partial` prefill round trip', () => {
   let app: Express;
 
   beforeAll(async () => {

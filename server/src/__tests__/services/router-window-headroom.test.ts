@@ -4,12 +4,12 @@ import { encrypt } from '../../lib/crypto.js';
 import { getRoutingScores, refreshStatsCache, setHeadroomThresholds } from '../../services/router.js';
 import { invalidateWindowUsage, modelWindowUsedFraction } from '../../services/ratelimit.js';
 
-// #899: the headroom guardrail used to have an opinion only about models that
+// the headroom guardrail used to have an opinion only about models that
 // declare a monthly_token_budget. A model capped by rpd/tpd was binary-gated —
 // full score until the request that finally 429s it. These tests pin the graded
 // behaviour: demotion as the window fills, no opinion while it is empty,
 // automatic recovery when the window rolls, and operator-tunable thresholds.
-describe('rate-window headroom guardrail (#899)', () => {
+describe('rate-window headroom guardrail', () => {
   const DAY_MS = 24 * 60 * 60 * 1000;
   let busy: { id: number; modelId: string };
   let idle: { id: number; modelId: string };

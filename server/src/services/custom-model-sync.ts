@@ -6,7 +6,7 @@ import { isCustomModelTombstoned } from './custom-model-tombstone.js';
 import { listCustomEndpoints } from './custom-endpoint.js';
 import { endpointScopeForBaseUrl } from '../lib/endpoint-scope.js';
 
-// ── Scheduled custom-model sync (#674/#663/#656) ─────────────────────────────
+// ── Scheduled custom-model sync ─────────────────────────────
 //
 // Operators add a custom OpenAI-compatible provider and fetch its model list
 // once, but providers change their model availability almost daily. This walks
@@ -22,8 +22,8 @@ import { endpointScopeForBaseUrl } from '../lib/endpoint-scope.js';
 //  - No catalog paywall interplay: these models come from the operator's own
 //    endpoint with the operator's own key, not from the published catalog.
 
-/** Default: once a day (#674 asks for daily; #663's 5-minute ask targets the
- *  bundled free catalog, which this pass deliberately never touches). */
+/** Default: once a day. (A 5-minute cadence would only matter for the bundled
+ *  free catalog, which this pass deliberately never touches.) */
 const DEFAULT_SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 /** Interval in ms from `CUSTOM_MODEL_SYNC_INTERVAL_MS`; 0 disables the pass,
@@ -35,7 +35,7 @@ export function customModelSyncIntervalMs(): number {
   return Number.isFinite(ms) && ms >= 0 ? ms : DEFAULT_SYNC_INTERVAL_MS;
 }
 
-/** Comma-separated glob patterns of model ids that are known-free (#746).
+/** Comma-separated glob patterns of model ids that are known-free.
  *  When set, the sync registers ONLY models matching a pattern — anything else
  *  (presumably paid) is skipped, honoring the repo's free-only policy. When
  *  unset, the sync keeps its legacy behavior of registering everything, so
@@ -58,12 +58,12 @@ export interface CustomModelSyncResult {
   added: number;
   /** Models already on this endpoint that were skipped. */
   skipped: number;
-  /** Models skipped because they matched no free pattern (#746). */
+  /** Models skipped because they matched no free pattern. */
   paidSkipped: number;
-  /** Models skipped because the operator deleted them and they must stay deleted (#926). */
+  /** Models skipped because the operator deleted them and they must stay deleted. */
   tombstoned: number;
   /** Models skipped because they are discernibly not chat models — embedding,
-   *  image, audio, transcription or video ids (#1051). Registering those as
+   *  image, audio, transcription or video ids. Registering those as
    *  chat models is how they used to 404 forever. */
   nonChatSkipped: number;
   failures: Array<{ baseUrl: string; error: string }>;
@@ -80,7 +80,7 @@ export async function runCustomModelSync(db: Db): Promise<CustomModelSyncResult>
       // A submitted key wins on the manual route; a scheduled pass can only use
       // what the endpoint already has on record. Keyless local servers keep the
       // 'no-key' sentinel, which the provider turns into an anonymous call
-      // with no Authorization header (#1331).
+      // with no Authorization header.
       const discovered = await discoverEndpointModels(endpoint.baseUrl, endpoint.apiKey ?? 'no-key');
 
       const scope = endpointScopeForBaseUrl(endpoint.baseUrl);
@@ -96,21 +96,21 @@ export async function runCustomModelSync(db: Db): Promise<CustomModelSyncResult>
           result.skipped += 1;
           continue;
         }
-        // #926: the operator deleted this model (or the key that owned it) and
+        // the operator deleted this model (or the key that owned it) and
         // expects it to stay gone. The sync's "add only" contract must not turn
         // a deliberate deletion into the next pass's "new model".
         if (isCustomModelTombstoned(db, scope, model.id)) {
           result.tombstoned += 1;
           continue;
         }
-        // Free-only policy (#746): when FREE_PATTERNS is configured, a model
+        // Free-only policy: when FREE_PATTERNS is configured, a model
         // that matches none of the known-free patterns is presumably paid and
         // is skipped rather than silently registered.
         if (freePatterns.length > 0 && !freePatterns.some(p => patternMatches(p, model.id))) {
           result.paidSkipped += 1;
           continue;
         }
-        // #1051: a diffusion/whisper/video/embedding id is not a chat model,
+        // a diffusion/whisper/video/embedding id is not a chat model,
         // and registering it here is how it ends up 404ing in every chain.
         // The sync only ADDS chat models; media and embedding models go
         // through their own explicit registration paths.

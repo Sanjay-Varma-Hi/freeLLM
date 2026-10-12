@@ -24,7 +24,7 @@ import { z } from 'zod';
 // /v1/chat/completions path as every OpenAI-compatible client.
 //
 // Hand-rolled JSON-RPC instead of the MCP SDK for the same reason the
-// OpenAPI viewer is dependency-free (#482): the desktop bundle and the
+// OpenAPI viewer is dependency-free: the desktop bundle and the
 // Node-20 CI matrix punish heavy/new dependencies, and a tools-only
 // stateless MCP server is ~five methods of plain JSON-RPC. No sessions, no
 // server-initiated streams (GET → 405), single JSON responses.
@@ -160,7 +160,7 @@ function usageSummary(args: Record<string, unknown>): unknown {
   return {
     range,
     requests: totals.requests,
-    // Over success+error only: 'canceled' rows (#752) are neither.
+    // Over success+error only: 'canceled' rows are neither.
     success_rate: totals.successes + totals.errors > 0 ? Math.round((totals.successes / (totals.successes + totals.errors)) * 1000) / 10 : null,
     input_tokens: totals.input_tokens,
     output_tokens: totals.output_tokens,
@@ -172,7 +172,7 @@ function routingInfo(): unknown {
   const scores = getRoutingScores();
   return {
     strategy: scores.strategy,
-    // Which key of a platform requests are steered to (#919) — a separate knob
+    // Which key of a platform requests are steered to — a separate knob
     // from the model strategy, so it has to be reported separately too.
     key_selection: scores.keySelectionStrategy,
     top_models: scores.scores
@@ -557,7 +557,7 @@ function authenticate(req: Request, res: Response): boolean {
   return true;
 }
 
-// ── Lifecycle configuration (#925, MVP-1) ───────────────────────────────────
+// ── Lifecycle configuration (MVP-1) ───────────────────────────────────
 // The MCP surface exposes provider health, usage stats and routing controls to
 // anything holding the unified key, so it is a configured surface rather than
 // an always-on one: /api/settings/enable-mcp (and the toggle on the Keys page)

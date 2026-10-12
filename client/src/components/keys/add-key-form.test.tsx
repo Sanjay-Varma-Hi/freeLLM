@@ -11,7 +11,7 @@ import { AddKeyForm } from './add-key-form'
 vi.mock('@/lib/api', () => ({ apiFetch: vi.fn() }))
 vi.mock('@/lib/toast', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
-// #1331: key-optional providers (Kilo, OVH, AI Horde) keep the key field
+// key-optional providers (Kilo, OVH, AI Horde) keep the key field
 // editable; a blank submit enables the anonymous tier, a real key is sent.
 let root: Root
 let container: HTMLDivElement

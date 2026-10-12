@@ -2,7 +2,7 @@ import type { Db } from '../types.js';
 
 /**
  * Migration: request_attempts.key_label — the operator-facing key identifier
- * for the failover ladder (#869).
+ * for the failover ladder.
  *
  * The ladder shows key1/key2 (key_ordinal), which tells you WHICH position in
  * the request's own rotation was tried but not WHICH key row that was — with

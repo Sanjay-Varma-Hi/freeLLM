@@ -22,7 +22,7 @@ async function request(app: Express, method: string, path: string, body: any, to
   return { status: res.status, body: json };
 }
 
-// GET/PUT /api/settings/task-weight-share (#1127 follow-up): tunable share of
+// GET/PUT /api/settings/task-weight-share: tunable share of
 // one bandit axis moved onto the other for declared/derived task types.
 describe('/api/settings/task-weight-share', () => {
   let app: Express;
@@ -105,7 +105,7 @@ describe('taskAdjustedWeights share parameter', () => {
 
   it('an exempt strategy ignores the configured share', () => {
     // The share only scales a bias the strategy accepts in the first place:
-    // fastest/reliable/custom stay exactly where the operator put them (#1128).
+    // fastest/reliable/custom stay exactly where the operator put them.
     for (const strategy of ['fastest', 'reliable', 'custom'] as const) {
       const out = taskAdjustedWeights(base, 'code', strategy, 1);
       expect(out.adjusted).toBe(false);

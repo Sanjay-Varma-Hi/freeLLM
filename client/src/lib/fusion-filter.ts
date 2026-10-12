@@ -1,4 +1,4 @@
-// Filtering helpers for the Fusion panel model picker (issue #872).
+// Filtering helpers for the Fusion panel model picker.
 // The explicit panel can list hundreds of models once several providers are
 // connected, so it needs a search box plus a provider filter instead of an
 // unscrollable wall of rows. Pure functions so the UI stays thin and the

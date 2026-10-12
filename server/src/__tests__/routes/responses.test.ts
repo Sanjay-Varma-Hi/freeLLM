@@ -31,7 +31,7 @@ async function post(app: Express, path: string, body: any, key?: string, headers
   return { status: res.status, text, contentType: res.headers.get('content-type') ?? '', headers: res.headers };
 }
 
-describe('POST /v1/responses (#96)', () => {
+describe('POST /v1/responses', () => {
   let app: Express;
   let key: string;
 
@@ -75,7 +75,7 @@ describe('POST /v1/responses (#96)', () => {
     expect(JSON.parse(text).output_text).toBe('ok');
   });
 
-  // #118: image parts now translate to image_url content blocks, so an image
+  // image parts now translate to image_url content blocks, so an image
   // request must be routed with requireVision=true (only vision-capable models
   // are candidates; a text-only pinned model is skipped, falling back to a
   // vision-capable peer). The old unconditional 422 is gone.
@@ -107,7 +107,7 @@ describe('POST /v1/responses (#96)', () => {
     expect(mockRouteRequest.mock.calls.at(-1)?.[3]).toBe(true);
   });
 
-  it('forwards a declared x-freellm-task-type to the router as the task arg (#1127)', async () => {
+  it('forwards a declared x-freellm-task-type to the router as the task arg', async () => {
     mockRouteRequest.mockClear();
     mockRouteRequest.mockReturnValue(fakeRoute({
       async chatCompletion() {
@@ -126,7 +126,7 @@ describe('POST /v1/responses (#96)', () => {
     expect(mockRouteRequest.mock.calls.at(-1)?.[10]).toBe('code');
   });
 
-  it('leaves the task arg undefined when no task header is sent (#1127)', async () => {
+  it('leaves the task arg undefined when no task header is sent', async () => {
     mockRouteRequest.mockClear();
     mockRouteRequest.mockReturnValue(fakeRoute({
       async chatCompletion() {
@@ -200,7 +200,7 @@ describe('POST /v1/responses (#96)', () => {
     }
   });
 
-  // #103: the x-api-key header (Anthropic wire format) must authenticate here
+  // the x-api-key header (Anthropic wire format) must authenticate here
   // too, not just on /v1/chat/completions.
   it('accepts the unified key via the x-api-key header', async () => {
     const server = app.listen(0, '127.0.0.1');
@@ -264,7 +264,7 @@ describe('POST /v1/responses (#96)', () => {
     expect(completed).toContain('"output_text":"Hello"');
   });
 
-  it('stream: records ttfb on the first reasoning token, not the first visible text (#764)', async () => {
+  it('stream: records ttfb on the first reasoning token, not the first visible text', async () => {
     mockRouteRequest.mockReturnValue(fakeRoute({
       async chatCompletion() { throw new Error('should not be called'); },
       async *streamChatCompletion() {
@@ -469,12 +469,12 @@ describe('POST /v1/responses (#96)', () => {
   });
 });
 
-// #579 gave this endpoint the same model resolution /v1/chat/completions has —
+//  gave this endpoint the same model resolution /v1/chat/completions has —
 // explicit model > sticky session > auto — but shipped without a regression
 // test. This is it. routeRequest is mocked, so the assertions read the routing
 // DECISION off its arguments: [2] is the preferred (pinned/sticky) model db id
 // and [6] is the strict chain an explicit model resolves to.
-describe('POST /v1/responses model routing priority (#579)', () => {
+describe('POST /v1/responses model routing priority', () => {
   let app: Express;
   let key: string;
   let pinnedId = 0;

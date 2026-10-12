@@ -63,7 +63,7 @@ function isAutoModel(modelId: string | undefined): boolean {
 //
 // Current Codex versions only speak the Responses API — `wire_api = "chat"`
 // is rejected — so the existing /v1/chat/completions endpoint isn't reachable
-// from Codex (see issue #96). This endpoint accepts a Responses-shaped request,
+// from Codex . This endpoint accepts a Responses-shaped request,
 // translates it to the internal chat-message format, runs it through the SAME
 // shared fallback loop as the proxy (lib/fallback-loop.ts), and translates the
 // result back into the Responses object / SSE event stream Codex expects.
@@ -416,7 +416,7 @@ export function toChatMessages(req: ResponsesRequest): ChatMessage[] {
       // (content + tool_calls); emitting consecutive assistant turns makes
       // Gemini map them to consecutive model turns and strict upstreams
       // (Mistral/Cohere) 400. Drop empty assistant items — an empty turn means
-      // nothing to a chat provider. (#96)
+      // nothing to a chat provider.
       const toolCalls: ChatToolCall[] = [];
       let j = i + 1;
       while (j < items.length && (items[j] as { type?: string }).type === 'function_call') {
@@ -627,7 +627,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
   res.setHeader('X-Request-ID', requestGroupId);
 
   // Same auth as the proxy (accepts Bearer or x-api-key): unified key, or a
-  // client-profile key carrying a server-enforced system prompt (#411).
+  // client-profile key carrying a server-enforced system prompt.
   const auth = resolveAuth(extractApiToken(req));
   if (!auth) {
     res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
@@ -716,7 +716,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
   messages = compressionResult.messages;
   res.setHeader('X-FreeLLM-Compress', formatCompressionHeader(compressionResult));
 
-  // Server-enforced system prompt (#411): after compression so it is never
+  // Server-enforced system prompt: after compression so it is never
   // compressed away, first in the list so the caller's own instructions
   // (`instructions` / system input items) follow it and cannot override it.
   messages = prependSystemPrompt(messages, auth.systemPrompt);
@@ -732,7 +732,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
   // /chat/completions, proxy.ts). Reject up front with a clear message when
   // none is enabled; when vision models are available, requireVision routing
   // skips text-only models — including a pinned/sticky one — and falls back to
-  // a vision-capable peer (#118, #125). A rough per-image token cost keeps
+  // a vision-capable peer. A rough per-image token cost keeps
   // budget routing from being skewed by content the text heuristic can't see.
   const hasImage = messageHasImage(messages);
   if (hasImage && !hasEnabledVisionModel()) {
@@ -749,9 +749,9 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
   const imageCount = messages.reduce((n, m) =>
     n + (Array.isArray(m.content) ? m.content.filter(b => (b as { type?: string })?.type === 'image_url' || (b as { type?: string })?.type === 'image').length : 0), 0);
   // Capped output reserve so a large max_output_tokens can't falsely exclude the
-  // model pool (#470); input counts in full. Threaded to the router separately:
+  // model pool; input counts in full. Threaded to the router separately:
   // it is exact and must not be inflated by the context-window safety margin
-  // (#956 review).
+  //
   const outputReserve = routingReserveTokens(reqData.max_output_tokens);
   const estimatedTotal = estimatedInputTokens + imageCount * IMAGE_TOKEN_ESTIMATE + outputReserve;
 
@@ -864,7 +864,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
 
   const responseId = newId('resp');
   const state = newFallbackState();
-  // Lets the failover loop learn which models reject tool calls (#1230).
+  // Lets the failover loop learn which models reject tool calls.
   state.wantsTools = wantsTools;
   const attemptLog: AttemptRecord[] = [];
   // Client-disconnect fan-out: the flag stops the loop before the NEXT
@@ -1130,9 +1130,9 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
     clientGone: () => clientGone,
     abortInFlight: () => hedgeAbort.abort(newHedgeAbortError()),
     route: () => {
-      // Task-type routing (#1127): same header/derivation as /chat/completions.
+      // Task-type routing: same header/derivation as /chat/completions.
       const taskType = resolveTaskType(req, tools, messages);
-      // #507: inflate the routing estimate from any provider-reported REQUESTED
+      // inflate the routing estimate from any provider-reported REQUESTED
       // size latched onto state so the existing size gates in router.ts skip
       // low-TPM / small-context models on retry.
       const routingTotal = fallbackRoutingTokens(state, estimatedTotal, outputReserve);
@@ -1154,7 +1154,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
         // free index. OpenAI's streaming SDK indexes snapshot.output by
         // output_index, so indices MUST be dense & unique — reusing 0 for the
         // text item after a tool-call item had already taken it makes the SDK
-        // crash on `snapshot.output[output_index]` (#96, Codex computer-use).
+        // crash on `snapshot.output[output_index]` (Codex computer-use).
         let outputIndex = 0;
         let msgItemId: string | null = null;
         let msgText = '';
@@ -1163,17 +1163,17 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
         // tool-call accumulator keyed by the provider's tool_call index
         const toolAcc = new Map<number, { outputIndex: number; itemId: string; callId: string; name: string; args: string }>();
         let totalOutputTokens = 0;
-        // #764: thinking tokens are tracked separately so the final Response
+        // thinking tokens are tracked separately so the final Response
         // object can report `output_tokens_details.reasoning_tokens` truthfully
         // instead of a hardcoded 0.
         let totalReasoningTokens = 0;
-        // #764: ttfb = first token of ANY kind (content or reasoning), recorded
+        // ttfb = first token of ANY kind (content or reasoning), recorded
         // in the pump loop; commit() only backfills streams that never produced
         // one. This path previously logged no ttfb at all, so Analytics showed
         // a null speed for every /v1/responses turn.
         let ttfbMs: number | null = null;
 
-        // Inline-dialect hold window (#231): first text is held until it
+        // Inline-dialect hold window: first text is held until it
         // either matches a tool-call dialect marker (held to the end and
         // rescued into function_call items) or provably cannot (flushed and
         // streamed normally). Mirrors the /chat/completions stream loop.
@@ -1258,7 +1258,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
             // Text deltas → output_text events on a single message item, after
             // the dialect hold window has decided the text is real prose.
             const text = delta.content ?? '';
-            // #764: reasoning models stream thinking before the first answer
+            // reasoning models stream thinking before the first answer
             // token — count that first token as ttfb so Analytics speed
             // reflects the real head-of-stream, and count thinking tokens as
             // real output consumption.
@@ -1289,7 +1289,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
                 }
               }
             } else if (reasoning.length > 0) {
-              // #764: thinking-only chunk (no visible text yet) — count tokens.
+              // thinking-only chunk (no visible text yet) — count tokens.
               totalOutputTokens += Math.ceil(reasoning.length / 4);
               totalReasoningTokens += Math.ceil(reasoning.length / 4);
             }
@@ -1484,7 +1484,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
         function: { ...tc.function, arguments: repairToolArguments(tc.function.arguments, toolSchemas.get(tc.function.name)) },
       }));
 
-      // Inline tool-call dialect rescue (#231) — see /chat/completions.
+      // Inline tool-call dialect rescue — see /chat/completions.
       if (wantsTools && toolCalls.length === 0 && text) {
         const rescue = rescueInlineToolCalls(text, new Set((tools ?? []).map(t => t.function.name)));
         if (rescue.detected) {
@@ -1509,12 +1509,12 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
       }
 
       const promptTokens = result.usage?.prompt_tokens ?? estimatedInputTokens;
-      // #764: include reasoning tokens (message.reasoning_content / reasoning)
+      // include reasoning tokens (message.reasoning_content / reasoning)
       // in the chars/4 estimate so thinking models aren't undercounted when the
       // provider omits `usage`.
       const completionTokens = result.usage?.completion_tokens
         ?? Math.ceil((text.length + completionReasoningText(result).length) / 4);
-      // #764: report reasoning_tokens truthfully — the provider's own count
+      // report reasoning_tokens truthfully — the provider's own count
       // when advertised, else the same chars/4 estimate of the thinking text.
       const reasoningTokens = result.usage?.completion_tokens_details?.reasoning_tokens
         ?? Math.ceil(completionReasoningText(result).length / 4);

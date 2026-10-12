@@ -142,7 +142,7 @@ async function openAiStyleEmbed(
   const r = await proxyFetch(url, {
     method: 'POST',
     // A custom endpoint with auth off holds the `no-key` sentinel: omit the
-    // header instead of sending `Bearer no-key` (#1331).
+    // header instead of sending `Bearer no-key`.
     headers: { 'Content-Type': 'application/json', ...bearerAuthHeader(key) },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -183,7 +183,7 @@ export interface CustomEmbeddingRegistration {
 /**
  * Upsert one custom embedding model bound to an endpoint credential — the
  * shared write path behind POST /api/embeddings/custom and the bulk key
- * importer (#382). Throws EmbeddingsError(400) when the family already exists
+ * importer. Throws EmbeddingsError(400) when the family already exists
  * at a different dimension: vectors from mismatched spaces must never mix, so
  * the caller has to pick a new family name instead.
  */
@@ -221,7 +221,7 @@ export function registerCustomEmbeddingModel(db: Db, reg: CustomEmbeddingRegistr
 
   // `display_name` is optional: a new model takes its id, and a model already
   // on record keeps the name it has instead of being reset by a submit that
-  // simply left the field blank (#704).
+  // simply left the field blank.
   if (existingModel) {
     db.prepare(`
       UPDATE embedding_models

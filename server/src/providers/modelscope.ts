@@ -58,7 +58,7 @@ function modelscopeValidateCacheMs(): number {
  * — a token minted without binding the ModelScope account to an Alibaba
  * Cloud CHINA-site account fails every call with that message. It flows
  * through validationResult() into the health error verbatim so users see the
- * actionable reason instead of a generic "invalid key". See issue #581.
+ * actionable reason instead of a generic "invalid key"..
  */
 export class ModelScopeProvider extends OpenAICompatProvider {
   /** key-material fingerprint → last successful validation wall-clock (ms).

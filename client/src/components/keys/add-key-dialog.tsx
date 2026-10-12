@@ -25,7 +25,7 @@ export function AddKeyDialog({ open, onOpenChange, initialPlatform }: {
   const [pane, setPane] = useState<Pane>('provider')
   const close = () => onOpenChange(false)
 
-  // #657: the scope picker for a key the provider pane just added. It lives
+  // the scope picker for a key the provider pane just added. It lives
   // here, not in the pane, because the pane unmounts with this dialog — the
   // picker has to outlive the add form it follows. null = nothing pending, and
   // the whole flow is skippable: dismissing leaves the key exactly as added.

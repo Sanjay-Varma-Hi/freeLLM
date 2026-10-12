@@ -5,7 +5,7 @@ function hasColumn(db: Db, table: string, column: string): boolean {
   return columns.some((candidate) => candidate.name === column);
 }
 
-/** Optional per-key model scope (#657): a JSON array of model_id strings the
+/** Optional per-key model scope: a JSON array of model_id strings the
  *  key may serve. NULL = the key serves every model of its platform. */
 export function up(db: Db): void {
   if (!hasColumn(db, 'api_keys', 'model_scope_json')) {

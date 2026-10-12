@@ -1,4 +1,4 @@
-// Migration: per-endpoint identity for custom relay models (#651)
+// Migration: per-endpoint identity for custom relay models
 // Created: 2026-07-29
 //
 // DOWN: reversible (throws when duplicates exist — see below)
@@ -7,7 +7,7 @@
 // under platform = 'custom', so two relays offering the same model id could not
 // coexist: the second registration silently rebound the first one's row. One
 // enabled flag, one set of ranks, one stats bucket — turning the model off
-// because relay A was broken turned it off for relay B as well (#619).
+// because relay A was broken turned it off for relay B as well.
 //
 // This adds `endpoint_scope` (the endpoint's normalized base_url, '' for every
 // catalog platform) and moves uniqueness to (platform, model_id,

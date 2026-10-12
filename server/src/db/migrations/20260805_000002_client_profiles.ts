@@ -1,4 +1,4 @@
-// Migration: per-client API keys with server-enforced system prompts (#411)
+// Migration: per-client API keys with server-enforced system prompts
 // Created: 2026-08-05
 //
 // DOWN: reversible

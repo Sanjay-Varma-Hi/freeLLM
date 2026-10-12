@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { parseKeysFromFile, parseModelList } from '../../lib/key-parser.js';
 
-// #382: a paste can declare the models a custom endpoint serves next to its
+// a paste can declare the models a custom endpoint serves next to its
 // key, either as CUSTOM_<n>_MODELS beside the paired CUSTOM_<n>_* lines or as
 // <PREFIX>_CUSTOM_MODELS beside <PREFIX>_BASE_URL + <PREFIX>_API_KEY/_KEY.
 
-describe('parseModelList (#382)', () => {
+describe('parseModelList', () => {
   it('splits on commas and strips trailing capability suffixes', () => {
     expect(parseModelList('llama3, qwen3-TOOLS,pixtral-VISION')).toEqual([
       { id: 'llama3' },
@@ -40,7 +40,7 @@ describe('parseModelList (#382)', () => {
   });
 });
 
-describe('model lists in .env pastes (#382)', () => {
+describe('model lists in.env pastes', () => {
   it('attaches CUSTOM_<n>_MODELS to its own endpoint only', () => {
     const env = [
       'CUSTOM_1_BASE_URL=http://relay-a.example/v1',

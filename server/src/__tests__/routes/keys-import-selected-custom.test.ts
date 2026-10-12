@@ -5,7 +5,7 @@ import { initDb, getDb } from '../../db/index.js';
 import { encrypt } from '../../lib/crypto.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #687, second half. #717 taught POST /api/keys/import about custom endpoints,
+// second half. taught POST /api/keys/import about custom endpoints,
 // but the dashboard never calls that route — the Add-key dialog does
 // /preview then /import-selected, and /import-selected rejected every custom
 // row outright. So a custom endpoint still could not be restored from its own
@@ -49,7 +49,7 @@ function customRows() {
     .all() as Array<{ id: number; platform: string; label: string; base_url: string | null }>;
 }
 
-describe('POST /api/keys/import-selected — custom endpoints (#687)', () => {
+describe('POST /api/keys/import-selected — custom endpoints', () => {
   let app: Express;
 
   beforeAll(() => {
@@ -92,7 +92,7 @@ describe('POST /api/keys/import-selected — custom endpoints (#687)', () => {
     expect(customRows()).toHaveLength(0);
   });
 
-  it('applies the SSRF guard the manual add path uses (#440)', async () => {
+  it('applies the SSRF guard the manual add path uses', async () => {
     const { status, body } = await post(app, '/api/keys/import-selected', {
       keys: [{
         keyName: 'metadata',
@@ -122,7 +122,7 @@ describe('POST /api/keys/import-selected — custom endpoints (#687)', () => {
     expect(customRows()).toHaveLength(1);
   });
 
-  it('pools re-imports of the same endpoint instead of duplicating the row (#619)', async () => {
+  it('pools re-imports of the same endpoint instead of duplicating the row', async () => {
     const row = {
       keyName: 'My Relay',
       keyValue: 'sk-relay-123',

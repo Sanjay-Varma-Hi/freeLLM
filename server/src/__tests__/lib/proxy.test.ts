@@ -27,7 +27,7 @@ import {
   normalizeProxyUrl,
 } from '../../lib/proxy.js';
 
-// #838 reads the OS-wide proxy (scutil/reg/gsettings) as a last-resort
+//  reads the OS-wide proxy (scutil/reg/gsettings) as a last-resort
 // fallback when neither the env nor the DB configures one. A developer
 // machine can genuinely have that set (macOS System Settings → Proxies),
 // which fails every "no proxy configured" case below for the same reason
@@ -134,13 +134,13 @@ describe('proxy config accessors', () => {
   });
 });
 
-// #630: `socks5h://` (and its SOCKS4 sibling `socks4a://`) ask the proxy to
+// `socks5h://` (and its SOCKS4 sibling `socks4a://`) ask the proxy to
 // resolve DNS, which is the whole point for users on DNS-poisoned networks.
 // Scheme detection used to be `startsWith('socks5:') || startsWith('socks4:')`,
 // so socks5h fell through to the undici ProxyAgent — which has no idea what
 // SOCKS is — and every request failed. socks-proxy-agent has understood both
 // schemes natively all along.
-describe('SOCKS scheme detection (#630)', () => {
+describe('SOCKS scheme detection', () => {
   it('recognises every SOCKS scheme socks-proxy-agent supports', () => {
     expect(isSocksProxyUrl('socks5://127.0.0.1:1080')).toBe(true);
     expect(isSocksProxyUrl('socks5h://127.0.0.1:1080')).toBe(true);
@@ -190,13 +190,13 @@ function stubHttpsRequest() {
 }
 
 // A plain `http://` destination rides http.request, not https.request — the
-// local-endpoint cases (#951) are all http, so both transports need stubbing
+// local-endpoint cases are all http, so both transports need stubbing
 // before a test can claim nothing reached the wire.
 function stubHttpRequest() {
   return vi.spyOn(http, 'request').mockImplementation(fakeRequest);
 }
 
-describe('proxyFetch dispatcher selection for SOCKS schemes (#630)', () => {
+describe('proxyFetch dispatcher selection for SOCKS schemes', () => {
   const cases: Array<[string, number]> = [
     ['socks5://127.0.0.1:1080', 5],
     ['socks5h://127.0.0.1:1080', 5],
@@ -221,13 +221,13 @@ describe('proxyFetch dispatcher selection for SOCKS schemes (#630)', () => {
   }
 });
 
-// #666: the SOCKS fallback hardcoded a 120s socket timeout, so a user with
+// The SOCKS fallback hardcoded a 120s socket timeout, so a user with
 // PROVIDER_TIMEOUT_CUSTOM=600000 still lost the request at 120s. The fix only
 // ever RAISES that guard — it never lowers it to the caller's timeout, because
 // http.request's `timeout` is a socket inactivity timer armed across the whole
 // streaming body while timeoutMs is a header deadline disarmed at headers
-// (#553/#584 hand mid-stream time to the stall watchdog).
-describe('SOCKS socket timeout guard (#666)', () => {
+// (/#584 hand mid-stream time to the stall watchdog).
+describe('SOCKS socket timeout guard', () => {
   const socketTimeoutOf = (spy: ReturnType<typeof stubHttpsRequest>): unknown =>
     (spy.mock.calls[0][0] as any).timeout;
 
@@ -320,11 +320,11 @@ describe('SOCKS destination hostname reaches the proxy unresolved', () => {
   });
 });
 
-// #353: HTTPS_PROXY / HTTP_PROXY / ALL_PROXY / NO_PROXY are the de-facto
+// HTTPS_PROXY / HTTP_PROXY / ALL_PROXY / NO_PROXY are the de-facto
 // standard for every other CLI on the box. Honouring them means a user who
 // already exported them for curl/git gets a working app with no extra config —
 // but an explicitly configured dashboard proxy must still win over ambient env.
-describe('standard proxy env vars (#353)', () => {
+describe('standard proxy env vars', () => {
   it('PROXY_URL wins over everything, including the dashboard value', () => {
     process.env.PROXY_URL = 'http://explicit:8080';
     process.env.ALL_PROXY = 'socks5://all:1080';
@@ -376,7 +376,7 @@ describe('standard proxy env vars (#353)', () => {
   });
 });
 
-describe('proxy source logging (#353)', () => {
+describe('proxy source logging', () => {
   it('names the source that won', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     process.env.HTTPS_PROXY = 'http://https-proxy:3128';
@@ -424,7 +424,7 @@ describe('proxy source logging (#353)', () => {
   });
 });
 
-describe('NO_PROXY bypass (#353)', () => {
+describe('NO_PROXY bypass', () => {
   const dispatcherFor = async (url: string) => {
     const spy = vi.spyOn(global, 'fetch').mockResolvedValue(okResponse());
     await proxyFetch(url, { method: 'POST' }, 'groq');
@@ -537,14 +537,14 @@ describe('proxyFetch routing', () => {
   });
 });
 
-// #951: a local destination — Ollama/llama.cpp/LM Studio on 127.0.0.1, or on
+// a local destination — Ollama/llama.cpp/LM Studio on 127.0.0.1, or on
 // the LAN at 192.168.1.20 — is unreachable through a remote proxy, and because
 // an IP literal must go on the wire as ATYP 0x01 (an IP) regardless of the
 // `socks5h` suffix, it is exactly what makes Tor log "giving Tor only an IP
 // address" and may get the connection refused. Loopback and private/LAN
 // addresses therefore always bypass the proxy, unless the operator opts out
 // with FREEAPI_PROXY_LOCAL_DESTINATIONS.
-describe('local and LAN destinations bypass the proxy (#951)', () => {
+describe('local and LAN destinations bypass the proxy', () => {
   /** Run one request through the SOCKS-configured proxy and report the route. */
   const routeOf = async (url: string): Promise<'direct' | 'proxied'> => {
     const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(okResponse());
@@ -642,7 +642,7 @@ describe('local and LAN destinations bypass the proxy (#951)', () => {
   });
 });
 
-// SSRF guard, request-time half (#440). The save-time check validates the
+// SSRF guard, request-time half. The save-time check validates the
 // literal base_url, but fetch()'s default redirect: 'follow' would re-request
 // a 3xx Location target with no re-validation — a public base_url answering
 // 302 → http://169.254.169.254/ used to defeat the guard entirely. Custom
@@ -787,7 +787,7 @@ describe('proxyFetch abort error enrichment', () => {
   });
 });
 
-// Per-key proxy override (#590). The fallback loop wraps each dispatch in
+// Per-key proxy override. The fallback loop wraps each dispatch in
 // withKeyProxy(route.proxyUrl, ...), which parks the URL in AsyncLocalStorage;
 // dispatchFetch reads it there and prefers it over the global proxy. Providers
 // are process singletons, so ALS is what makes "this key exits from there"
@@ -797,7 +797,7 @@ describe('proxyFetch abort error enrichment', () => {
 // proxy host/port, so which dispatcher was chosen is directly observable
 // (undici's ProxyAgent is opaque by comparison, and the port makes global vs
 // per-key unambiguous).
-describe('per-key proxy override (#590)', () => {
+describe('per-key proxy override', () => {
   const agentPortOf = (spy: ReturnType<typeof stubHttpsRequest>, call = 0): unknown =>
     ((spy.mock.calls[call]?.[0] as any)?.agent)?.proxy?.port;
 
@@ -915,11 +915,11 @@ describe('per-key proxy override (#590)', () => {
   });
 });
 
-// #863: the dashboard "Test" button for the outbound proxy. probeProxyUrl must
+// the dashboard "Test" button for the outbound proxy. probeProxyUrl must
 // report reachability of a DRAFT proxy URL without persisting anything, fall
 // back to the saved URL when the input is empty, and never throw — network
 // failures and unbuildable agents come back as structured { ok: false, error }.
-describe('probeProxyUrl (#863)', () => {
+describe('probeProxyUrl', () => {
   it('runs direct and reports ok when no proxy URL is configured', async () => {
     const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(okResponse());
 
@@ -1049,7 +1049,7 @@ describe('probeProxyUrl (#863)', () => {
   });
 });
 
-describe('system proxy detection parsers (#353)', () => {
+describe('system proxy detection parsers', () => {
   it('parses macOS scutil HTTP proxy output', () => {
     const out = [
       '<dictionary> {',
@@ -1101,7 +1101,7 @@ describe('system proxy detection parsers (#353)', () => {
   });
 });
 
-describe('scheme-less proxy values (#1373)', () => {
+describe('scheme-less proxy values', () => {
   const REG_ENABLED = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\n    ProxyEnable    REG_DWORD    0x1\n';
   const regServer = (value: string) =>
     `HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\n    ProxyServer    REG_SZ    ${value}\n`;
@@ -1143,7 +1143,7 @@ describe('scheme-less proxy values (#1373)', () => {
   });
 });
 
-describe('fetch failed carries its cause (#1373)', () => {
+describe('fetch failed carries its cause', () => {
   const fetchFailed = (cause: unknown) => Object.assign(new TypeError('fetch failed'), { cause });
 
   it('names a DNS failure and the host', async () => {

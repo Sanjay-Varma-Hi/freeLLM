@@ -47,7 +47,7 @@ fallbackRouter.get('/penalty-inspector', (_req: Request, res: Response) => {
 });
 
 // DELETE /penalty-inspector → lift every cooldown, penalty and failure streak
-// at once (#952). The per-key DELETE /api/keys/:id/cooldowns stays for the
+// at once. The per-key DELETE /api/keys/:id/cooldowns stays for the
 // surgical case; this is the escape hatch for a pool that cannot route at all.
 fallbackRouter.delete('/penalty-inspector', (_req: Request, res: Response) => {
   res.json(clearRouterPressure());
@@ -64,18 +64,18 @@ const routingSchema = z.object({
   }).optional(),
   // Exploration toggle: give unmeasured models a guaranteed chance to be tried.
   exploreEnabled: z.boolean().optional(),
-  // Peak-hours adjustment (#760), off by default. Hours are whole numbers in
+  // Peak-hours adjustment, off by default. Hours are whole numbers in
   // 0-23 and are read in `peakTimezone`, never the server's local clock, so the
   // window means the same thing on a UTC container as on the operator's laptop.
   peakHoursAdjust: z.boolean().optional(),
   peakStartHour: z.number().int().min(0).max(23, { message: 'peakStartHour must be an integer between 0 and 23' }).optional(),
   peakEndHour: z.number().int().min(0).max(23, { message: 'peakEndHour must be an integer between 0 and 23' }).optional(),
   peakTimezone: z.string().refine(isValidTimezone, { message: 'peakTimezone must be a valid IANA timezone name' }).optional(),
-  // How to pick between several keys of one platform (#919). Independent of
+  // How to pick between several keys of one platform. Independent of
   // `strategy`, which ranks MODELS — the two are set from the same form, so
   // they round-trip through the same request.
   keySelectionStrategy: z.enum(['auto', 'least-remaining']).optional(),
-  // Ceiling on automatic cooldowns (#952): 1 min .. 24 h in ms, null = no cap
+  // Ceiling on automatic cooldowns: 1 min.. 24 h in ms, null = no cap
   // (the escalation ladder keeps its 24h top step and 402/403 bench a day).
   cooldownCeilingMs: z.number().int()
     .min(MIN_COOLDOWN_CEILING_MS, { message: `cooldownCeilingMs must be at least ${MIN_COOLDOWN_CEILING_MS} (1 minute)` })
@@ -126,7 +126,7 @@ fallbackRouter.put('/routing', (req: Request, res: Response) => {
   // `presets` is the raw preset table (unchanged); `weights` is what the router
   // will actually use right now, which differs from the preset while the
   // peak-hours adjustment is firing. Returning both keeps the echo honest
-  // without breaking clients that read `presets` (#760).
+  // without breaking clients that read `presets`.
   const active = getActiveRoutingWeights();
   const peak = getPeakHoursConfig();
   res.json({
@@ -163,7 +163,7 @@ const MODEL_JOINS = `
     LEFT JOIN catalog_model_tombstones ts
       ON ts.kind = 'chat' AND ts.platform = m.platform AND ts.model_id = m.model_id`;
 
-// The whole catalog seen THROUGH one chain (#1021). A chain is a set of opt-ins,
+// The whole catalog seen THROUGH one chain. A chain is a set of opt-ins,
 // not a copy of the catalog: a model the chain names keeps the priority and the
 // on/off flag stored against it, and a model it does not name is still listed —
 // switched OFF, ranked after everything the chain does name. That is what makes
@@ -217,7 +217,7 @@ function orderProfileRows(rows: any[]): any[] {
 // Get fallback chain (with dynamic penalties)
 fallbackRouter.get('/', (req: Request, res: Response) => {
   const db = getDb();
-  // #1047: an explicit ?profile= pins the read to that chain, so a client
+  // an explicit ?profile= pins the read to that chain, so a client
   // caching per-chain can never have "the active chain, whichever that is right
   // now" written into a specific chain's cache entry. During an activation the
   // active id changes between the client's two fetches; that race is how chain
@@ -236,13 +236,13 @@ fallbackRouter.get('/', (req: Request, res: Response) => {
   // `fallback_config` is the chain only for an install that has no profiles at
   // all. Once one is active it is authoritative even when it is empty — falling
   // through to the global table there is what made two different empty chains
-  // show (and save) the same configuration (#1021).
+  // show (and save) the same configuration.
   const rows = activeProfileId != null
     ? orderProfileRows(db.prepare(PROFILE_CHAIN_SQL).all(activeProfileId) as any[])
     : db.prepare(GLOBAL_CHAIN_SQL).all() as any[];
 
   // Count usable keys per platform — enabled AND healthy/unknown status. Unified
-  // with /token-usage and the routing scorer (#456) so budget pooling is computed
+  // with /token-usage and the routing scorer so budget pooling is computed
   // from the same key set everywhere (a disabled or invalid key adds no capacity).
   const keyCounts = db.prepare(`
     SELECT platform, COUNT(*) as count
@@ -298,7 +298,7 @@ fallbackRouter.get('/', (req: Request, res: Response) => {
       monthlyTokenBudgetTokens: parseBudget(r.monthly_token_budget) * Math.max(1, keyCountMap.get(r.platform) ?? 1),
       supportsVision: r.supports_vision === 1,
       supportsTools: r.supports_tools === 1,
-      // 'discovered' (#1348): fetched from a built-in provider's /models because
+      // 'discovered': fetched from a built-in provider's /models because
       // the catalog carries none for it. Routes like a catalog row.
       source: r.platform === 'custom' || r.key_id != null
         ? 'custom'
@@ -306,7 +306,7 @@ fallbackRouter.get('/', (req: Request, res: Response) => {
       keyId: r.key_id ?? null,
       keyLabel: r.key_label ?? null,
       // Which relay endpoint a custom row belongs to, and the id that names it
-      // unambiguously (#651). Null for catalog models only — every custom row
+      // unambiguously. Null for catalog models only — every custom row
       // bound to an endpoint carries both, including a lone one. Deciding when
       // they are worth showing is the client's job (see memberProviderLabel /
       // providerPinId / memberEndpointTitle): it reveals them only where two
@@ -315,10 +315,10 @@ fallbackRouter.get('/', (req: Request, res: Response) => {
       qualifiedModelId: qualifiedModelMemberId(r.platform, r.model_id, r.endpoint_scope),
       hasOverrides: Boolean(r.has_overrides),
       // Which fields the local override actually replaces, so the model page
-      // can mark the individual inputs it edits (#551).
+      // can mark the individual inputs it edits.
       overrideFields: overriddenFieldNames(r.overrides_json),
       // Why the switch is off: a model auto-disabled because the provider
-      // retired it upstream (410 / end of life, #634) is a different state from
+      // retired it upstream (410 / end of life) is a different state from
       // one the user turned off, and the dashboard says so. The reason is the
       // provider's own (redacted) wording.
       retiredUpstream: r.tombstone_source === 'upstream_eol',
@@ -358,7 +358,7 @@ fallbackRouter.put('/', (req: Request, res: Response) => {
   // which is the normal state of every model in a hand-built one. The old
   // UPDATE-only write is why an empty chain could never gain its first model —
   // and why, having matched nothing, the edit was quietly redirected into the
-  // single global table shared by every chain (#1021).
+  // single global table shared by every chain.
   const writeAll = activeProfileId != null
     ? (() => {
         const known = knownModelIds(db);
@@ -387,7 +387,7 @@ fallbackRouter.put('/', (req: Request, res: Response) => {
 });
 
 // `intelligence_rank` is scoped to each provider's own catalog — a provider's
-// #1 model is not globally #1 (see issue #135: MiniMax's top model outranking
+// #1 model is not globally #1 (MiniMax's top model outranking
 // Gemini Pro because both read "Intel #1"). `size_label` IS a cross-provider
 // capability tier, so normalize on it first and use intelligence_rank only as
 // an in-tier tiebreaker. Unknown labels sort last.
@@ -471,7 +471,7 @@ fallbackRouter.get('/token-usage', (_req: Request, res: Response) => {
   // Ordered by intelligence (rank 1 = smartest), not chain priority: the
   // dashboard's monthly-budget bar and legend follow this order, and chain
   // priority is seeded provider by provider, which read as "grouped by
-  // provider" (#1243). Priority stays as the tiebreaker within a rank.
+  // provider". Priority stays as the tiebreaker within a rank.
   let rawModels: { model_db_id: number; platform: string; model_id: string; display_name: string; monthly_token_budget: string; priority: number; enabled: number; intelligence_rank: number; rpm_limit: number | null; rpd_limit: number | null; tpm_limit: number | null; tpd_limit: number | null }[];
 
   if (activeProfile) {
@@ -545,7 +545,7 @@ fallbackRouter.get('/token-usage', (_req: Request, res: Response) => {
 });
 
 // Per-model time-window rate-limit usage (RPM/RPD/TPM: used vs limit), for the
-// dashboard's remaining-quota display (#876). The monthly-budget metric says
+// dashboard's remaining-quota display. The monthly-budget metric says
 // nothing about windowed limits, so this surfaces what the router actually
 // enforces.
 //
@@ -555,8 +555,8 @@ fallbackRouter.get('/token-usage', (_req: Request, res: Response) => {
 // one idle key routes fine, and reporting the exhausted one paints a red badge
 // over a model that is wide open. So we mirror the router's key eligibility
 // (`selectKeyForModel`) — enabled + healthy/unknown, model scope allows this
-// model (#657), and for a custom model the key must belong to the model's own
-// endpoint (#212, #619) — and then report the ELIGIBLE key with the most
+// model, and for a custom model the key must belong to the model's own
+// endpoint — and then report the ELIGIBLE key with the most
 // headroom (lowest used/limit ratio across its windows), which is the key the
 // router lands on once the busier ones fail their gates.
 //

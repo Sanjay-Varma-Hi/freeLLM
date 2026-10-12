@@ -22,7 +22,7 @@ const model: ModelSettingsSource = {
   enabled: true,
 }
 
-describe('parseRank (#551)', () => {
+describe('parseRank', () => {
   it('accepts integers inside the catalog range', () => {
     expect(parseRank('1')).toBe(1)
     expect(parseRank(' 1000 ')).toBe(1000)
@@ -35,7 +35,7 @@ describe('parseRank (#551)', () => {
   })
 })
 
-describe('parseOptionalCount (#551)', () => {
+describe('parseOptionalCount', () => {
   it('reads a blank field as "no limit"', () => {
     expect(parseOptionalCount('')).toBeNull()
     expect(parseOptionalCount('   ')).toBeNull()
@@ -49,7 +49,7 @@ describe('parseOptionalCount (#551)', () => {
   })
 })
 
-describe('reviewModelSettings (#551)', () => {
+describe('reviewModelSettings', () => {
   it('is clean and valid for an untouched form', () => {
     const review = reviewModelSettings(model, modelSettingsForm(model))
     expect(review.dirty).toBe(false)

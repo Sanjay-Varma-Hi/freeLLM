@@ -29,7 +29,7 @@ export interface PeakHoursPatch {
 }
 
 /**
- * Opt-in time-of-day reweighting (#760), rendered at the same footnote tier as
+ * Opt-in time-of-day reweighting, rendered at the same footnote tier as
  * the Explore toggle rather than in a card of its own. Off — the default — it
  * is one checkbox and nothing else; the window inputs appear only once someone
  * turns it on.

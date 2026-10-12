@@ -71,7 +71,7 @@ describe('/api/settings/enable-mcp', () => {
   }
 });
 
-describe('/mcp lifecycle gate (#925)', () => {
+describe('/mcp lifecycle gate', () => {
   let app: Express;
   let token: string;
   let unifiedKey: string;
@@ -125,7 +125,7 @@ describe('/mcp lifecycle gate (#925)', () => {
 });
 
 // The stored default is what decides whether an upgrade is a silent breakage.
-describe('enable_mcp default seed (#925)', () => {
+describe('enable_mcp default seed', () => {
   function makeDb(): Database.Database {
     const db = new Database(':memory:');
     db.exec(`

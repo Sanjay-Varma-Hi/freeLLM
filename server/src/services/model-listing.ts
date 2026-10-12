@@ -39,7 +39,7 @@ export interface ModelListing {
 
 // `ready` — at least one key could actually serve a request for this model
 // right now: enabled, healthy or never probed (probing is lazy, so an unprobed
-// key counts as usable), not scoped away from the model (#657), not on
+// key counts as usable), not scoped away from the model, not on
 // cooldown, and inside its rate and token windows. `exhausted` — keys match
 // the model but every one of them is currently blocked, so a request would
 // fail straight away. `needsKey` — nothing matches it at all, or the model is

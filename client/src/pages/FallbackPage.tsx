@@ -98,18 +98,18 @@ export default function FallbackPage() {
   const queryClient = useQueryClient()
   // Staged edits carry the chain they were made against, so switching chains
   // in the manager below discards them instead of letting one chain's unsaved
-  // rows be saved into another (#1021).
+  // rows be saved into another.
   const [staged, setStaged] = useState<{ profileId: number | null; entries: FallbackEntry[] } | null>(null)
   const [optionsCollapsed, setOptionsCollapsed] = useState(readOptionsCollapsed)
 
-  // Catalog search + filter state (#343).
+  // Catalog search + filter state.
   const [search, setSearch] = useState('')
   const [filterVision, setFilterVision] = useState(false)
   const [filterTools, setFilterTools] = useState(false)
   const [minContext, setMinContext] = useState(0)
 
   // The table edits the ACTIVE chain, so it is part of this query's identity
-  // (#1021): keyed on 'fallback' alone, switching chains in the manager below
+  // keyed on 'fallback' alone, switching chains in the manager below
   // re-rendered the previous chain's rows from cache, and a save then wrote
   // them into the newly activated one. Held back until the active chain is
   // known so the first paint is already the right chain's.
@@ -121,7 +121,7 @@ export default function FallbackPage() {
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery<FallbackEntry[]>({
     queryKey: ['fallback', 'chain', activeProfileId],
-    // The chain id rides in the request itself (#1047): keyed-but-unpinned, a
+    // The chain id rides in the request itself: keyed-but-unpinned, a
     // refetch racing an activation fetched "whichever chain is active by now"
     // into the OLD chain's cache entry, and switching A→B→A then rendered (and
     // could save) B's rows under A's name until a hard refresh.
@@ -131,7 +131,7 @@ export default function FallbackPage() {
   const isLoading = activePending || entriesLoading
 
   // Staged edits are DISCARDED when the active chain changes, not just hidden
-  // (#1047): merely masking them meant switching A→B→A resurrected A's stale
+  // merely masking them meant switching A→B→A resurrected A's stale
   // unsaved rows over freshly fetched data, with only a refresh clearing them.
   useEffect(() => {
     setStaged(prev => (prev && prev.profileId !== activeProfileId ? null : prev))
@@ -152,7 +152,7 @@ export default function FallbackPage() {
     refetchInterval: 15_000,
   })
 
-  // Time-window rate-limit usage (#876). One observer and one poll timer for the
+  // Time-window rate-limit usage. One observer and one poll timer for the
   // whole table — the row component reads it from a map instead of subscribing
   // per row, which on a large catalog was hundreds of observers and timers.
   const { data: rateLimitUsage } = useQuery<RateLimitUsageData>({
@@ -188,7 +188,7 @@ export default function FallbackPage() {
   const keySelection: KeySelectionStrategy = routing?.keySelectionStrategy ?? 'auto'
   const isManual = strategy === 'priority'
 
-  // Merge fallback metadata with live scores, keyed by model. Memoized (#1047):
+  // Merge fallback metadata with live scores, keyed by model. Memoized:
   // recomputing these over the whole catalog on every render — and the page
   // renders once per landing query plus once per 15s poll — was a large part of
   // the "absurdly slow" feel on big catalogs.
@@ -233,7 +233,7 @@ export default function FallbackPage() {
   // one logical row that links to its own page (the on/off toggle was removed). ─
   const orderedGroups = useMemo(() => buildGroups(rows, isManual, rateUsageByModel), [rows, isManual, rateUsageByModel])
 
-  // Catalog search + filters (#343). Filtering operates on whole logical-model
+  // Catalog search + filters. Filtering operates on whole logical-model
   // groups; rank stays the model's position in the full chain so the numbers
   // don't renumber as you filter. Drag-to-reorder is only offered over the full,
   // unfiltered manual chain (reordering a filtered subset would be ambiguous).
@@ -281,7 +281,7 @@ export default function FallbackPage() {
     setLocalEntries(allEntries.map(e => (ids.has(e.modelDbId) ? { ...e, enabled } : e)))
   }
 
-  // Bulk on/off over what is currently on screen (#895). Curating a chain by
+  // Bulk on/off over what is currently on screen. Curating a chain by
   // hand means turning most of the catalog off, which one row at a time over
   // 200 models nobody does. It deliberately follows the filters: "search groq,
   // disable all" is the useful gesture, and touching hidden rows would be a
@@ -305,7 +305,7 @@ export default function FallbackPage() {
     setLocalEntries(allEntries.map(e => ({ ...e, priority: prio.get(e.modelDbId) ?? e.priority })))
   }
 
-  // Jump-to-rank (#1317): type a target rank instead of dragging a model across
+  // Jump-to-rank: type a target rank instead of dragging a model across
   // a long chain. Same staging path as drag — persistGroupOrder serializes the
   // new display order into localEntries and Save commits it. The typed rank is
   // clamped to the chain, so 1 means "front of the queue" and an over-the-end
@@ -414,7 +414,7 @@ export default function FallbackPage() {
 
           {!optionsCollapsed && (
             <div className="mt-3 flex flex-col items-start gap-2 border-t pt-3">
-              {/* Key selection (#919). A separate knob from the strategy above:
+              {/* Key selection. A separate knob from the strategy above:
                   that one ranks MODELS, this one picks between several keys of
                   the same provider. Shown in every mode — manual chain order
                   still leaves the choice of key open. */}
@@ -434,7 +434,7 @@ export default function FallbackPage() {
                 </Tooltip>
               </label>
 
-              {/* Cooldown ceiling (#952). Caps the router's OWN bench guesses
+              {/* Cooldown ceiling. Caps the router's OWN bench guesses
                   (escalation ladder, 402/403 day benches); provider-stated
                   retry times are never shortened. Shown in every mode: the
                   ladder runs regardless of how models are ranked. */}
@@ -456,7 +456,7 @@ export default function FallbackPage() {
                 </Tooltip>
               </label>
 
-              {/* Exploration toggle (#685 follow-up): a niche knob that gives
+              {/* Exploration toggle: a niche knob that gives
                   unmeasured models a guaranteed chance to be tried so they build
                   reliability/speed data. Hidden in Manual mode, where
                   routeRequest ignores it. */}
@@ -476,7 +476,7 @@ export default function FallbackPage() {
                 </label>
               )}
 
-              {/* Peak-hours adjustment (#760): an opt-in tweak to the preset
+              {/* Peak-hours adjustment: an opt-in tweak to the preset
                   weights, and off it does nothing at all. Its "(peak hours)"
                   marker on the weight summary above stays visible either way —
                   that one explains live behaviour. */}
@@ -493,7 +493,7 @@ export default function FallbackPage() {
 
         </section>
 
-        {/* Named fallback chains (#960/#895): list/create/activate/delete.
+        {/* Named fallback chains: list/create/activate/delete.
             Activating a chain makes the table below edit that chain. */}
         <ChainManager />
 
@@ -515,7 +515,7 @@ export default function FallbackPage() {
           />
         ) : (
           <>
-            {/* Catalog toolbar: search + capability/context filters (#343) */}
+            {/* Catalog toolbar: search + capability/context filters */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative w-full sm:max-w-xs">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

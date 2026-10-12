@@ -143,7 +143,7 @@ describe('ACLIDE Responses adapter', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  // #1277 follow-up: these used to be fatal, so one ACLIDE hop ended the chain.
+  // these used to be fatal, so one ACLIDE hop ended the chain.
   it('words a 400 so the chain fails over instead of ending', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValue(json({ error: { message: 'invalid parameter temperature' } }, 400));
     const err = await new AclideProvider().chatCompletion('k', messages, model).catch((e: unknown) => e);

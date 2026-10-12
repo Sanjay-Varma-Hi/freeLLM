@@ -45,10 +45,10 @@ import { AddModelDialog } from './add-model-dialog'
 
 type StatusFilter = 'all' | 'healthy' | 'issues' | 'disabled'
 
-// #787: what the batch bar can do to the selected keys of one group.
+// what the batch bar can do to the selected keys of one group.
 type BulkAction = 'enable' | 'disable' | 'delete'
 
-// #1403 phase 3: the balance badge names its unit with the Free tier page's
+//  phase 3: the balance badge names its unit with the Free tier page's
 // already-translated metric words.
 const METRIC_LABEL_KEY = {
   requests: 'freeTier.metricRequests',
@@ -70,23 +70,23 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
   const [groupOverrides, setGroupOverrides] = useState<Map<string, boolean>>(new Map())
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  // Custom endpoint whose model list is being fetched (#488) — relays change
+  // Custom endpoint whose model list is being fetched — relays change
   // what they serve constantly, so this is a repeat action, not a one-off.
-  // `builtin`: a built-in provider key the catalog has no models for (#1348),
+  // `builtin`: a built-in provider key the catalog has no models for,
   // whose picks register as discovered rows instead of custom-endpoint models.
   const [discoverTarget, setDiscoverTarget] = useState<{ keyId: number; builtin: boolean } | null>(null)
-  // Custom endpoint taking another credential (#702). Keyed by base URL, since
+  // Custom endpoint taking another credential. Keyed by base URL, since
   // a key joins the pool of an endpoint rather than of the row it was opened
   // from, and every key of that endpoint offers the same action.
   const [addKeyBaseUrl, setAddKeyBaseUrl] = useState<string | null>(null)
   // Key whose plaintext the operator asked to copy; re-authentication happens
-  // in the dialog, not here (#705).
+  // in the dialog, not here.
   const [copyKey, setCopyKey] = useState<{ id: number; maskedKey: string } | null>(null)
-  // Key whose model scope is being edited (#657).
+  // Key whose model scope is being edited.
   const [scopeKeyId, setScopeKeyId] = useState<number | null>(null)
-  // Re-open the post-add model picker against the current catalog (#657).
+  // Re-open the post-add model picker against the current catalog.
   const [modelEditorKeyId, setModelEditorKeyId] = useState<number | null>(null)
-  // #787: keys selected for bulk enable/disable/delete within a group.
+  // keys selected for bulk enable/disable/delete within a group.
   const [selectedKeyIds, setSelectedKeyIds] = useState<Set<number>>(new Set())
   // Provider (or, for a custom endpoint, key) whose models are being test-fired,
   // and the target a hand-typed model is being added to. Both came over from
@@ -142,7 +142,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
     },
   })
 
-  // #685 follow-up: fire one real chat request at a custom endpoint so an
+  // fire one real chat request at a custom endpoint so an
   // unmeasured model gains a reliability/speed sample immediately instead of
   // waiting for natural traffic. Only a successful probe records a sample.
   const probeKey = useMutation({
@@ -150,7 +150,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
     // silence it and toast a translated line that carries the reason instead.
     meta: { silenceToast: true },
     mutationFn: (keyId: number) =>
-      // reasoning/toolCalls are optional (#874): the server omits a capability
+      // reasoning/toolCalls are optional: the server omits a capability
       // whose probe errored or timed out, and "absent" means UNKNOWN — which is
       // not the same claim as "the model cannot do it", so it renders as such.
       apiFetch<{ modelId: string; latencyMs: number; reasoning?: boolean; toolCalls?: boolean }>(`/api/keys/custom/probe`, {
@@ -190,7 +190,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
     },
   })
 
-  // One key on or off, as opposed to togglePlatform's whole-platform sweep (#705).
+  // One key on or off, as opposed to togglePlatform's whole-platform sweep.
   const setKeyEnabled = useMutation({
     mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
       apiFetch(`/api/keys/${id}`, { method: 'PATCH', body: JSON.stringify({ enabled }) }),
@@ -201,7 +201,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
     },
   })
 
-  // #787: the batch bar's one mutation. There is no bulk endpoint, so this is
+  // the batch bar's one mutation. There is no bulk endpoint, so this is
   // still one request per key against the per-key routes — but the outcome is
   // reported once. Per-key mutations would each raise the global error toast,
   // so a batch where key 3 of 8 failed left the user with a pile of unrelated
@@ -267,7 +267,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
   for (const k of healthData?.keys ?? []) healthKeyMap.set(k.id, k)
   const statusOf = (k: ApiKey) => healthKeyMap.get(k.id)?.status ?? k.status
 
-  // #1403 phase 3: the provider-reported balance for a key, from the same
+  //  phase 3: the provider-reported balance for a key, from the same
   // health poll the row's status already rides on. One badge per key: the
   // lowest remaining fraction among that key's pools, since that pool is the
   // one that runs dry first and starts routing around the key.
@@ -296,7 +296,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
 
   // Search narrows either whole groups (label match) or the keys within them
   // (label / masked-key / endpoint-URL match); the status filter then trims
-  // the result set. The baseUrl term is #1056's lesson applied here: a custom
+  // the result set. The baseUrl term matters here: a custom
   // row renders "api.unorouter.com" on screen, so searching that host must
   // find the row the same way the fallback table's search does.
   const visibleGroups = grouped
@@ -378,7 +378,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
             const expanded = isGroupExpanded(group)
             const healthyCount = group.keys.filter(k => statusOf(k) === 'healthy').length
             const issueCount = group.keys.filter(k => statusOf(k) !== 'healthy').length
-            // #787: once a selection exists in this group the checkboxes stay
+            // once a selection exists in this group the checkboxes stay
             // visible, so the rest of the selection can be built without hunting.
             const groupHasSelection = group.keys.some(k => selectedKeyIds.has(k.id))
             return (
@@ -461,7 +461,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                   </button>
                 </div>
 
-                {/* #787: batch bar — appears only while keys of THIS group are
+                {/* batch bar — appears only while keys of THIS group are
                     selected. One mutation per key (the per-key endpoint), which
                     keeps the router and health caches consistent. */}
                 {(() => {
@@ -520,7 +520,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                       return (
                         <div key={k.id} className="bg-card">
                           <div className="group/krow flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
-                            {/* #787: bulk-select checkbox — enabling the row-level
+                            {/* bulk-select checkbox — enabling the row-level
                                 batch bar below. Deliberately secondary: the switch
                                 stays the primary per-key control, and a checkbox on
                                 every row at rest is chrome nobody asked for. It fades
@@ -542,7 +542,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                               aria-label={t('keys.selectKey')}
                               className={`size-3.5 flex-shrink-0 accent-foreground cursor-pointer transition-opacity focus-visible:opacity-100 ${groupHasSelection ? 'opacity-100' : 'opacity-0 group-hover/krow:opacity-100'}`}
                             />
-                            {/* Per-key switch (#705). The group switch writes every key of the
+                            {/* Per-key switch. The group switch writes every key of the
                                 platform at once, which for the Custom group meant every endpoint
                                 you run. The API has taken a per-key `enabled` all along and the
                                 router honours it; only the dashboard could not say it. Leading,
@@ -569,7 +569,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                               </Button>
                             )}
                             <code className={`text-xs font-mono flex-shrink-0 ${k.enabled ? '' : 'opacity-50'}`}>{k.maskedKey}</code>
-                            {/* Clicking the label is still the edit affordance (#705),
+                            {/* Clicking the label is still the edit affordance,
                                 but the dialog also lets a credential be replaced in place. */}
                             <button
                               type="button"
@@ -585,7 +585,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                               </code>
                             )}
                             <span className={`text-xs text-muted-foreground ${k.enabled ? '' : 'opacity-50'}`}>{statusLabelKey[status] ? t(statusLabelKey[status]) : status}</span>
-                            {/* Only a SCOPED key shows anything (#657); an unscoped one stays as it always was. */}
+                            {/* Only a SCOPED key shows anything; an unscoped one stays as it always was. */}
                             {(k.modelScope?.length ?? 0) > 0 && (
                               <Badge
                                 variant="secondary"
@@ -595,7 +595,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                                 {t(k.modelScope!.length === 1 ? 'keys.modelScopeBadgeOne' : 'keys.modelScopeBadgeOther', { count: k.modelScope!.length })}
                               </Badge>
                             )}
-                            {/* #1403 phase 3: the provider-reported balance (#1403).
+                            {/*  phase 3: the provider-reported balance.
                                 Amber at ≤20% left — the same low-balance signal the
                                 Quota outlook panel gives, but visible where the operator
                                 actually scans keys instead of on a second tab. */}
@@ -729,7 +729,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
                                   </Tooltip>
                                 </>
                               )}
-                              {/* Deliberately secondary (#657): a small hover-cluster affordance,
+                              {/* Deliberately secondary: a small hover-cluster affordance,
                                   not a first-fold control. */}
                               {!k.keyless && (
                                 <Tooltip text={t('keys.modelScope')}>
@@ -861,7 +861,7 @@ export function ProviderList({ onAddKey }: { onAddKey: () => void }) {
       )}
 
       {(() => {
-        // Resolved from the live query so a save re-seeds the next open (#657).
+        // Resolved from the live query so a save re-seeds the next open.
         const scopeKey = scopeKeyId !== null ? keys.find(k => k.id === scopeKeyId) : undefined
         return scopeKey ? (
           <ModelScopeDialog

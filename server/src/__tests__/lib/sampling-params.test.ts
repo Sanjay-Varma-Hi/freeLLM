@@ -10,7 +10,7 @@ import {
 } from '../../lib/sampling-params.js';
 
 describe('pickSamplingParams', () => {
-  it('forwards set values and skips undefined/null (#200 explicit-null tolerance)', () => {
+  it('forwards set values and skips undefined/null (explicit-null tolerance)', () => {
     expect(pickSamplingParams({
       seed: 42,
       top_k: 50,
@@ -170,7 +170,7 @@ describe('reasoning_effort (request-side reasoning control)', () => {
   });
 });
 
-describe('reasoning_effort normalization (#619 — off-scale values must not 400)', () => {
+describe('reasoning_effort normalization (— off-scale values must not 400)', () => {
   it('passes supported values through untouched, case/whitespace tolerant', () => {
     for (const effort of REASONING_EFFORTS) {
       expect(normalizeReasoningEffort(effort)).toBe(effort);

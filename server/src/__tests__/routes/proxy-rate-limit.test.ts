@@ -24,7 +24,7 @@ async function request(app: Express, headers: Record<string, string> = {}) {
   return { status: res.status, body: json, headers: res.headers };
 }
 
-describe('Proxy per-IP rate limiting (#35 item #6)', () => {
+describe('Proxy per-IP rate limiting (item #6)', () => {
   const originalRpm = process.env.PROXY_RATE_LIMIT_RPM;
 
   beforeAll(() => {

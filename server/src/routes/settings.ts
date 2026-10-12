@@ -35,7 +35,7 @@ import {
 
 export const settingsRouter = Router();
 
-// Which RELEASE this install is, for the dashboard's version row (#703).
+// Which RELEASE this install is, for the dashboard's version row.
 // Deliberately NOT /api/version: the Ollama emulation already owns that path
 // and answers it for real Ollama clients, so mounting here would have shadowed
 // it. `null` means the version could not be established honestly, and the
@@ -44,7 +44,7 @@ settingsRouter.get('/version', (_req: Request, res: Response) => {
   res.json({ version: getAppVersion() });
 });
 
-// Opt-in for the dashboard's automatic release reminder (#782). Off unless the
+// Opt-in for the dashboard's automatic release reminder. Off unless the
 // operator turns it on: a self-hosted install must not contact GitHub on page
 // load on behalf of someone who never asked it to. The manual checker in
 // Settings is a separate surface and is unaffected by this flag.
@@ -132,7 +132,7 @@ settingsRouter.put('/fusion', (req: Request, res: Response) => {
   res.json({ config: saved, maxK: getFusionMaxK() });
 });
 
-// ── MCP server lifecycle (#925, MVP-1) ──────────────────────────────────────
+// ── MCP server lifecycle (MVP-1) ──────────────────────────────────────
 // Config surface for the /mcp introspection server. The Keys page renders this
 // as a switch under Agent compatibility; the stored default is seeded once by
 // migration so upgrades keep serving the clients they already had.
@@ -304,7 +304,7 @@ const guardrailsPutSchema = z.object({
   maxConsecutiveUpstreamFails: z.number().int().min(0).optional(),
 });
 
-// Get the headroom guardrail thresholds (#899): the remaining-budget fraction
+// Get the headroom guardrail thresholds: the remaining-budget fraction
 // at which proactive demotion begins and the score floor at 0 remaining. Both
 // are decimals (0.2 = 20%). null = the scoring.ts default is in effect.
 settingsRouter.get('/headroom', (_req: Request, res: Response) => {
@@ -338,7 +338,7 @@ settingsRouter.put('/headroom', (req: Request, res: Response) => {
   }
 });
 
-// Task-type weight share (#1127 follow-up): the fraction of one bandit axis
+// Task-type weight share: the fraction of one bandit axis
 // moved onto the other when a request declares/derives a task type (code →
 // intelligence; chat → speed). 0 = bias disabled. null = scoring.ts default.
 settingsRouter.get('/task-weight-share', (_req: Request, res: Response) => {
@@ -509,7 +509,7 @@ settingsRouter.put('/proxy', (req: Request, res: Response) => {
   });
 });
 
-// Test proxy connectivity WITHOUT saving (#863). The dashboard's "Test" button
+// Test proxy connectivity WITHOUT saving. The dashboard's "Test" button
 // sends the DRAFT value; an empty body falls back to the saved proxy URL. The
 // probe never persists anything — it only builds a throwaway dispatcher and
 // measures a round trip through the (draft or saved) proxy.

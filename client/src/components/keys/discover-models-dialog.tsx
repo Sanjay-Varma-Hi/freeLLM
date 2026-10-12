@@ -7,12 +7,12 @@ import { useI18n } from '@/i18n'
 import { toast } from '@/lib/toast'
 import { formatContext } from '@/lib/routing'
 
-// #488: relays add and drop models weekly, so keeping a custom endpoint's model
+// relays add and drop models weekly, so keeping a custom endpoint's model
 // list current by hand means re-running `curl .../v1/models | jq` every so
 // often. Ask the endpoint instead, tick the ones to keep, register them in one
 // call. Reads only the user's OWN endpoint with the user's OWN key.
 //
-// #1348: the same dialog serves built-in provider keys whose platform the
+// the same dialog serves built-in provider keys whose platform the
 // catalog carries no models for. The list comes from that provider's own
 // /models, picks register as discovered rows, and only chat models can be
 // picked (the catalog owns media and embedding rows for built-in platforms).
@@ -23,14 +23,14 @@ export interface DiscoveredModel {
   registered: boolean
   /** Approximate context window in tokens when the upstream advertises one. */
   contextWindow?: number
-  /** Human-readable price hint ("free", "$1.25/M in $2/M out") when present (#685). */
+  /** Human-readable price hint ("free", "$1.25/M in $2/M out") when present. */
   priceNote?: string
   /** The server's verdict on whether the note means free — the only thing this
    *  picker badges green, so "$10/M in" can never read as free. */
   isFree?: boolean
   /** True when the upstream advertises image input. */
   vision?: boolean
-  /** Present only when the model is discernibly NOT a chat model (#1051). The
+  /** Present only when the model is discernibly NOT a chat model. The
    *  server routes it to the matching table on register; video is skipped. */
   kind?: 'embedding' | 'image' | 'audio' | 'transcription' | 'video'
 }
@@ -62,7 +62,7 @@ export function DiscoverModelsDialog({
   onOpenChange: (open: boolean) => void
   endpoint: EndpointRef
   onRegistered?: () => void
-  /** A built-in provider key rather than a custom endpoint (#1348). */
+  /** A built-in provider key rather than a custom endpoint. */
   builtin?: boolean
 }) {
   const { t } = useI18n()
@@ -188,7 +188,7 @@ export function DiscoverModelsDialog({
                       {t('models.vision')}
                     </span>
                   )}
-                  {/* #1051: a non-chat model registers into its own table (or,
+                  {/* a non-chat model registers into its own table (or,
                       for video, is skipped), so say what the row IS up front. */}
                   {model.kind && (
                     <span className="shrink-0 rounded-full bg-violet-600/15 px-1.5 py-0.5 text-[10px] text-violet-700 dark:bg-violet-400/15 dark:text-violet-400">

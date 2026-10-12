@@ -199,7 +199,7 @@ describe('sanitizeForGemini', () => {
       },
     };
     // prefixItems/contains are stripped, but Gemini requires `items` on every
-    // array (#1334), so the tuple's member becomes `items` and `bag` gets `{}`.
+    // array, so the tuple's member becomes `items` and `bag` gets `{}`.
     expect(sanitizeForGemini(input)).toEqual({
       type: 'object',
       properties: {

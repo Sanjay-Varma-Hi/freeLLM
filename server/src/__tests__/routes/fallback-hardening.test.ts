@@ -183,7 +183,7 @@ describe('fallback hardening (items 3, 4, 5, 6)', () => {
     expect(cooldownRowFor(firstModel)).toBeUndefined();
   });
 
-  it('item 4 bound (#751): consecutive empty-length completions bench the model+key at the streak limit', async () => {
+  it('item 4 bound: consecutive empty-length completions bench the model+key at the streak limit', async () => {
     // One empty-length turn is reasoning truncation; the Nth in a row on the
     // same model+key is a broken model. Each request here fails over to a
     // healthy sibling, but the streak accrues on the FIRST model.
@@ -219,7 +219,7 @@ describe('fallback hardening (items 3, 4, 5, 6)', () => {
 
     expect(status).toBe(429);
     // The first attempt always runs, and so does the first RETRY even on a
-    // spent budget (#751) — attempt 2 is where the chain stops.
+    // spent budget — attempt 2 is where the chain stops.
     expect(chatCompletion).toHaveBeenCalledTimes(2);
     expect(body.error.message).toContain('retry time budget');
     expect(body.error.message).toContain('Attempt trail:');

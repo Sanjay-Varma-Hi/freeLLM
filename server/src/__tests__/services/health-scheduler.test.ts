@@ -30,7 +30,7 @@ describe('startHealthChecker / stopHealthChecker', () => {
     stopHealthChecker();
   });
 
-  // The pass re-arms itself after each run with a fresh jittered delay (#553)
+  // The pass re-arms itself after each run with a fresh jittered delay
   // instead of sitting on a fixed 5-minute interval, so a fleet's probes don't
   // stay phase-locked to the same instant on every provider.
   it('arms one jittered timer around the 5-minute base interval', () => {

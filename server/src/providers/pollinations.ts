@@ -15,7 +15,7 @@ const POLLINATIONS_ACCOUNT_KEY_URL = 'https://gen.pollinations.ai/account/key';
  *   GET /v1/models answers 200 for a revoked key (and for no key at all —
  *   verified live 2026-07-28), while POST /v1/chat/completions answers 401.
  *   The default openai-compat probe therefore reported dead keys as healthy
- *   and routing degraded silently. See issue #608.
+ *   and routing degraded silently..
  *
  * The probe is GET /account/key instead, which enforces auth (401 for a
  * garbage bearer, verified the same day) and costs no generation quota.

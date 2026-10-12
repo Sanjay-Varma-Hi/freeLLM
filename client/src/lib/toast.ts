@@ -17,7 +17,7 @@ export interface ToastItem {
 /** Most toasts kept on screen at once; older ones are evicted (see push). */
 const MAX_VISIBLE_TOASTS = 4
 
-// Per-severity auto-dismiss defaults (#586). Success/info give the user a
+// Per-severity auto-dismiss defaults. Success/info give the user a
 // comfortable read; errors are sticky — they carry information the user may
 // need to act on (and copy), every toast has a dismiss button, identical
 // messages are deduped in push, and the cap below still bounds the stack, so

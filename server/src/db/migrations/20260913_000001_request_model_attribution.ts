@@ -1,4 +1,4 @@
-// Migration: stamp request history with the concrete model row (#1187)
+// Migration: stamp request history with the concrete model row
 //
 // DOWN: reversible
 //

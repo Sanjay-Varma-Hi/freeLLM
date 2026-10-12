@@ -7,8 +7,8 @@ import { endpointScopeForBaseUrl } from '../lib/endpoint-scope.js';
 
 // ── Shared custom-model registration ─────────────────────────────────────────
 //
-// POST /custom, the bulk key importer (#382) and the scheduled custom-model
-// sync (#674/#663/#656) register models against a user's own endpoint through
+// POST /custom, the bulk key importer and the scheduled custom-model
+// sync register models against a user's own endpoint through
 // the SAME code path, so they can never drift apart. This used to live inline
 // in routes/keys.ts; it moved here verbatim and the copy there was deleted, so
 // no caller can invent a subtly different notion of "registering a custom
@@ -43,16 +43,16 @@ export interface RegisterCustomModelsResult {
  * transaction.
  *
  * Key rows are matched on (base_url, secret): a new secret for a known
- * endpoint is a SECOND credential for it, not a replacement (#619), and a
- * new base_url is a separate provider (#212). Identity is per endpoint
- * (#651): the same model id on a DIFFERENT relay is a separate row with its
+ * endpoint is a SECOND credential for it, not a replacement, and a
+ * new base_url is a separate provider. Identity is per endpoint
+ * the same model id on a DIFFERENT relay is a separate row with its
  * own enabled flag, ranks and stats, instead of silently rebinding the other
  * endpoint's row. A model already on THIS endpoint keeps the key it has, so
- * adding a second credential doesn't re-bind it (#619).
+ * adding a second credential doesn't re-bind it.
  *
  * Capability flags: an unset flag binds NULL so COALESCE picks the insert
  * default (tools 1, vision 0) on a new row and preserves the existing value
- * on re-registration (#470). An omitted display name binds NULL the same way
+ * on re-registration. An omitted display name binds NULL the same way
  * — it falls back to the model id on a new row and leaves a name already on
  * the row alone, so the bulk re-registration behind "Fetch models" (which
  * posts bare ids) can't wipe names the operator set.
@@ -75,7 +75,7 @@ export function registerCustomModels(
 /**
  * The registration loop itself, against an ALREADY-resolved endpoint key and
  * inside the caller's transaction. Split out from registerCustomModels so the
- * bulk key importer (#382) — which resolves its own key and owns a wider
+ * bulk key importer — which resolves its own key and owns a wider
  * transaction — shares this exact write path instead of keeping a second copy.
  */
 export function registerCustomChatModels(
@@ -85,15 +85,15 @@ export function registerCustomChatModels(
   entries: CustomModelEntry[],
 ): RegisteredCustomModel[] {
   const endpointKeyIds = customEndpointKeyIds(db, keyId);
-  // The identity discriminator for every row registered in this call (#651).
+  // The identity discriminator for every row registered in this call.
   const endpointScope = endpointScopeForBaseUrl(baseUrl);
   // Unknown ≠ worst: seed the routing ranks at the catalog median so a new
-  // custom model is explored instead of buried at intelligence 0 (#488).
+  // custom model is explored instead of buried at intelligence 0.
   const seed = customModelSeed(db);
 
   const registered: RegisteredCustomModel[] = [];
   for (const { modelId, displayName, supportsTools, supportsVision } of entries) {
-    // #926: this is an EXPLICIT registration (POST /custom, bulk importer or
+    // this is an EXPLICIT registration (POST /custom, bulk importer or
     // the dashboard's "Fetch models" submit), so it overrides a previous
     // deletion. The scheduled sync never reaches this loop for a tombstoned
     // model — it filters them out in custom-model-sync.ts — so the tombstone

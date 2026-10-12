@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { initDb, getDb } from '../../db/index.js';
 import { customModelSeed, FALLBACK_CUSTOM_SEED } from '../../services/custom-model-seed.js';
 
-// #488: a freshly registered custom model used to land at size_label 'Custom'
+// a freshly registered custom model used to land at size_label 'Custom'
 // (tier 0 — below every catalog tier) and rank 50, so the bandit's intelligence
 // axis scored it 0 and it lost every auto-route. Seed at the catalog MEDIAN
 // instead: we know nothing about the model, so start it in the middle.
@@ -19,7 +19,7 @@ function seedCatalog(rows: Array<{ label: string; intel: number; speed: number }
   rows.forEach((r, i) => insert.run(`m${i}`, `M${i}`, r.intel, r.speed, r.label));
 }
 
-describe('customModelSeed (#488)', () => {
+describe('customModelSeed', () => {
   beforeEach(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

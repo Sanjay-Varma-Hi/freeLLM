@@ -65,7 +65,7 @@ const IMAGE_TOKEN_ESTIMATE = 1000;
 // time (thinking, document, server-tool blocks…) and Claude Code sends blocks
 // with extra fields like `cache_control`. We validate the envelope and handle
 // the block types we understand by `type`, ignoring the rest — same tolerance
-// philosophy as the OpenAI route (#200).
+// philosophy as the OpenAI route.
 const contentBlockSchema = z.object({ type: z.string() }).passthrough();
 
 const anthropicMessageSchema = z.object({
@@ -110,7 +110,7 @@ const messagesSchema = z.object({
   // it stripped by the policy in lib/sampling-params.ts.
   // `type` is a free string, not the enabled/disabled enum: Anthropic keeps
   // adding modes (Claude Code sends 'adaptive') and validating the enum here
-  // turned a knob we only use as a hint into a hard 400 (#632).
+  // turned a knob we only use as a hint into a hard 400.
   thinking: z.object({
     type: z.string().optional(),
     budget_tokens: z.number().int().optional(),
@@ -429,7 +429,7 @@ function writeSse(res: Response, event: string, data: unknown): void {
 // Convert rescued inline tool calls (parsed out of a model that serialized its
 // tool call as TEXT) into OpenAI-shaped tool_calls, so toAnthropicContent /
 // the streaming tool_use emitter render them as Anthropic tool_use blocks —
-// the same rescue /chat/completions and /v1/responses already apply (#231).
+// the same rescue /chat/completions and /v1/responses already apply.
 function rescuedToToolCalls(
   calls: Array<{ name: string; arguments: string }>,
   schemas: Map<string, unknown>,
@@ -524,9 +524,9 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
     reasoning_effort: effortFromAnthropicThinking(body.thinking),
   };
   // Capped output reserve so a large max_tokens can't falsely exclude the model
-  // pool (#470); input + images count in full. Threaded to the router
+  // pool; input + images count in full. Threaded to the router
   // separately: it is exact and must not be inflated by the context-window
-  // safety margin (#956 review).
+  // safety margin.
   const outputReserve = routingReserveTokens(max_tokens);
   const estimatedTotal = estimatedInputTokens + imageCount * IMAGE_TOKEN_ESTIMATE + outputReserve;
 
@@ -565,12 +565,12 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
   const rawSession = req.headers['x-claude-code-session-id'] ?? req.headers['x-session-id'];
   const sessionId = Array.isArray(rawSession) ? rawSession[0] : rawSession;
 
-  // Same-model cross-provider failover (#932). A pin resolves to ONE catalog
+  // Same-model cross-provider failover. A pin resolves to ONE catalog
   // row, and until now that row was the only thing the request preferred: when
   // its provider failed, the loop walked the rest of the catalog and answered
   // with a completely different model. The OpenAI, Responses and inbound-chat
   // surfaces already avoid that by routing a pinned id over its unified model
-  // group as a STRICT chain (#335) — every provider serving the same logical
+  // group as a STRICT chain — every provider serving the same logical
   // model, and nothing else. Build the identical chain here so /v1/messages
   // behaves the same.
   //
@@ -617,7 +617,7 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
   // when every provider rejected the request, not always a 429), and applies the
   // inline tool-call dialect rescue that the OpenAI/Responses surfaces carry.
   const state = newFallbackState();
-  // Lets the failover loop learn which models reject tool calls (#1230).
+  // Lets the failover loop learn which models reject tool calls.
   state.wantsTools = wantsTools;
   const attemptLog: AttemptRecord[] = [];
   // Client-disconnect fan-out: the flag stops the loop before the NEXT
@@ -648,9 +648,9 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
     clientGone: () => clientGone,
     abortInFlight: () => hedgeAbort.abort(newHedgeAbortError()),
     route: () => {
-      // Task-type routing (#1127): same header/derivation as /chat/completions.
+      // Task-type routing: same header/derivation as /chat/completions.
       const taskType = resolveTaskType(req, tools, messages);
-      // #507: inflate the routing estimate from any provider-reported REQUESTED
+      // inflate the routing estimate from any provider-reported REQUESTED
       // size latched onto state so the existing size gates in router.ts skip
       // low-TPM / small-context models on retry.
       const routingTotal = fallbackRoutingTokens(state, estimatedTotal, outputReserve);
@@ -688,7 +688,7 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
           result.choices?.[0]?.finish_reason === 'length' ? { skipBench: true } : {},
         );
       }
-      // #809: bare "safe"/"unsafe" classification output from a relay is an
+      // bare "safe"/"unsafe" classification output from a relay is an
       // upstream filter, not the requested model — fail over like an empty
       // completion.
       if (isUpstreamClassificationOutput(respText, route.platform) && respToolCalls.length === 0) {
@@ -698,7 +698,7 @@ anthropicRouter.post('/messages', async (req: Request, res: Response) => {
         );
       }
 
-      // Inline tool-call dialect rescue (#231): a tool-bearing request answered
+      // Inline tool-call dialect rescue: a tool-bearing request answered
       // with the call serialized as TEXT → re-parse it into structured tool_use
       // so Claude Code's agent loop keeps working; a detected-but-unparseable
       // dialect is a dead turn and fails over like an empty completion. Same
@@ -803,7 +803,7 @@ interface StreamCtx {
   strategyKey?: string;
   /** Cancel this attempt's time-budget hedge once the stream commits. */
   disarmHedge: () => void;
-  /** The request's failover state, so a served tool request can be learned from (#1230). */
+  /** The request's failover state, so a served tool request can be learned from. */
   state: FallbackState;
 }
 
@@ -830,7 +830,7 @@ async function streamCompletion(
   let upstreamFinish: string | null = null;
   const toolAcc = new Map<number, { id?: string; name: string; args: string; thought_signature?: string }>();
 
-  // Inline-dialect hold window (#231): the first text is held until it either
+  // Inline-dialect hold window: the first text is held until it either
   // matches a tool-call dialect marker (held to the end and rescued into
   // tool_use blocks) or provably cannot (flushed and streamed normally). This is
   // also the commit point convergence — message_start is not sent until the

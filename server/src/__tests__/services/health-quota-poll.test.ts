@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { encrypt } from '../../lib/crypto.js';
 import { getDb, initDb } from '../../db/index.js';
 
-// #1403: the health pass piggybacks provider-reported quota polling on a
+// the health pass piggybacks provider-reported quota polling on a
 // healthy verdict, throttled per key, and a quota failure must never bend the
 // health verdict itself.
 const fetchQuota = vi.hoisted(() => vi.fn());
@@ -52,7 +52,7 @@ beforeEach(() => {
   vi.useRealTimers();
 });
 
-describe('health-pass quota polling (#1403)', () => {
+describe('health-pass quota polling', () => {
   it('polls quota after a healthy check and records nothing on failure without changing the verdict', async () => {
     const keyId = seedKey();
     validateKey.mockResolvedValue(true);

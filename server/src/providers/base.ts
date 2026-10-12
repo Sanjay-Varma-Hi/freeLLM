@@ -199,7 +199,7 @@ export interface ProviderFetchOptions {
   timeoutBounds?: 'headers' | 'request';
 }
 
-/** Per-stream timeout wiring for readSseStream (#584). */
+/** Per-stream timeout wiring for readSseStream. */
 export interface SseStreamOptions {
   /** The chat timeout the adapter gave fetchWithTimeout for this request
    * (options.timeoutMs override included). Becomes the first-byte grace
@@ -247,7 +247,7 @@ export abstract class BaseProvider {
   abstract validateKey(apiKey: string, quotaContext?: QuotaObservationContext): Promise<KeyValidationResult>;
 
   /**
-   * Optional quota/balance probe (#1403). Providers whose API exposes a
+   * Optional quota/balance probe. Providers whose API exposes a
    * key-info/quota endpoint override this to fetch the provider-reported
    * limit/remaining and persist them as a `source: 'quota_api'` observation,
    * so the dashboard shows a real balance instead of a text-label guess.
@@ -260,7 +260,7 @@ export abstract class BaseProvider {
     return false;
   }
 
-  /** Whether this provider actually has a quota endpoint to probe (#1403).
+  /** Whether this provider actually has a quota endpoint to probe.
    * fetchQuota alone can't answer it: OpenAICompatProvider overrides the
    * method for every instance, spec or not. Routes that owe the operator a
    * "this platform has no quota endpoint" answer must use this instead. */
@@ -278,7 +278,7 @@ export abstract class BaseProvider {
     if (res.status !== 401 && res.status !== 403) return true;
     // A Cloudflare bot challenge ("Just a moment...") is a 403 about the
     // caller's IP and User-Agent, not about the key. Surface it as
-    // inconclusive so health never auto-disables a good key behind it (#1298).
+    // inconclusive so health never auto-disables a good key behind it.
     if (res.headers?.get('cf-mitigated') === 'challenge') {
       throw providerHttpError(res, `${this.name} key validation blocked by a Cloudflare challenge (HTTP ${res.status}); the key was not checked`);
     }
@@ -309,7 +309,7 @@ export abstract class BaseProvider {
     url: string,
     init: RequestInit,
     // Adapters that don't pass a timeout inherit the platform's env override
-    // (PROVIDER_TIMEOUT_<PLATFORM>, issue #547) over the historical 15s.
+    // (PROVIDER_TIMEOUT_<PLATFORM>) over the historical 15s.
     timeoutMs = providerTimeoutMs(this.platform, 15000),
     fetchOpts?: ProviderFetchOptions,
   ): Promise<Response> {
@@ -361,15 +361,15 @@ export abstract class BaseProvider {
   }
 
   /**
-   * One reader.read() bounded by the mid-stream inactivity watchdog (#553).
+   * One reader.read bounded by the mid-stream inactivity watchdog.
    * Shared by readSseStream and adapters that parse their own wire format
    * (google.ts) so every stream gets the same stall semantics:
    * PROVIDER_STREAM_STALL_TIMEOUT_MS (per-platform override
-   * PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM>, #584), default 90s, 0 disables.
+   * PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM>), default 90s, 0 disables.
    * Client-abort rejections pass through untouched — undici errors the body
    * with the request signal's reason, so a disconnect surfaces here as the
    * marked error from newClientAbortError, not as a stall. `timeoutMessage`
-   * lets the first-byte read report its distinct wording (#584).
+   * lets the first-byte read report its distinct wording.
    */
   protected async readWithStallTimeout<T>(
     read: () => Promise<T>,
@@ -390,7 +390,7 @@ export abstract class BaseProvider {
   }
 
   /**
-   * Budget for the FIRST read of a streaming body (issue #584): the platform's
+   * Budget for the FIRST read of a streaming body: the platform's
    * chat timeout is already "how slow may the first token be" — tuned per
    * platform at registration and env-overridable via PROVIDER_TIMEOUT_<PLATFORM>
    * — but on streams it is disarmed the moment response HEADERS arrive, and
@@ -413,14 +413,14 @@ export abstract class BaseProvider {
   }
 
   /**
-   * Shared SSE reader for OpenAI-wire streaming endpoints (#231 audit).
+   * Shared SSE reader for OpenAI-wire streaming endpoints.
    *
    * Hardened against the upstream failure modes observed live:
    *  - Inactivity timeout: fetchWithTimeout's abort timer dies the moment
    *    response HEADERS arrive, so a provider that stalls mid-body used to
    *    hang the client forever. Each read now has its own deadline. The FIRST
    *    read gets a grace budget derived from the platform's chat timeout
-   *    (#584) — SSE headers can arrive instantly while the model prefills a
+   * — SSE headers can arrive instantly while the model prefills a
    *    long prompt for minutes, which is slow, not stalled.
    *  - Abrupt EOF: a stream that ends without `[DONE]` AND without any
    *    `finish_reason` is a truncated generation, not a completion. It used
@@ -453,12 +453,12 @@ export abstract class BaseProvider {
 
     // The 90s default was hardcoded and silently truncated slow streams — the
     // gateway ended them with an error frame plus a clean [DONE] that OpenAI
-    // SDK clients swallow, so responses "just stopped" (issue #553). Operators
+    // SDK clients swallow, so responses "just stopped". Operators
     // proxying slow free tiers can raise it (or 0 to disable) via
     // PROVIDER_STREAM_STALL_TIMEOUT_MS, or per platform via
-    // PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM> (#584).
+    // PROVIDER_STREAM_STALL_TIMEOUT_<PLATFORM>.
     const inactivityTimeoutMs = opts?.stallTimeoutMs ?? streamStallTimeoutMs(this.platform);
-    // First-byte grace (#584): adapters pass the same chat timeout they gave
+    // First-byte grace: adapters pass the same chat timeout they gave
     // fetchWithTimeout; the fallback mirrors fetchWithTimeout's own default so
     // adapters that never tuned either stay on max(15s-or-env, stall) — i.e.
     // exactly the stall budget they had before.

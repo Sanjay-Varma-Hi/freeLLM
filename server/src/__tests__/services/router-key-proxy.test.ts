@@ -4,11 +4,11 @@ import { encrypt } from '../../lib/crypto.js';
 import { encryptProxyUrl } from '../../lib/key-proxy.js';
 import { routeRequest, setRoutingStrategy } from '../../services/router.js';
 
-// Per-key proxy override (#590): the URL rides on the RouteResult the router
+// Per-key proxy override: the URL rides on the RouteResult the router
 // already builds, so the dispatch loop needs neither a query nor a decrypt per
 // attempt. These pin that contract — the loop reads route.proxyUrl and nothing
 // else.
-describe('Router — per-key proxy override (#590)', () => {
+describe('Router — per-key proxy override', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

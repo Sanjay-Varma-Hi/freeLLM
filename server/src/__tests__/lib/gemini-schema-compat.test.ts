@@ -253,11 +253,11 @@ describe('sanitizeForGemini vendor extensions and pass-through', () => {
   });
 });
 
-describe('sanitizeForGemini items shapes (#1334)', () => {
+describe('sanitizeForGemini items shapes', () => {
   // Gemini requires `items` on every ARRAY ("…items: missing field" otherwise)
   // and rejects a list-valued `items`; `items: {}` and `items: { anyOf }` are
   // accepted. Shapes below were checked against the live API.
-  it('reproduces #1334: a nested array whose tuple lived in prefixItems gets items', () => {
+  it('reproduces: a nested array whose tuple lived in prefixItems gets items', () => {
     const out = sanitizeForGemini({
       type: 'object',
       properties: {

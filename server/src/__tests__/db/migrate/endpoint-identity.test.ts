@@ -7,7 +7,7 @@ import {
   down as endpointIdentityDown,
 } from '../../../db/migrations/20260729_000001_custom_model_endpoint_identity.js';
 
-// Per-endpoint model identity (#651): the migration has to change the shape of
+// Per-endpoint model identity: the migration has to change the shape of
 // a table two other tables point INTO, on databases that are already carrying
 // user data. These cases pin the two things that could quietly destroy an
 // install: row ids drifting (which would silently re-point every fallback /

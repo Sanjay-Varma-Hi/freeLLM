@@ -92,13 +92,13 @@ export default function AgentsPage() {
 
       <section className="mb-6 rounded-3xl border bg-card p-5">
         <h2 className="text-sm font-medium">{t('agents.quickstartTitle')}</h2>
-        <p className="mt-0.5 max-w-prose text-xs text-muted-foreground">{t('agents.quickstart')}</p>
+        <p className="mt-0.5 max-w-prose text-xs text-muted-foreground">{t('agents.manualHint')}</p>
         <div className="mt-3 flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2">
           <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs">
-            npx freellmapi setup-claude --url {origin}
+            {`${origin}/v1`}
           </code>
           <CopyButton
-            text={`npx freellmapi setup-claude --url ${origin}`}
+            text={`${origin}/v1`}
             className="size-7 shrink-0"
             label={t('common.copy')}
           />
@@ -112,7 +112,6 @@ export default function AgentsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {toolCatalog.map(tool => {
           const traffic = seen.get(analyticsIds[tool.id] ?? tool.id)
-          const command = `npx freellmapi ${tool.command} --url ${origin}`
           const endpoint = tool.baseUrlSupport === 'root' ? origin : `${origin}/v1`
           // The copied snippet is pasted into config files — keep it
           // locale-independent.
@@ -144,16 +143,6 @@ export default function AgentsPage() {
                 </CardAction>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col gap-4">
-                <div>
-                  <p className="text-xs font-medium">{t('agents.setupLabel')}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {tool.configType === 'guide' ? t('agents.setupGuideHint') : t('agents.setupHint')}
-                  </p>
-                  <div className="mt-2 flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2">
-                    <code className="min-w-0 flex-1 truncate font-mono text-[11px]">{command}</code>
-                    <CopyButton text={command} className="size-7 shrink-0" label={t('common.copy')} />
-                  </div>
-                </div>
                 <div>
                   <p className="text-xs font-medium">{t('agents.manualLabel')}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{t('agents.manualHint')}</p>

@@ -99,7 +99,7 @@ function expectReleased(routes: RouteResult[]): void {
   }
 }
 
-describe('endpoint TTFB-aware fallback budget (#1262)', () => {
+describe('endpoint TTFB-aware fallback budget', () => {
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});

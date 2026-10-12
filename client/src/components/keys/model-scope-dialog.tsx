@@ -8,7 +8,7 @@ import { useI18n } from '@/i18n'
 import { X } from 'lucide-react'
 import type { ApiKey } from '../../../../shared/types'
 
-// #657: relay stations hand out keys that only serve one model group; a key
+// relay stations hand out keys that only serve one model group; a key
 // scoped here is skipped by the router for every model outside its list. A
 // deliberately light editor: a chip list plus a free-text id field. Suggestions
 // come only from data the key row already carries (a custom endpoint's

@@ -29,7 +29,7 @@ const CHECK_INTERVAL_JITTER = 0.2;
 
 // A key validated more recently than this is skipped by the scheduled pass:
 // re-asking a provider about a credential it just answered for is exactly the
-// traffic #553 is about. Below the jittered minimum interval (4 minutes) so a
+// traffic is about. Below the jittered minimum interval (4 minutes) so a
 // short interval can never skip a whole pass' worth of keys.
 export const RECENT_CHECK_SKIP_MS = 3.5 * 60 * 1000;
 
@@ -83,7 +83,7 @@ function recordInvalidFailure(keyId: number, platform?: string): void {
 }
 
 /**
- * Provider-reported quota polling (#1403 phase 1). Providers with a key-info
+ * Provider-reported quota polling (phase 1). Providers with a key-info
  * endpoint (see BaseProvider.fetchQuota) get polled right after a health pass
  * confirms the key works, so the dashboard shows the provider's own balance
  * instead of a regex guess over catalog text. Throttled per key: a poll is
@@ -128,7 +128,7 @@ export async function pollKeyQuota(
   }
 }
 
-/** True when this provider actually has a quota endpoint to probe (#1403).
+/** True when this provider actually has a quota endpoint to probe.
  *  Uses the provider's own hasQuotaProbe getter: OpenAICompatProvider
  *  overrides fetchQuota for every instance, spec or not, so a method-identity
  *  check would claim quota support for specless platforms. */
@@ -162,7 +162,7 @@ export async function checkKeyHealth(keyId: number): Promise<KeyStatus> {
 
   try {
     const apiKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
-    // #590: probe the key from the same exit its traffic uses. A key that is
+    // probe the key from the same exit its traffic uses. A key that is
     // only reachable through its own proxy (the reason to set one) would
     // otherwise be validated direct, fail, and be auto-disabled after three
     // checks while real requests through the proxy were working fine.
@@ -189,11 +189,11 @@ export async function checkKeyHealth(keyId: number): Promise<KeyStatus> {
 
     if (isValid) {
       failureCount.delete(keyId);
-      // #1348: a healthy key on a built-in platform the catalog does not carry
+      // a healthy key on a built-in platform the catalog does not carry
       // serves nothing until its models are discovered. Fire-and-forget; the
       // trigger is a no-op for every other platform, and throttled.
       triggerBuiltinModelDiscovery(db, row.platform, 'healthy');
-      // #1403: piggyback provider-reported quota polling on the healthy
+      // piggyback provider-reported quota polling on the healthy
       // verdict — but only for providers with a quota endpoint, and at most
       // once per QUOTA_POLL_INTERVAL_MS per key. Fire-and-forget, silent.
       if (supportsQuotaPolling(provider) && quotaPollDue(keyId)) {
@@ -258,7 +258,7 @@ export async function probeKeyValidity(keyId: number): Promise<KeyProbeOutcome> 
     if (!provider) return 'error';
 
     const apiKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
-    // Same reasoning as checkKeyHealth: probe through the key's own proxy (#590).
+    // Same reasoning as checkKeyHealth: probe through the key's own proxy.
     const validation = await withKeyProxy(decryptProxyUrl(row), () => provider.validateKey(apiKey, {
       platform: row.platform as Platform,
       keyId,
@@ -341,7 +341,7 @@ function providerBucket(row: HealthKeyRow): string {
  * Round-robin the queue across providers: one key from each provider, then the
  * next from each, and so on. Raw DB order is provider-clustered (keys are added
  * a provider at a time), which is what turned a fleet with 40 keys on one
- * provider into 40 back-to-back requests from one IP (#553). Exported for tests.
+ * provider into 40 back-to-back requests from one IP. Exported for tests.
  */
 export function interleaveByProvider<T>(rows: T[], bucketOf: (row: T) => string): T[] {
   const buckets = new Map<string, T[]>();
@@ -372,7 +372,7 @@ export function checkAllKeys(opts: HealthPassOptions = {}): Promise<HealthPassRe
     checkAllInFlight = null;
   });
   // Keep the degraded-mode state machine in step with the latest verdicts
-  // (#904): a fleet-wide outage should flip the gateway into degraded mode
+  // a fleet-wide outage should flip the gateway into degraded mode
   // shortly after the pass that observed it, not after the next request.
   void checkAllInFlight.then(() => updateDegradationState());
   return checkAllInFlight;

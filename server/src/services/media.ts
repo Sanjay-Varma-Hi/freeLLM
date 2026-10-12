@@ -5,8 +5,7 @@
 // (a chat request can't misroute to an image model) and never pollute the chat
 // token budget. Each platform has a small adapter here; routing fails over
 // across the providers serving the same modality. The rows are maintained in the
-// published catalog and arrive via catalog-sync (premium on the live tier within
-// ~12h, free once each model is 30 days old) — never seeded by migrations.
+// published catalog and arrive via catalog-sync — never seeded by migrations.
 import { getDb } from '../db/index.js';
 import { parseRetryAfterMs } from '../providers/base.js';
 import { RetryHintTracker } from '../lib/retry-hint.js';
@@ -522,7 +521,7 @@ async function callHuggingFaceVideo(
   const videoUrl = result.video?.url;
   if (!videoUrl) throw new MediaError('huggingface returned no video URL', 502);
   // Every other URL this adapter contacts is built from constants; this one
-  // comes out of an upstream JSON body, which is exactly the shape #440's
+  // comes out of an upstream JSON body, which is exactly the shape the SSRF
   // guard exists for. Refuse anything that is not plain http(s) on a routable
   // address before spending a request on it — a result URL pointing at cloud
   // metadata or a link-local address would otherwise be fetched and streamed

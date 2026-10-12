@@ -553,7 +553,7 @@ function PreviewSection({ state }: { state: CompressionState }) {
   )
 }
 
-const RELEASES_URL = 'https://github.com/tashfeenahmed/freellmapi/releases'
+const RELEASES_URL = 'https://github.com/Sanjay-Varma-Hi/freeLLM/releases'
 
 function GeneralSection({ active }: { active: boolean }) {
   const { t } = useI18n()
@@ -632,10 +632,10 @@ function formatDateTime(value: string | null | undefined, locale: Locale) {
 
 /**
  * The one update surface in the dashboard: which build this is, and — on demand —
- * whether official `main` has moved past it (#491).
+ * whether official `main` has moved past it.
  *
  * The collapsed row is deliberately wordless, as the version row it replaces was
- * (#703): a proper noun, a version number, an arrow and icons, so it reads the
+ * a proper noun, a version number, an arrow and icons, so it reads the
  * same in all 60 shipped locales. Words only appear behind the button, in the
  * dialog, where the commits and the deployment-specific upgrade command are —
  * and those strings are translated.
@@ -660,7 +660,7 @@ function UpdateChecker({ active }: { active: boolean }) {
   const [error, setError] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activity, setActivity] = useState<string[]>([])
-  // Opt-in for the automatic reminder pill (#782). `null` until the server has
+  // Opt-in for the automatic reminder pill. `null` until the server has
   // answered, so the row never renders a state that isn't the stored one.
   const [autoCheck, setAutoCheck] = useState<boolean | null>(null)
 
@@ -930,21 +930,21 @@ function UpdateChecker({ active }: { active: boolean }) {
                 {info.installation === 'docker' && (
                   <div className="flex gap-2 rounded-xl border bg-muted/30 p-3">
                     <SquareTerminal className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <code className="whitespace-pre-wrap break-all font-mono text-[11px]">docker compose pull && docker compose up -d</code>
+                    <code className="whitespace-pre-wrap break-all font-mono text-[11px]">git pull && docker compose up -d --build</code>
                   </div>
                 )}
                 {info.installation === 'source' && (
                   <div className="space-y-2">
                     <div className="flex gap-2 rounded-xl border bg-muted/30 p-3">
                       <SquareTerminal className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                      <code className="whitespace-pre-wrap break-all font-mono text-[11px]">git fetch https://github.com/tashfeenahmed/freellmapi.git main && git merge --ff-only FETCH_HEAD && npm ci && npm run build</code>
+                      <code className="whitespace-pre-wrap break-all font-mono text-[11px]">git fetch https://github.com/Sanjay-Varma-Hi/freeLLM.git main && git merge --ff-only FETCH_HEAD && npm ci && npm run build</code>
                     </div>
                     <p className="text-[11px] text-muted-foreground">{t('settings.restartAfterUpdate')}</p>
                   </div>
                 )}
                 {(info.installation === 'desktop' || info.installation === 'unknown') && (
                   <a
-                    href="https://github.com/tashfeenahmed/freellmapi/releases/latest"
+                    href="https://github.com/Sanjay-Varma-Hi/freeLLM/releases/latest"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs font-medium underline underline-offset-4"

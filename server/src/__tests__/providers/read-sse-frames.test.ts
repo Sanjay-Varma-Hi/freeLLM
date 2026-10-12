@@ -34,7 +34,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('readSseFrames data: prefix (issue #1087)', () => {
+describe('readSseFrames data: prefix', () => {
   it('parses data: {json} with a space after the colon', async () => {
     const body = `data: ${CONTENT_CHUNK}\n\ndata: ${FINISH_CHUNK}\n\ndata: [DONE]\n\n`;
     const provider = makeProvider();

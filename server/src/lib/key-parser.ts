@@ -1,4 +1,4 @@
-/** One model id from a `*_MODELS` list (#382). A capability flag is set only
+/** One model id from a `*_MODELS` list. A capability flag is set only
  *  when the paste declared it via a trailing `-TOOLS` / `-VISION` suffix;
  *  unset means "no opinion" so registration keeps its own defaults. */
 export interface ParsedModelEntry {
@@ -17,7 +17,7 @@ export interface ParsedKey {
    *  CUSTOM_<n>_BASE_URL / CUSTOM_<n>_KEY convention in .env). */
   baseUrl?: string;
   /** Custom endpoints only: models declared beside the key via
-   *  CUSTOM_<n>_MODELS / <PREFIX>_CUSTOM_MODELS (#382). */
+   *  CUSTOM_<n>_MODELS / <PREFIX>_CUSTOM_MODELS. */
   models?: ParsedModelEntry[];
   /** Display name carried by a format that has one (CSV column 3, export
    *  JSON `label`). The import route stores it when present instead of
@@ -539,7 +539,7 @@ export function parseAuthJson(content: string): ParseResult {
 }
 
 /**
- * Parse a comma-separated model list (#382). Trailing `-TOOLS` / `-VISION`
+ * Parse a comma-separated model list. Trailing `-TOOLS` / `-VISION`
  * suffixes — either order, possibly both — strip off the stored id and set the
  * matching capability flag. Trailing ONLY: a TOOLS/VISION inside the id is
  * part of the id, and the suffixes are uppercase by convention so a real model
@@ -579,7 +579,7 @@ interface CustomEnvFold {
  * with no URL beside it stays unpaired and is skipped downstream, which is the
  * honest outcome: there is no endpoint to attach it to.
  *
- * Model lists ride the same conventions (#382): `CUSTOM_<n>_MODELS=` attaches
+ * Model lists ride the same conventions: `CUSTOM_<n>_MODELS=` attaches
  * to the CUSTOM_<n> pair, and `<PREFIX>_CUSTOM_MODELS=` turns a
  * `<PREFIX>_BASE_URL` + `<PREFIX>_API_KEY` (or `<PREFIX>_KEY`) pair in the
  * same paste into a custom endpoint carrying those models. A bare

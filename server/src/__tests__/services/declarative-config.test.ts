@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
-import { initDb, getDb, getSetting, setSetting } from '../../db/index.js';
-import { applyDeclarativeConfig, applyDeclarativeConfigFromEnv, activateConfiguredLicense } from '../../services/declarative-config.js';
+import { initDb, getDb, getSetting } from '../../db/index.js';
+import { applyDeclarativeConfig, applyDeclarativeConfigFromEnv } from '../../services/declarative-config.js';
 import { getRoutingStrategy } from '../../services/router.js';
 import { userCount, verifyCredentials } from '../../services/auth.js';
-import { SETTING_LICENSE_KEY } from '../../services/catalog-sync.js';
 
 const ORIGINAL_CONFIG_JSON = process.env.FREEAPI_CONFIG_JSON;
 const ORIGINAL_CONFIG_PATH = process.env.FREEAPI_CONFIG_PATH;
@@ -107,7 +106,7 @@ describe('declarative config import', () => {
     expect((getDb().prepare("SELECT COUNT(*) AS n FROM api_keys WHERE platform = 'groq' AND label = 'config'").get() as { n: number }).n).toBe(1);
   });
 
-  // #600: pollinations lost `keyless: true` in #573, so a legacy declarative
+  // pollinations lost `keyless: true`, so a legacy declarative
   // config with a keyless-era pollinations entry (no `key`) used to throw at
   // boot and brick the install. Missing-key entries must now degrade to a
   // per-entry skip + warning instead of killing the apply.
@@ -194,7 +193,7 @@ describe('declarative config import', () => {
   });
 });
 
-// Per-endpoint identity (#651): two relays can hold the same model id, so a
+// Per-endpoint identity: two relays can hold the same model id, so a
 // declarative `models:` or `fallback:` entry naming only (platform, modelId) is
 // ambiguous for platform 'custom'. Patching whichever row SQLite returned first
 // would silently edit the wrong relay, so the entry has to say which endpoint
@@ -283,11 +282,9 @@ describe('declarative config with two relays serving one model id', () => {
   });
 });
 
-// admin + license: the two declarative fields that touch the dashboard account
-// and the Premium catalog feed. The admin entry must only ever create the
-// FIRST account — once a user exists it degrades to a warning so a config
-// file can never take over a claimed install. The license entry goes through
-// the same validate-then-store contract as POST /api/premium/key.
+// admin: the declarative field that touches the dashboard account. The admin
+// entry must only ever create the FIRST account — once a user exists it
+// degrades to a warning so a config file can never take over a claimed install.
 describe('declarative config admin', () => {
   beforeEach(() => {
     getDb().prepare('DELETE FROM users').run();
@@ -329,66 +326,15 @@ describe('declarative config admin', () => {
   });
 });
 
-describe('declarative config license', () => {
-  function mockLicenseService(over: Record<string, unknown> = {}) {
-    return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/v1/license/activate')) {
-        return new Response(JSON.stringify({
-          valid: true, plan: 'premium', status: 'active', expiresAt: null, ...over,
-        }));
-      }
-      if (url.endsWith('/v1/license/check')) {
-        return new Response(JSON.stringify({ plan: 'premium', status: 'active', expiresAt: null }));
-      }
-      // /v1/latest catalog fetch from the kicked sync — fail it on purpose;
-      // syncCatalog catches, logs, and records the error without throwing.
-      return new Response('no catalog in tests', { status: 500 });
-    });
-  }
-
-  beforeEach(() => {
-    getDb().prepare("DELETE FROM settings WHERE key IN ('premium_license_key', 'premium_license_status')").run();
-  });
-
+describe('declarative config license (retired)', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('validates and stores a configured license key, then kicks a live sync', async () => {
-    const fetchMock = mockLicenseService();
-    const result = applyDeclarativeConfig({ license: 'flk_valid_test_key' });
-    expect(result.license).toBe(true);
-    await vi.waitFor(() => expect(getSetting(SETTING_LICENSE_KEY)).toBe('flk_valid_test_key'));
-    const called = fetchMock.mock.calls.map(c => String(c[0] instanceof Request ? c[0].url : c[0]));
-    expect(called.some(u => u.endsWith('/v1/license/activate'))).toBe(true);
-  });
-
-  it('does not store a rejected license key', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    mockLicenseService({ valid: false, reason: 'unknown_key' });
-    await activateConfiguredLicense('flk_rejected_key');
-    expect(getSetting(SETTING_LICENSE_KEY)).toBeUndefined();
-    expect(warn.mock.calls.some(c => String(c[0]).includes('rejected'))).toBe(true);
-  });
-
-  it('leaves settings untouched when the license service is unreachable', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'));
-    await activateConfiguredLicense('flk_offline_key');
-    expect(getSetting(SETTING_LICENSE_KEY)).toBeUndefined();
-    expect(warn.mock.calls.some(c => String(c[0]).includes('could not reach'))).toBe(true);
-  });
-
-  it('skips activation entirely when the stored key already matches', async () => {
-    setSetting(SETTING_LICENSE_KEY, 'flk_already_stored');
+  it('accepts a leftover license entry, ignores it, and never contacts any server', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
-    await activateConfiguredLicense('flk_already_stored');
+    const result = applyDeclarativeConfig({ license: 'flk_old_key_value' });
+    expect(result.applied).toBe(true);
+    expect(result.warnings).toContain('license: no longer used — the entry was ignored');
     expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('re-activates when the configured key differs from the stored one (rotation)', async () => {
-    setSetting(SETTING_LICENSE_KEY, 'flk_old_key_1');
-    mockLicenseService();
-    await activateConfiguredLicense('flk_new_key_2');
-    expect(getSetting(SETTING_LICENSE_KEY)).toBe('flk_new_key_2');
+    expect(getSetting('premium_license_key')).toBeUndefined();
   });
 });

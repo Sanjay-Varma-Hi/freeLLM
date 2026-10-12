@@ -102,7 +102,7 @@ describe('GET /api/analytics/requests', () => {
     expect(successes.body.rows.map((r: any) => r.status)).toEqual(['success']);
   });
 
-  it("filters by the 'canceled' status (#752)", async () => {
+  it("filters by the 'canceled' status", async () => {
     insertCall(recentUtcTimestamp(8).sql, '10.0.0.1', 'ua', 'success');
     insertCall(recentUtcTimestamp(9).sql, '10.0.0.1', 'ua', 'canceled');
 

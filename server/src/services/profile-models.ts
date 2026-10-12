@@ -9,7 +9,7 @@ export function getActiveProfileId(db: Db): number | null {
   return profile ? profileId : null;
 }
 
-// Only chains that still opt in to the backfill (#895). A chain created with
+// Only chains that still opt in to the backfill. A chain created with
 // `empty: true` — or one the operator later switched the flag off on — holds
 // exactly what was put in it, and a catalog sync must not quietly refill it.
 const AUTO_INCLUDING_PROFILES_SQL = `
@@ -47,7 +47,7 @@ export function ensureAllModelsInProfiles(db: Db): void {
   const maxPriority = db.prepare('SELECT COALESCE(MAX(priority), 0) AS max_priority FROM profile_models WHERE profile_id = ?');
   const insert = db.prepare('INSERT INTO profile_models (profile_id, model_db_id, priority, enabled) VALUES (?, ?, ?, ?)');
 
-  // One transaction for the whole backfill (#1047): under WAL each bare
+  // One transaction for the whole backfill: under WAL each bare
   // insert.run() is its own commit + fsync, and profiles × missing models of
   // those, run on the event loop, is how a catalog sync froze every request
   // on the box for minutes on slow storage.

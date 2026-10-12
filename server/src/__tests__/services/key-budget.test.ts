@@ -15,7 +15,7 @@ import {
   nextMonthResetAt,
 } from '../../services/key-budget.js';
 
-// Per-key monthly budget (#1158): caps are opt-in (0 = unlimited), metering is
+// Per-key monthly budget: caps are opt-in (0 = unlimited), metering is
 // the current UTC month's successful requests, and the rejection carries a
 // Retry-After of seconds-until-next-month.
 
@@ -57,7 +57,7 @@ function lastMonth(d = new Date()): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 20, 12, 0, 0));
 }
 
-describe('key-budget: monthly caps (#1158)', () => {
+describe('key-budget: monthly caps', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');

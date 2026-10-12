@@ -95,7 +95,7 @@ describe('per-attempt traces in the analytics requests API', () => {
     ]);
   });
 
-  it('returns the snapshotted key label per attempt, null when the key was unlabeled (#869)', async () => {
+  it('returns the snapshotted key label per attempt, null when the key was unlabeled', async () => {
     const id = insertRequest('success', recentSql(12));
     insertAttempt(id, 0, 'groq', 'llama-x', 1, 'rate_limited', 0, 210, '429 over quota', 'work laptop');
     insertAttempt(id, 1, 'groq', 'llama-x', 2, 'ok', 215, 900, null, null);

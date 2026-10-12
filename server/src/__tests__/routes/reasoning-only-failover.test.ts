@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import type { Express } from 'express';
 
 // Reasoning-only responses used to pass as success on the shared inbound-chat
-// lane (#1184): the empty-completion check required the turn to have no text,
+// lane: the empty-completion check required the turn to have no text,
 // no reasoning AND no tool calls, so a stream that spent the whole budget on a
 // thinking trace — then dropped or truncated the answer — was delivered as a
 // blank success and the failover ladder never moved. Coding agents (the main
@@ -90,7 +90,7 @@ function insertKey(label: string): void {
   `).run(label, encrypted, iv, authTag);
 }
 
-describe('reasoning-only turns fail over on the shared inbound-chat lane (#1184)', () => {
+describe('reasoning-only turns fail over on the shared inbound-chat lane', () => {
   let app: Express;
 
   beforeAll(() => {

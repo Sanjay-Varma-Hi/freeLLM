@@ -1,4 +1,4 @@
-// Structured-output enforcement for the fallback chain (#514 follow-up).
+// Structured-output enforcement for the fallback chain.
 //
 // Forwarding response_format is necessary but not sufficient: a free-tier
 // model that doesn't understand JSON mode often just answers in prose (or
@@ -15,7 +15,7 @@
 //      penalty; the chain just tries the next candidate)
 //
 // Streaming responses used to skip enforcement entirely (bytes already on
-// the wire). Since #933 the proxy's stream path buffers structured-output
+// the wire). the proxy's stream path buffers structured-output
 // requests in a 'json' hold mode — headers are held until the stream ends,
 // so the same check/heal/fail-over applies there too. The response cache
 // remains non-stream only.

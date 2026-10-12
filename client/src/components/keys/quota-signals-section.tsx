@@ -31,7 +31,7 @@ export function QuotaSignalsSection({ states }: { states: ProviderQuotaState[] }
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-medium">{state.platform}</span>
                   {/* The key's own name where it has one, since "key #7" tells the
-                      operator nothing about which credential is near its limit (#705). */}
+                      operator nothing about which credential is near its limit. */}
                   <span className="text-muted-foreground">
                     {state.keyLabel || t('keys.quotaKeyRef', { id: state.keyId })}
                   </span>

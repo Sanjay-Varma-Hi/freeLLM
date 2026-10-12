@@ -4,10 +4,10 @@ import type { Db } from '../db/types.js';
 // ── Custom OpenAI-compatible endpoints: keys per endpoint ────────────────────
 // A custom endpoint is identified by its base_url and can hold SEVERAL
 // credentials — relay services routinely hand out one key per plan/group, and
-// pooling them is the whole point of adding more than one (#619). Registration
+// pooling them is the whole point of adding more than one. Registration
 // therefore matches on (base_url, secret), never on base_url alone: a new
 // secret for a known endpoint INSERTs, it does not overwrite the key already
-// stored. Models still bind to one api_keys row via key_id (#212); the router
+// stored. Models still bind to one api_keys row via key_id; the router
 // treats every key sharing that row's base_url as an alternative for the same
 // model, so the binding names the ENDPOINT and the pool rotates underneath it.
 
@@ -58,7 +58,7 @@ function touch(db: Db, id: number, label: string | undefined): void {
  * host and port. Every endpoint used to default to the literal 'Custom', so the
  * panels that identify a key by label alone (analytics, cooldowns, quota
  * signals) showed a column of identical rows once you ran more than one relay
- * (#705). The host is what actually tells two endpoints apart.
+ * The host is what actually tells two endpoints apart.
  */
 function defaultCustomEndpointLabel(baseUrl: string): string {
   try {
@@ -83,10 +83,10 @@ function insertKey(db: Db, baseUrl: string, secret: string, label: string | unde
  *  - no key submitted        → reuse the endpoint's first key (label refresh only)
  *  - a key already on record  → update that row (label / re-enable)
  *  - a new key, placeholder-only endpoint → replace the placeholder in place
- *  - a new key, endpoint already has one → INSERT a second credential (#619)
+ *  - a new key, endpoint already has one → INSERT a second credential
  *
  * `pinnedKeyId` lets a caller that already knows WHICH credential of the pool
- * it is acting for name it — the bulk registration of discovered models (#488)
+ * it is acting for name it — the bulk registration of discovered models
  * comes back holding the key row the user fetched the list with. It only
  * applies when that row really serves this base_url and no new secret was
  * submitted; a new secret still goes through the rules above.
@@ -179,7 +179,7 @@ export interface CustomEndpointCredential {
 
 /**
  * Every ENABLED custom endpoint, one entry per distinct base_url, carrying its
- * first stored credential. Used by the scheduled model sync (#674/#663/#656)
+ * first stored credential. Used by the scheduled model sync
  * to refresh model lists unattended: the manual route asks the operator for a
  * key mid-typing, but a scheduled pass can only use what the endpoint already
  * has on record.

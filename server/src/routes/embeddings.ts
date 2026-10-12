@@ -98,7 +98,7 @@ embeddingsRouter.post('/custom', async (req: Request, res: Response) => {
   }
   // Optional: NULL means "no opinion". A new model takes its id, and a model
   // already on record keeps the name it has instead of being reset by a submit
-  // that simply left the field blank (#704).
+  // that simply left the field blank.
   const submittedName = parsed.data.displayName?.trim() || null;
   const family = parsed.data.family?.trim() || modelId;
   const providedKey = parsed.data.apiKey?.trim() || undefined;
@@ -126,7 +126,7 @@ embeddingsRouter.post('/custom', async (req: Request, res: Response) => {
 
   const upsert = db.transaction(() => {
     // A new secret for a known endpoint is an ADDITIONAL credential, never a
-    // replacement for the stored one (#619).
+    // replacement for the stored one.
     const { keyId, storedKey: storedKeyForMask } = resolveCustomEndpointKey(db, baseUrl, providedKey, label);
     const { modelDbId } = registerCustomEmbeddingModel(db, {
       keyId,

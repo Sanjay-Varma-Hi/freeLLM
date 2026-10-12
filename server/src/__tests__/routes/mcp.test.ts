@@ -35,7 +35,7 @@ describe('MCP server (/mcp, stateless Streamable HTTP)', () => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
     app = createApp();
-    // MCP is opt-in since #925 — these tests exercise the tool surface itself.
+    // MCP is opt-in — these tests exercise the tool surface itself.
     setSetting('enable_mcp', '1');
   });
 

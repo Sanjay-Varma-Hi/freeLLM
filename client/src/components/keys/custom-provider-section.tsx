@@ -14,7 +14,7 @@ import { toast } from '@/lib/toast'
 import { DiscoverModelsDialog } from './discover-models-dialog'
 
 // Split a free-text model field on commas / newlines into a clean id list,
-// dropping blanks and duplicates so one endpoint can take several models. (#281)
+// dropping blanks and duplicates so one endpoint can take several models.
 function parseModelList(raw: string): string[] {
   const seen = new Set<string>()
   return raw
@@ -36,11 +36,11 @@ export function CustomProviderSection({ onAdded }: { onAdded?: () => void } = {}
   const [family, setFamily] = useState('')
   const [apiKey, setApiKey] = useState('')
   // Chat models default tools on (modern OpenAI-compatible servers all emit tool
-  // calls) and vision off; declare them here or flip them later per model. (#470)
+  // calls) and vision off; declare them here or flip them later per model.
   const [supportsTools, setSupportsTools] = useState(true)
   const [supportsVision, setSupportsVision] = useState(false)
   // "Fetch models" asks the endpoint itself what it serves instead of making the
-  // user paste ids from a curl (#488).
+  // user paste ids from a curl.
   const [discoverOpen, setDiscoverOpen] = useState(false)
 
   const models = customType === 'chat' ? parseModelList(model) : [model.trim()].filter(Boolean)
@@ -154,7 +154,7 @@ export function CustomProviderSection({ onAdded }: { onAdded?: () => void } = {}
             <SelectContent>
               {/* label prop drives the trigger's SelectValue text (Base UI falls
                   back to the raw value without it, showing "chat" instead of
-                  the translated label — #837). */}
+                  the translated label —). */}
               <SelectItem value="chat" label={t('keys.customTypeChat')}>{t('keys.customTypeChat')}</SelectItem>
               <SelectItem value="embedding" label={t('keys.customTypeEmbedding')}>{t('keys.customTypeEmbedding')}</SelectItem>
               <SelectItem value="image" label={t('keys.customTypeImage')}>{t('keys.customTypeImage')}</SelectItem>

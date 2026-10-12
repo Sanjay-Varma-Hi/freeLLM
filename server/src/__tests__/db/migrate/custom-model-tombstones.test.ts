@@ -21,7 +21,7 @@ afterEach(() => {
   for (const db of dbs.splice(0)) db.close();
 });
 
-describe('custom_model_tombstones migration (#926)', () => {
+describe('custom_model_tombstones migration', () => {
   it('creates the tombstone table keyed by (endpoint_scope, model_id)', () => {
     const db = makeDb();
     dbs.push(db);

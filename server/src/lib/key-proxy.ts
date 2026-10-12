@@ -2,7 +2,7 @@ import { encrypt, decrypt } from './crypto.js';
 import { PROXY_SCHEMES } from './proxy.js';
 
 /**
- * Per-key proxy override (#590) — storage and presentation helpers.
+ * Per-key proxy override — storage and presentation helpers.
  *
  * A proxy URL routinely carries `user:pass@` credentials, so it is stored the
  * same way the API key on that row is: AES-256-GCM ciphertext + iv + auth tag

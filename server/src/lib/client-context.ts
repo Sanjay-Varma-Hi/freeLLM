@@ -15,7 +15,7 @@ const storage = new AsyncLocalStorage<ClientContext>();
 
 // Resolve the client IP. With Express's `trust proxy` disabled (the default),
 // this is the socket peer address and a spoofed X-Forwarded-For from a LAN
-// client is ignored. When TRUST_PROXY (#1024) opts into trusting a reverse
+// client is ignored. When TRUST_PROXY opts into trusting a reverse
 // proxy, `req.ip` walks the configured trusted-proxy chain and returns the
 // first untrusted address — instead of trusting the leftmost caller-supplied
 // X-Forwarded-For value, which would let any direct caller spoof it.

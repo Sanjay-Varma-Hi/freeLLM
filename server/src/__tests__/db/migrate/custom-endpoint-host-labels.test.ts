@@ -15,7 +15,7 @@ function makeDb(): Database.Database {
     );
   `);
   const insert = db.prepare('INSERT INTO api_keys (platform, label, base_url) VALUES (?, ?, ?)');
-  insert.run('custom', 'Custom', 'http://127.0.0.1:11434/v1');   // legacy default (#704)
+  insert.run('custom', 'Custom', 'http://127.0.0.1:11434/v1');   // legacy default
   insert.run('custom', 'Custom', 'http://192.168.1.50:8080/v1'); // …and its indistinguishable twin
   insert.run('custom', 'Ollama box', 'http://127.0.0.1:1234/v1');// operator's own name: untouched
   insert.run('custom', 'Custom', null);                          // no URL to rename to
@@ -33,7 +33,7 @@ afterEach(() => {
   for (const db of dbs.splice(0)) db.close();
 });
 
-describe('custom_endpoint_host_labels migration (#704)', () => {
+describe('custom_endpoint_host_labels migration', () => {
   it('renames the legacy default to the endpoint host and leaves everything else alone', () => {
     const db = makeDb();
     dbs.push(db);

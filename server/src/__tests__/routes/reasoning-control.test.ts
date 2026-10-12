@@ -7,7 +7,7 @@ import { effortFromAnthropicThinking } from '../../routes/anthropic.js';
 
 // Request-side reasoning control (reasoning_effort / reasoning:{effort} /
 // Anthropic thinking:{budget_tokens}) and inline <think> extraction, driven
-// end-to-end through the real routes with a mocked Groq upstream (P2 #16).
+// end-to-end through the real routes with a mocked Groq upstream (P2).
 
 let dashToken = '';
 
@@ -160,7 +160,7 @@ describe('request-side reasoning control (end-to-end)', () => {
     expect(JSON.stringify(captured.body)).not.toContain('reasoning');
   });
 
-  it("clamps an off-scale effort to the nearest supported one instead of 400-ing (#619)", async () => {
+  it("clamps an off-scale effort to the nearest supported one instead of 400-ing", async () => {
     const captured = mockJson(textCompletion('ok'));
     const { status } = await request(app, '/v1/chat/completions', {
       model: 'auto', reasoning_effort: 'max',
@@ -249,7 +249,7 @@ describe('Anthropic surface: thinking knob + thinking blocks', () => {
     expect(effortFromAnthropicThinking({ type: 'enabled', budget_tokens: 32000 })).toBe('high');
   });
 
-  it("accepts thinking types outside the enabled/disabled enum (#632)", () => {
+  it("accepts thinking types outside the enabled/disabled enum", () => {
     // 'adaptive' means the model manages its own budget — no knob forwarded.
     expect(effortFromAnthropicThinking({ type: 'adaptive' })).toBeUndefined();
     expect(effortFromAnthropicThinking({ type: 'auto' })).toBeUndefined();
@@ -258,7 +258,7 @@ describe('Anthropic surface: thinking knob + thinking blocks', () => {
     expect(effortFromAnthropicThinking({ type: 'off' })).toBe('none');
   });
 
-  it("a thinking:{type:'adaptive'} request completes instead of 400-ing (#632)", async () => {
+  it("a thinking:{type:'adaptive'} request completes instead of 400-ing", async () => {
     const captured = mockJson(textCompletion('done'));
     const { status } = await request(app, '/v1/messages', {
       model: 'claude-sonnet-4-5', max_tokens: 64,

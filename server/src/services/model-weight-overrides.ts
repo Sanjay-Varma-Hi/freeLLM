@@ -5,7 +5,7 @@ import { getDb, getSetting } from '../db/index.js';
 // signal available at boot.
 const CATALOG_LAST_SYNC_SETTING = 'catalog_last_sync_ms';
 
-// ── Per-model routing weight overrides (#738) ────────────────────────────────
+// ── Per-model routing weight overrides ────────────────────────────────
 //
 // Operators who run a relay with several models sometimes want to keep a model
 // around (manual priority may still select it) while making the bandit far less
@@ -26,7 +26,7 @@ const CATALOG_LAST_SYNC_SETTING = 'catalog_last_sync_ms';
 //   >1.0 → promoted
 // Out-of-range (negative, >2) or non-finite values are dropped, never applied;
 // an empty or malformed variable is ignored entirely. Matching is by model_id
-// alone (not platform-qualified), consistent with "individual models" in #738.
+// alone (not platform-qualified), consistent with "individual models".
 //
 // The override is orthogonal to the strategy's weight vector: it multiplies the
 // final score rather than replacing any weight, so it composes with every

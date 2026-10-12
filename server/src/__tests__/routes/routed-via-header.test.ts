@@ -4,7 +4,7 @@ import { createApp } from '../../app.js';
 import { initDb, getDb, getUnifiedApiKey } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #619: relays hand out model ids that are not header-safe — Chinese names,
+// relays hand out model ids that are not header-safe — Chinese names,
 // bracketed variant suffixes, spaces. Splicing one straight into X-Routed-Via
 // made Node throw ERR_INVALID_CHAR while writing the response, so a call that
 // had already succeeded upstream came back as a failure. Every surface that
@@ -84,7 +84,7 @@ function mockRelay(): void {
   });
 }
 
-describe('X-Routed-Via with a header-hostile model id (#619)', () => {
+describe('X-Routed-Via with a header-hostile model id', () => {
   let app: Express;
 
   beforeAll(async () => {

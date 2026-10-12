@@ -5,7 +5,7 @@ import { initDb, getDb, getUnifiedApiKey } from '../../db/index.js';
 import { getStickyModel, setStickyModel } from '../../routes/proxy.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// Stream turn-integrity (#231 audit): the proxy must deliver agent-usable
+// Stream turn-integrity: the proxy must deliver agent-usable
 // TURNS, not transport bytes. These tests feed crafted upstream SSE bodies
 // through a mocked fetch and assert the failure modes observed live are
 // either failed over (before headers) or surfaced honestly (after).
@@ -228,8 +228,8 @@ describe('proxy stream turn-integrity', () => {
     expect(frames(r.text).some(f => f.choices?.[0]?.delta?.content?.includes('Non-empty'))).toBe(true);
   });
 
-  it('fails over a stream whose model answers in prose despite response_format json_object (#933)', async () => {
-    // The whole point of #933: a streamed structured-output request must not
+  it('fails over a stream whose model answers in prose despite response_format json_object', async () => {
+    // The whole point: a streamed structured-output request must not
     // ship an essay as a "success". The first model ignores the format; the
     // second honors it. Headers are held in 'json' hold mode, so the first
     // attempt can still fail over invisibly.
@@ -254,7 +254,7 @@ describe('proxy stream turn-integrity', () => {
     expect(rows[1].status).toBe('success');
   });
 
-  it('heals a fenced JSON block streamed for a json_object request (#933)', async () => {
+  it('heals a fenced JSON block streamed for a json_object request', async () => {
     // Prose-wrapped/fenced output is the common "almost right" shape: heal it
     // in place and deliver only the JSON, same as the non-stream path.
     mockUpstream([
@@ -274,7 +274,7 @@ describe('proxy stream turn-integrity', () => {
     expect(rows[0].status).toBe('success');
   });
 
-  it('passes a clean JSON stream through untouched for a json_object request (#933)', async () => {
+  it('passes a clean JSON stream through untouched for a json_object request', async () => {
     mockUpstream([
       { body: sse(roleChunk, textChunk('{"ok":true,"items":[1,2,3]}'), finishChunk('stop'), '[DONE]') },
     ]);
@@ -326,7 +326,7 @@ describe('proxy stream turn-integrity', () => {
     expect(text).toBe('Hello world');
     expect(fs.map(f => f.choices?.[0]?.finish_reason).filter(Boolean)).toEqual(['stop']);
     // The crafted upstream frames all advertise model "m". Public frames must
-    // instead identify the concrete model selected by the router (#568).
+    // instead identify the concrete model selected by the router.
     expect(fs.every(f => f.error || f.model === up.seen[0].model)).toBe(true);
     expect(r.text.trim().endsWith('data: [DONE]')).toBe(true);
   });
@@ -460,7 +460,7 @@ describe('proxy stream turn-integrity', () => {
     expect(r.body.choices[0].finish_reason).toBe('tool_calls');
   });
 
-  it('records ttfb on the first reasoning_content token, not the first visible text (#764)', async () => {
+  it('records ttfb on the first reasoning_content token, not the first visible text', async () => {
     // Reasoning models stream thinking (reasoning_content) long before the
     // first answer token. The regression: ttfb was recorded at header flush,
     // i.e. the END of the thinking phase, so the Analytics speed shown was the

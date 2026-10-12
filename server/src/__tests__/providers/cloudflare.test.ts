@@ -71,7 +71,7 @@ describe('CloudflareProvider', () => {
       expect(calls[0]).toBe('https://api.cloudflare.com/client/v4/user/tokens/verify');
     });
 
-    it('falls back to the account-scoped endpoint when /user 403s (#297)', async () => {
+    it('falls back to the account-scoped endpoint when /user 403s', async () => {
       const calls: string[] = [];
       vi.spyOn(global, 'fetch').mockImplementation(async (url) => {
         calls.push(url as string);

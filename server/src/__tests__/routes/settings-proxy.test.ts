@@ -5,7 +5,7 @@ import { getSetting, initDb } from '../../db/index.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 import { applyFetchRelayToken, applyProxyMode, applyProxyUrl } from '../../lib/proxy.js';
 
-// #838 falls back to the OS-wide proxy (scutil/reg/gsettings) when nothing is
+//  falls back to the OS-wide proxy (scutil/reg/gsettings) when nothing is
 // configured in the DB or the env, so on a machine whose system proxy is set
 // the "clears the proxy on an empty string" case would read the ambient proxy
 // back. '' parses as "no proxy" in every platform branch.
@@ -32,7 +32,7 @@ async function request(app: Express, method: string, path: string, body: any, to
 
 // PUT /api/settings/proxy is the only place a proxy URL is validated, so the
 // scheme allow-list here is what actually decides whether a user can save
-// `socks5h://` from the dashboard (#630).
+// `socks5h://` from the dashboard.
 describe('PUT /api/settings/proxy scheme validation', () => {
   let app: Express;
   let token: string;

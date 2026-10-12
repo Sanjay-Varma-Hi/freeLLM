@@ -1,6 +1,6 @@
 // Keep user-deleted custom models deleted across the scheduled model sync.
 //
-// Issue #926: catalog-managed models carry a tombstone so catalog-sync never
+// catalog-managed models carry a tombstone so catalog-sync never
 // resurrects a model the user deleted. The scheduled custom-model sync
 // (services/custom-model-sync.ts) had no equivalent, so deleting a custom
 // relay's model (or its whole endpoint key) was undone by the next sync pass:
@@ -9,7 +9,7 @@
 //
 // This module holds the same contract for custom rows, keyed by
 // (endpoint_scope, model_id) — the exact identity a custom model row has today
-// (#651), so deleting a model on one relay never suppresses the identical id
+// so deleting a model on one relay never suppresses the identical id
 // on another. A tombstone is "keep it deleted" and is cleared the moment the
 // operator EXPLICITLY re-registers that model on the same endpoint.
 

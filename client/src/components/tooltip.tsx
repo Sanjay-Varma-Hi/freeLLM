@@ -24,7 +24,7 @@ export function Tooltip({ text, children, side = 'top', className }: {
   }
   const hide = () => setCoords(null)
 
-  // #826: a hover tooltip lingers after a dialog (copy full key / model
+  // a hover tooltip lingers after a dialog (copy full key / model
   // scope) is opened on top of its trigger and closed again — the mouse never
   // actually leaves the trigger, so `mouseleave` never fires and the tooltip
   // stays until the pointer happens to cross another hot-zone. Two

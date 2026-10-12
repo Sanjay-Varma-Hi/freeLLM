@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { classifyIp, assessProviderUrl, isLoopbackOrPrivateUrl, isLoopbackOrPrivateHostname } from '../../lib/url-guard.js';
 
-// SSRF guard for user-supplied custom-provider base URLs (#440). Metadata and
+// SSRF guard for user-supplied custom-provider base URLs. Metadata and
 // link-local targets must never be reachable; loopback/private stay allowed by
 // default (local Ollama / LM Studio is the app's primary documented use case)
 // and flip to blocked under FREEAPI_BLOCK_PRIVATE_PROVIDER_URLS.
@@ -141,7 +141,7 @@ describe('assessProviderUrl', () => {
   });
 });
 
-describe('isLoopbackOrPrivateUrl (#592 local-endpoint cooldown exemption)', () => {
+describe('isLoopbackOrPrivateUrl (local-endpoint cooldown exemption)', () => {
   it('true for loopback and localhost forms', () => {
     expect(isLoopbackOrPrivateUrl('http://127.0.0.1:11434/v1')).toBe(true);
     expect(isLoopbackOrPrivateUrl('http://localhost:11434/v1')).toBe(true);
@@ -172,7 +172,7 @@ describe('isLoopbackOrPrivateUrl (#592 local-endpoint cooldown exemption)', () =
   });
 
   // The FQDN spelling resolves exactly like the bare name, so it must not slip
-  // through as "some public host" (#951 — it would then get proxied).
+  // through as "some public host" (— it would then get proxied).
   it('true for the trailing-dot FQDN spelling of localhost', () => {
     expect(isLoopbackOrPrivateUrl('http://localhost./v1')).toBe(true);
     expect(isLoopbackOrPrivateUrl('http://ollama.localhost./v1')).toBe(true);

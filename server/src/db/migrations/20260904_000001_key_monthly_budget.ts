@@ -7,7 +7,7 @@ function hasColumn(db: Db, table: string, column: string): boolean {
 }
 
 /**
- * Per-key monthly budget (#1158): optional request / token caps per api_keys
+ * Per-key monthly budget: optional request / token caps per api_keys
  * row, counted against the current UTC month's SUCCESSFUL requests. 0 means
  * "no cap" — the pre-existing behaviour, so existing installs are untouched.
  *

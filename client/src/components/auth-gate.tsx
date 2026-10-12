@@ -66,7 +66,7 @@ function AuthForm({ mode, onAuthed }: { mode: 'setup' | 'login'; onAuthed: () =>
   // length must still be able to log in). The same goes for the email shape:
   // the desktop app's hidden account is `desktop@localhost` (no TLD), which
   // the login route accepts on purpose (server/src/routes/auth.ts), so a
-  // browser tab must be able to submit it after a password reset (#1250).
+  // browser tab must be able to submit it after a password reset.
   const emailError = !email.trim()
     ? t('validation.required')
     : isSetup && !isEmail(email)

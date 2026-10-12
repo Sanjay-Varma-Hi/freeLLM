@@ -76,10 +76,10 @@ describe('CSP security headers', () => {
   });
 });
 
-// #682: upgrade-insecure-requests broke plain-HTTP LAN installs because the
+// upgrade-insecure-requests broke plain-HTTP LAN installs because the
 // browser rewrites /assets/* to https:// on an origin with no TLS. The directive
 // is now gated by request protocol + the CSP_UPGRADE_INSECURE_REQUESTS env.
-describe('CSP upgrade-insecure-requests (#682)', () => {
+describe('CSP upgrade-insecure-requests', () => {
   let app: Express;
 
   beforeAll(() => {
@@ -101,10 +101,10 @@ describe('CSP upgrade-insecure-requests (#682)', () => {
   });
 });
 
-// #734: COOP and Origin-Agent-Cluster apply to secure contexts only. Sending
+// COOP and Origin-Agent-Cluster apply to secure contexts only. Sending
 // them to a plain-HTTP LAN origin gets them discarded with a console error, so
 // they are emitted only where the browser would honour them.
-describe('secure-context-only headers (#734)', () => {
+describe('secure-context-only headers', () => {
   let app: Express;
 
   beforeAll(() => {
@@ -145,7 +145,7 @@ describe('secure-context-only headers (#734)', () => {
   });
 });
 
-describe('CSP_UPGRADE_INSECURE_REQUESTS env override (#682)', () => {
+describe('CSP_UPGRADE_INSECURE_REQUESTS env override', () => {
   let app: Express;
   const envKey = 'CSP_UPGRADE_INSECURE_REQUESTS';
 

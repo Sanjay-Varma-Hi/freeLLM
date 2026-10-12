@@ -5,7 +5,7 @@ import { initDb, getDb } from '../../db/index.js';
 import { encrypt, decrypt } from '../../lib/crypto.js';
 import { mintDashboardToken } from '../helpers/auth.js';
 
-// #687: exporting every key and importing the file back has to return the
+// exporting every key and importing the file back has to return the
 // custom OpenAI-compatible endpoints too. They were dropped three ways at once:
 // .env and .csv carried no base_url, the importer refused platform 'custom'
 // outright, and the dialog counted rows the export then skipped.
@@ -80,7 +80,7 @@ function seed() {
   addKey('custom', 'no-key', 'Local no-auth', 'http://127.0.0.1:8080/v1');
 }
 
-describe('#687 custom endpoints survive an export/import round trip', () => {
+describe(' custom endpoints survive an export/import round trip', () => {
   let app: Express;
 
   beforeAll(() => {

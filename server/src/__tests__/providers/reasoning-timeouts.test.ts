@@ -28,7 +28,7 @@ describe('reasoning-model chat timeouts', () => {
     // Radeon Cloud documents a ten-minute non-streaming and stream-gap limit.
     ['radeon', 600_000],
     // NVIDIA NIM prefills 100k-token prompts for minutes before the first SSE
-    // byte; this value doubles as the streaming first-byte grace budget (#584).
+    // byte; this value doubles as the streaming first-byte grace budget.
     ['nvidia', 180_000],
   ] as const)('%s is registered with a %dms chat timeout', (platform, ms) => {
     const provider = resolveProvider(platform);

@@ -4,7 +4,7 @@
  * use the traditional forward-proxy transport. */
 export type ProxyMode = 'forward' | 'fetch-relay';
 
-/** A model declared beside a custom endpoint in an import file (#382). A
+/** A model declared beside a custom endpoint in an import file. A
  *  capability flag is present only when the paste declared it via a trailing
  *  -TOOLS / -VISION suffix. */
 export interface ImportModelEntry {
@@ -18,9 +18,9 @@ export interface PreviewKey {
   keyValue: string;
   detectedPlatform: string | null;
   prefix: string;
-  /** Custom endpoints only: the upstream URL the export file carried (#687). */
+  /** Custom endpoints only: the upstream URL the export file carried. */
   baseUrl?: string;
-  /** Custom endpoints only: models to register alongside the key (#382). */
+  /** Custom endpoints only: models to register alongside the key. */
   models?: ImportModelEntry[];
   isDuplicate?: boolean;
 }
@@ -49,7 +49,7 @@ export interface ImportSelectedResponse {
   skipped: string[];
   errors: Array<{ key: string; error: string }>;
   total: number;
-  /** Models registered for imported custom endpoints (#382). */
+  /** Models registered for imported custom endpoints. */
   modelsRegistered: number;
 }
 
@@ -103,8 +103,7 @@ export type Platform =
   | 'bai'
   // AnyAPI — OpenAI-compatible gateway. Free tier is $0/no card/recurring but
   // capped at 100K tokens/day over "free and basic" models only; no RPM/RPD is
-  // published. Catalog rows live in the hosted catalog (premium now, free after
-  // 30 days).
+  // published. Catalog rows live in the hosted catalog.
   | 'anyapi'
   // AMD Radeon Cloud TokenFactory — OpenAI-compatible shared inference. Its
   // rotating public-model roster is free without consuming instance credits,
@@ -134,7 +133,7 @@ export type Platform =
   // platform.agnes-ai.com (no card).
   | 'agnes'
   // Reka — OpenAI-compatible. Native multimodal models (reka-edge takes
-  // image/video). New accounts need prepaid credits (#1202); key from
+  // image/video). New accounts need prepaid credits; key from
   // platform.reka.ai.
   | 'reka'
   // SiliconFlow — OpenAI-compatible. Registered for its FREE generative-media
@@ -153,26 +152,26 @@ export type Platform =
   // ainative.studio.
   | 'ainative'
   // Aion Labs — OpenAI-compatible aggregator with a no-card free API key.
-  // Catalog rows live in the Oracle catalog (premium now, free after 30 days).
+  // Catalog rows live in the Oracle catalog.
   | 'aion'
   // Requesty — OpenAI-compatible router with no-card free models/credits.
-  // Catalog rows live in the Oracle catalog (premium now, free after 30 days).
+  // Catalog rows live in the Oracle catalog.
   | 'requesty'
   // NavyAI — OpenAI-compatible unified API. Free plan is 150K tokens/day and
-  // 20 RPM; catalog rows live in the Oracle catalog (premium now, free after 30 days).
+  // 20 RPM; catalog rows live in the Oracle catalog.
   | 'navy'
   // NaraRouter — OpenAI-compatible aggregator. Free account key from
   // router.bynara.id after Telegram channel/link verification; free-plan routes
-  // reset daily and are catalog-managed (premium now, free after 30 days).
+  // reset daily and are catalog-managed.
   | 'nara'
   // SEA-LION (AI Singapore) — OpenAI-compatible first-party API. Free key
   // (Google sign-in, no card, no region wall) at 10 RPM; catalog rows live in
-  // the Oracle catalog (premium now, free after 30 days).
+  // the Oracle catalog.
   | 'sealion'
   // OrcaRouter — OpenAI-compatible aggregator (api.orcarouter.ai/v1). Free key
   // from orcarouter.ai (no card); recurring rate-limited free aliases at $0
   // (never fall back to paid). Catalog rows live in the Oracle catalog
-  // (premium now, free after the 30-day model-age gate).
+  //
   | 'orcarouter'
   // UnoRouter (unorouter.com) — OpenAI-compatible aggregator. The web app is a
   // Next.js site at unorouter.com; the API lives at api.unorouter.com/v1. Free
@@ -180,24 +179,23 @@ export type Platform =
   // per-minute rate limit (429 on cap, e.g. "1 request(s) every 1 min").
   // Live-probed 2026-08-23: /v1/models is public without a key but 401s on a
   // wrong key, and /v1/chat/completions 401s without a key, so default key
-  // validation works. Catalog rows live in the hosted catalog (premium now,
-  // free after the 30-day model-age gate).
+  // validation works. Catalog rows live in the hosted catalog.
   | 'unorouter'
   // xKiro (xkiro.com) — OpenAI-compatible gateway at api.xkiro.com/v1. Free key
   // from xkiro.com (no card); free plan is 5M tokens/day on its free models,
   // paid models 403 on a free key.
   // /v1/models is public (200 with no key), so key validation must probe
   // /v1/usage, which 401s on a missing/invalid ClientApiKey. Catalog rows live
-  // in the hosted catalog (premium now, free after the 30-day model-age gate).
+  // in the hosted catalog.
   | 'xkiro'
   // ModelScope (魔搭社区, Alibaba) — OpenAI-compatible inference API
   // (api-inference.modelscope.cn/v1). Free tier is 2000 requests/day
   // account-wide, but calls only work after the ModelScope account is bound to
   // an Alibaba Cloud CHINA-site (cn) account with Chinese real-name
   // verification — tokens mint without binding, then every call 401s. Catalog
-  // rows land after community testing confirms per-model behavior (#581).
+  // rows land after community testing confirms per-model behavior.
   | 'modelscope'
-  // ── Chinese domestic providers (#922/#923/#924) ────────────────────────────
+  // ── Chinese domestic providers ────────────────────────────
   // All four need Chinese real-name verification (实名认证) on the cloud account
   // before a key will serve traffic, the same wall ModelScope hits above.
   // LongCat is the exception worth knowing: its platform accepts an email
@@ -234,10 +232,10 @@ export type Platform =
   // can take tens of seconds; no tool support; usage is reported as kudos, not
   // tokens. Anonymous key `0000000000` works (lowest priority); a registered
   // aihorde.net key raises queue priority. Has a dedicated AIHordeProvider that
-  // normalizes the proxy's OpenAI divergences. See issue #345.
+  // normalizes the proxy's OpenAI divergences..
   | 'aihorde'
   // User-configured OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM,
-  // Ollama, any base_url). The endpoint URL lives on the api_keys row; see #117.
+  // Ollama, any base_url). The endpoint URL lives on the api_keys row;.
   | 'custom';
 
 export interface Model {
@@ -258,7 +256,7 @@ export interface Model {
   supportsVision: boolean;
   supportsTools: boolean;
   /** 'discovered': fetched from a built-in provider's own /models because the
-   *  catalog carries no models for it (#1348). */
+   *  catalog carries no models for it. */
   source?: 'catalog' | 'custom' | 'discovered';
   keyId?: number | null;
   endpointScope?: string | null;
@@ -322,7 +320,7 @@ export interface ApiKey {
    *  no credential to copy, scope or reveal. */
   keyless: boolean;
   /** The platform works with or without a key (Kilo, OVH, AI Horde), so a key
-   *  can be added to or left off this row (#1331). */
+   *  can be added to or left off this row. */
   keyOptional?: boolean;
   /** Whether an export file would actually contain this row. The server decides
    *  it so the dialog's "will export N keys" cannot drift from the export. */
@@ -331,21 +329,21 @@ export interface ApiKey {
   lastCheckedAt: string | null;
   lastHealthError: string | null;
   /** Model ids this key is limited to; null = serves every model of its
-   *  platform (#657). */
+   *  platform. */
   modelScope?: string[] | null;
-  /** Per-key monthly request cap (0 = unlimited, #1158). */
+  /** Per-key monthly request cap (0 = unlimited). */
   monthlyRequestCap?: number;
-  /** Per-key monthly token cap (0 = unlimited, #1158). */
+  /** Per-key monthly token cap (0 = unlimited). */
   monthlyTokenCap?: number;
   /** Current UTC month's successful usage against the caps above, with the
    *  ISO time of the next monthly reset. */
   monthlyUsage?: { requests: number; tokens: number; resetsAt: string };
-  /** The per-key proxy override with its password masked (#590); '' = none. */
+  /** The per-key proxy override with its password masked; '' = none. */
   maskedProxyUrl?: string;
   models?: ApiKeyModel[];
   cooldowns?: ApiKeyCooldown[];
   /** True for a built-in provider key whose platform the catalog carries no
-   *  models for, so the dashboard offers Fetch models on it (#1348). */
+   *  models for, so the dashboard offers Fetch models on it. */
   modelDiscovery?: boolean;
 }
 
@@ -437,7 +435,7 @@ export type ChatToolChoice =
 // Gemini-lineage agents (Qwen Code, AionUI) send part-style `{ text }` blocks
 // with no `type` — plus bare strings inside arrays. We accept all of it on
 // the wire and flatten to string for providers that don't support arrays
-// (Cohere, Cloudflare). See server/src/lib/content.ts. (#200)
+// (Cohere, Cloudflare). See server/src/lib/content.ts.
 export type ChatContentBlock = string | { type?: string; text?: string; [key: string]: unknown };
 export type ChatContent = string | null | ChatContentBlock[];
 
@@ -449,12 +447,12 @@ export interface ChatMessage {
   tool_calls?: ChatToolCall[];
   // The model's thinking trace on an assistant turn. Some thinking models
   // (DeepSeek on OpenCode Zen) require it to be replayed verbatim on the next
-  // turn or they 400; the proxy preserves and forwards it. See issue #255.
+  // turn or they 400; the proxy preserves and forwards it..
   reasoning_content?: string;
   // Moonshot's "partial" prefill flag on an assistant turn: when true, the
   // model continues the given text instead of starting a fresh turn. Only
   // forwarded to models that understand it (Moonshot/Kimi); stripped for all
-  // other providers. See issue #1038.
+  // other providers..
   partial?: boolean;
 }
 
@@ -489,12 +487,12 @@ export interface TokenUsage {
   total_tokens: number;
   // OpenAI-standard breakdown some providers advertise alongside the totals.
   // Optional because many free-tier endpoints omit it; the proxy falls back
-  // to its chars/4 estimate when absent. (#764)
+  // to its chars/4 estimate when absent.
   completion_tokens_details?: { reasoning_tokens?: number };
   prompt_tokens_details?: { cached_tokens?: number };
   // Gateway-synthesized block (upstream never sent usage): flagged so a
   // cost-accounting client can tell it apart from the upstream's real
-  // counts. (#1084)
+  // counts.
   estimated?: boolean;
 }
 

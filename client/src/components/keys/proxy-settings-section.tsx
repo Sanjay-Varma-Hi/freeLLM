@@ -40,7 +40,7 @@ export function ProxySettingsSection() {
     queryFn: () => apiFetch('/api/settings/proxy'),
   })
 
-  // #825: the per-platform route-via-proxy switch used to live only inside the
+  // the per-platform route-via-proxy switch used to live only inside the
   // group dropdown on the Providers tab (two clicks per platform, no bulk, and
   // no way to see which platforms route through the proxy at a glance). Render
   // the same bypass list here as visible switches, one per platform that has
@@ -73,7 +73,7 @@ export function ProxySettingsSection() {
     },
   })
 
-  // #863: test the DRAFT proxy URL (or the saved one when the input is empty)
+  // test the DRAFT proxy URL (or the saved one when the input is empty)
   // without saving anything. Result shown inline; failures carry the reason.
   const testProxy = useMutation({
     meta: { silenceToast: true },
@@ -200,7 +200,7 @@ export function ProxySettingsSection() {
         <p className="text-destructive text-xs mt-2">{(saveProxy.error as Error).message}</p>
       )}
 
-      {/* #825: visible per-platform route-via-proxy switches, one per platform
+      {/* visible per-platform route-via-proxy switches, one per platform
           that has keys. checked = routed through the proxy (not in the bypass
           list), matching the semantic of the old Providers-tab dropdown item. */}
       {!isError && enabled && keys.length > 0 && (

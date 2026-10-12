@@ -1,4 +1,4 @@
-// GET /api/fallback/rate-limit-usage (#876) must answer "how close is this model
+// GET /api/fallback/rate-limit-usage must answer "how close is this model
 // to being unroutable", which means following the key the ROUTER would pick next
 // — not the busiest key on the account. Reporting the busiest one paints a red
 // badge over a model that has an idle key sitting right there, and counting a
@@ -105,7 +105,7 @@ describe('GET /api/fallback/rate-limit-usage', () => {
     expect(row.rpm).toEqual({ used: RPM_LIMIT, limit: RPM_LIMIT });
   });
 
-  it('ignores a key whose model scope excludes this model (#657)', async () => {
+  it('ignores a key whose model scope excludes this model', async () => {
     // The free key is scoped to a different model, so the router can never reach
     // it; the only key that can serve this model is spent. Counting the scoped
     // key would report a comfortable 0/30 for a model that cannot be served.

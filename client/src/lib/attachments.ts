@@ -1,4 +1,4 @@
-// Playground file attachments (#325). Two kinds only, on purpose:
+// Playground file attachments. Two kinds only, on purpose:
 //
 //   - images (png/jpeg/webp/gif) → downscaled in the browser and sent as an
 //     OpenAI `image_url` data-URI content part, which the server already

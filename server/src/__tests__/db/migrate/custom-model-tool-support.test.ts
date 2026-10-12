@@ -15,7 +15,7 @@ function makeDb(): Database.Database {
     );
   `);
   const insert = db.prepare('INSERT INTO models (platform, model_id, supports_tools) VALUES (?, ?, ?)');
-  insert.run('custom', 'qwen3:4b', 0);          // the stuck-at-zero case (#470)
+  insert.run('custom', 'qwen3:4b', 0);          // the stuck-at-zero case
   insert.run('custom', 'llama3:8b', 1);          // already tool-capable
   insert.run('groq', 'llama-3.3-70b', 0);        // a catalog row that must NOT change
   return db;
@@ -31,7 +31,7 @@ afterEach(() => {
   for (const db of dbs.splice(0)) db.close();
 });
 
-describe('custom_model_tool_support migration (#470)', () => {
+describe('custom_model_tool_support migration', () => {
   it('flips every custom model to tool-capable and leaves catalog rows alone', () => {
     const db = makeDb();
     dbs.push(db);

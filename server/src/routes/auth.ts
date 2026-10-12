@@ -20,7 +20,7 @@ export const authRouter = Router();
 
 const failedPasswordAttempts = new Map<number, number>();
 
-// Dashboard auth (#35). These routes are mounted BEFORE requireAuth, so
+// Dashboard auth. These routes are mounted BEFORE requireAuth, so
 // /status, /setup and /login are reachable without a session (bootstrap);
 // /logout and /me validate the token themselves.
 
@@ -35,7 +35,7 @@ const signupSchema = z.object({
 // `desktop@localhost` (server-host.ts), which has no TLD and so could never
 // satisfy z.email() — every login attempt on a desktop install failed with
 // "A valid email is required" before the password was even checked, including
-// the reset-then-sign-in-from-a-browser route suggested in #807. Length rules
+// the reset-then-sign-in-from-a-browser route suggested. Length rules
 // belong to signup too: an account created under an older policy must still be
 // able to get in.
 const loginSchema = z.object({

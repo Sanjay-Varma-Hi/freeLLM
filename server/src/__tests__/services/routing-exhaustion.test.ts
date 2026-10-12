@@ -123,7 +123,7 @@ describe('Routing Key Exhaustion', () => {
 
   // 404 model-removed handling: a dead model is skipped ENTIRELY for the rest
   // of the request instead of burning one fallback attempt per key on the same
-  // dead route. (PR #111, credits @barbotkonv.)
+  // dead route.
   describe('skipModels (model-level 404 skip)', () => {
     it('skips every key of a skipped model and routes to the next model', () => {
       const db = getDb();

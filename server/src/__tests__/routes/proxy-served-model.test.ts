@@ -5,7 +5,7 @@ import { initDb, getDb, getUnifiedApiKey } from '../../db/index.js';
 import { resetServedModelObservations } from '../../lib/served-model.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// Served-model drift guard (#534 follow-up): the proxy overwrites the
+// Served-model drift guard: the proxy overwrites the
 // upstream `model` field with the routed id before the caller sees it (the
 // gateway contract — unchanged here). These tests assert the raw upstream
 // value is captured BEFORE that overwrite, compared against the routed id,
@@ -85,7 +85,7 @@ function servedModelWarns(): string[] {
     .filter(m => m.startsWith('[ServedModel]'));
 }
 
-describe('served-model drift guard (#534)', () => {
+describe('served-model drift guard', () => {
   let app: Express;
   let groqModelId: string;
 

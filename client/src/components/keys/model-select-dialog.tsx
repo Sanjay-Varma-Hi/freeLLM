@@ -9,7 +9,7 @@ import { formatContext } from '@/lib/routing'
 import { resolveScopeUpdate, type ScopeCandidate } from '@/lib/model-scope-selection'
 
 // Post-add model picker. A key pasted for a platform with a large catalog is
-// assumed to serve all of it (#657: modelScope null), which is wrong for relay
+// assumed to serve all of it (modelScope null), which is wrong for relay
 // keys sold per model group — and the symptom is a run of 401s at routing time
 // rather than anything the Keys page shows. So once, right after the add, show
 // what this key is about to be asked to serve.

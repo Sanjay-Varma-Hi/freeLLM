@@ -29,7 +29,7 @@ function setSettingIfMissing(db: LogTx, key: string, value: string): void {
   `).run(key, value);
 }
 
-// Resolve the concrete models.id for a request (#1187). Catalog requests
+// Resolve the concrete models.id for a request. Catalog requests
 // resolve by (platform, model_id); custom requests resolve through the
 // request's key (its normalized base_url is the row's endpoint_scope).
 // Returns NULL when the request is unattributable — a custom request whose
@@ -62,7 +62,7 @@ function resolveModelDbId(
 // is logged identically. Lives in a neutral lib module to avoid an import cycle
 // between the fusion service and the proxy route that both call it.
 //
-// Status is 'success', 'error', or 'canceled' (#752 — the client hung up
+// Status is 'success', 'error', or 'canceled' (— the client hung up
 // mid-attempt). A canceled request counts toward request totals — it happened —
 // but toward NEITHER success nor error: rates and scoring must read
 // success/(success+error), never success/total.
@@ -91,7 +91,7 @@ export function logRequest(
   // (requested_model set but != model_id).
   requestedModel: string | null = null,
   // The model the UPSTREAM claims it served, ONLY when it genuinely differs
-  // from the routed model_id after cosmetic normalization (#534 — see
+  // from the routed model_id after cosmetic normalization (— see
   // lib/served-model.ts). NULL when it matches or the provider reported
   // nothing usable, so the column stays empty in the healthy case.
   servedModel: string | null = null,
@@ -160,7 +160,7 @@ export function logRequest(
 // request by the fallback loop AFTER the response is finished, so the write is
 // off the client's latency path. Zero-failure single-attempt successes write
 // exactly one 'ok' row. A trace with no parent row writes nothing — since the
-// fallback loop logs a 'canceled' row for pure client aborts (#752), that is
+// fallback loop logs a 'canceled' row for pure client aborts, that is
 // now only the loop-top stop paths, whose failed attempts each wrote their own
 // row already.
 export function persistRequestAttempts(trace: RequestTrace): void {

@@ -4,7 +4,7 @@ import { createApp } from '../../app.js';
 import { initDb, getDb, getUnifiedApiKey } from '../../db/index.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// #1102 follow-up: `execution_id` must be on EVERY JSON body the chat
+// `execution_id` must be on EVERY JSON body the chat
 // completion route sends — success and error alike — or clients cannot rely on
 // it. A field that is present only when the call succeeds is worse than no
 // field: the failing case is exactly the one you need the id for. It always
@@ -73,7 +73,7 @@ function mockUpstream(opts: { fail?: boolean; stream?: boolean } = {}) {
   });
 }
 
-describe('execution_id on chat completion bodies (#1102)', () => {
+describe('execution_id on chat completion bodies', () => {
   let app: Express;
 
   beforeAll(() => {

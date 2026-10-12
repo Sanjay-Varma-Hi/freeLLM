@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isUpstreamClassificationOutput } from '../../lib/error-classify.js';
 
 /**
- * #809: kilo's free relay sometimes answers with a bare "safe"/"unsafe" — an
+ * kilo's free relay sometimes answers with a bare "safe"/"unsafe" — an
  * upstream content filter's verdict standing in for the model's reply. The
  * surfaces treat that as an empty completion and fail over.
  *
@@ -11,7 +11,7 @@ import { isUpstreamClassificationOutput } from '../../lib/error-classify.js';
  * every platform would discard correct responses and burn the whole fallback
  * chain for anyone doing classification.
  */
-describe('isUpstreamClassificationOutput (#809)', () => {
+describe('isUpstreamClassificationOutput', () => {
   it('flags a bare classification verdict from the kilo relay', () => {
     expect(isUpstreamClassificationOutput('safe', 'kilo')).toBe(true);
     expect(isUpstreamClassificationOutput('unsafe', 'kilo')).toBe(true);

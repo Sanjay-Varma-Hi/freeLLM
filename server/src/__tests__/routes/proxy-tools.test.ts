@@ -186,7 +186,7 @@ describe('Proxy tool-calling support', () => {
     expect(body.choices[0].message.content).toContain('30C');
   });
 
-  it('round-trips assistant reasoning_content on follow-up turns (DeepSeek thinking — #255)', async () => {
+  it('round-trips assistant reasoning_content on follow-up turns (DeepSeek thinking —)', async () => {
     const origFetch = global.fetch;
     let providerBody: any = null;
 
@@ -225,7 +225,7 @@ describe('Proxy tool-calling support', () => {
     expect(providerBody.messages[1].reasoning_content).toBeUndefined();
   });
 
-  it('restores session reasoning_content the client dropped on replay (#797)', async () => {
+  it('restores session reasoning_content the client dropped on replay', async () => {
     const origFetch = global.fetch;
     let turn = 0;
     let providerBody: any = null;
@@ -280,7 +280,7 @@ describe('Proxy tool-calling support', () => {
     expect(providerBody.messages[1].reasoning_content).toBeUndefined();
   });
 
-  it('sends the client\'s messages untouched when the session remembers no reasoning (#797)', async () => {
+  it('sends the client\'s messages untouched when the session remembers no reasoning', async () => {
     const origFetch = global.fetch;
     let providerBody: any = null;
 
@@ -316,7 +316,7 @@ describe('Proxy tool-calling support', () => {
     expect(providerBody.messages.some((m: any) => 'reasoning_content' in m)).toBe(false);
   });
 
-  it('restores only into the outbound copy, so a failover hop still sends the client\'s bytes (#797)', async () => {
+  it('restores only into the outbound copy, so a failover hop still sends the client\'s bytes', async () => {
     const origFetch = global.fetch;
     const calls: any[] = [];
 

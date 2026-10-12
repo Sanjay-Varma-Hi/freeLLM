@@ -169,7 +169,7 @@ describe('upstream 401 rotates to the sibling key instead of 502 (item 1)', () =
     expect(headers.get('x-fallback-attempts')).toBe('2');
   });
 
-  it('Google-style 400 bad key rotates + revalidates and never blames the client request (#268)', async () => {
+  it('Google-style 400 bad key rotates + revalidates and never blames the client request', async () => {
     // Google reports a dead/expired key as HTTP 400 "API key not valid", NOT a
     // 401. Before the fix that classified as a provider bad-request, so an
     // exhaustion could surface to the client as 400 "All routed providers

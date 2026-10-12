@@ -57,7 +57,7 @@ function fakeRoute() {
   };
 }
 
-describe('client profiles (#411)', () => {
+describe('client profiles', () => {
   let app: Express;
   let unifiedKey: string;
 

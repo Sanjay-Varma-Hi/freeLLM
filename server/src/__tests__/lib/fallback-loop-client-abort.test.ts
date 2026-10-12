@@ -12,7 +12,7 @@ import type { RouteResult } from '../../services/router.js';
  * throw must stop the ladder immediately, release the in-flight lease via the
  * existing finally, and leave NO provider-failure trace — no cooldown, no
  * skip-key entry, no logFailure row, no exhaustion render. What it DOES leave
- * (#752) is a 'canceled' requests row, so the dashboard shows the request
+ * is a 'canceled' requests row, so the dashboard shows the request
  * happened; stats/scoring queries exclude that status everywhere.
  */
 
@@ -125,7 +125,7 @@ describe('fallback loop on client abort', () => {
     expect(state.skipModels.size).toBe(0);
   });
 
-  it("writes a 'canceled' requests row so the abort is visible in the dashboard (#752)", async () => {
+  it("writes a 'canceled' requests row so the abort is visible in the dashboard", async () => {
     const state = newFallbackState();
     const { route } = leasedRoute();
     await runFallbackLoop(hooks(state, {

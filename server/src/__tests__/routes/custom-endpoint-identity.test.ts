@@ -11,10 +11,10 @@ import { logRequest } from '../../lib/request-log.js';
 import { buildModelListing } from '../../services/model-listing.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// Per-endpoint model identity (#651). Two relays that both offer
+// Per-endpoint model identity. Two relays that both offer
 // `deepseek-v3.1` used to collapse into ONE models row: one enabled flag, one
 // reliability/speed bucket. Relay A going bad took relay B's copy down with it
-// (#619). These cases pin that the two copies are now genuinely separate — and,
+// These cases pin that the two copies are now genuinely separate — and,
 // just as important, that an install with a SINGLE relay behaves exactly as
 // before.
 
@@ -80,7 +80,7 @@ async function registerBothRelays(app: Express) {
   });
 }
 
-describe('per-endpoint identity for custom relay models (#651)', () => {
+describe('per-endpoint identity for custom relay models', () => {
   let app: Express;
 
   beforeEach(() => {
@@ -236,7 +236,7 @@ describe('per-endpoint identity for custom relay models (#651)', () => {
       expect(rowsFor(SHARED_MODEL).map(r => r.enabled)).toEqual([1, 1]);
     });
 
-    it('records the concrete model row selected for each relay (#1187)', async () => {
+    it('records the concrete model row selected for each relay', async () => {
       await registerBothRelays(app);
       const a = rowOn(RELAY_A);
       const b = rowOn(RELAY_B);
@@ -354,7 +354,7 @@ describe('per-endpoint identity for custom relay models (#651)', () => {
 
       const groups = getModelGroups();
       // An unqualified key names BOTH relays, so they share one split group —
-      // exactly what it meant before #651, left alone rather than reinterpreted.
+      // exactly what it meant, left alone rather than reinterpreted.
       const groupOf = (id: number) => groups.find(g => g.members.some(m => m.model_db_id === id))!;
       expect(groupOf(a.id).groupKey).toBe(groupOf(b.id).groupKey);
       expect(groupOf(a.id).groupKey).toContain('__split__');

@@ -23,7 +23,7 @@ describe('scoring: reliability posterior', () => {
     expect(reliabilityPosterior(5, 3)).toEqual({ alpha: 6, beta: 4 });
   });
 
-  it('community prior folds in as the starting balance (#685)', () => {
+  it('community prior folds in as the starting balance', () => {
     // Unseen model + a strong community record → starts near the community rate.
     const withCommunity = expectedReliability(0, 0, { successes: 98, failures: 2 });
     expect(withCommunity).toBeGreaterThan(0.9);
@@ -33,7 +33,7 @@ describe('scoring: reliability posterior', () => {
       .toEqual({ alpha: 100, beta: 3 });
   });
 
-  it('local samples dilute the community prior automatically (#685)', () => {
+  it('local samples dilute the community prior automatically', () => {
     // A tiny community prior barely moves the posterior once the install has
     // hundreds of its own samples: 1001/1012 ≈ 0.989 vs 0.99 local-only.
     const mostlyLocal = expectedReliability(990, 10, { successes: 10, failures: 0 });
@@ -81,7 +81,7 @@ describe('scoring: intelligence axis', () => {
   });
 });
 
-describe('scoring: intelligence_rank is visible on the axis (#673)', () => {
+describe('scoring: intelligence_rank is visible on the axis', () => {
   // A realistic three-tier chain. The Frontier model pins the top of the
   // min-max normalization and the Medium model pins the bottom; the Large
   // model in between is the one the user re-ranks, so the span is unchanged by
@@ -128,7 +128,7 @@ describe('scoring: guardrails', () => {
     expect(headroomFactor(900_000, 1_000_000)).toBeLessThan(1); // 10% left → protecting
   });
 
-  it('honors tunable rampStart/floor thresholds (#899)', () => {
+  it('honors tunable rampStart/floor thresholds', () => {
     // Aggressive operator: start protecting at 50% remaining, floor at 0.3.
     const opts = { rampStart: 0.5, floor: 0.3 };
     expect(headroomFactor(400_000, 1_000_000, opts)).toBe(1); // 60% left ≥ rampStart → no opinion
@@ -139,7 +139,7 @@ describe('scoring: guardrails', () => {
     expect(headroomFactor(1_000_000, 1_000_000, opts)).toBeCloseTo(0.3, 5); // fully used → floor
   });
 
-  it('clamps out-of-range thresholds to defaults (#899)', () => {
+  it('clamps out-of-range thresholds to defaults', () => {
     expect(headroomFactor(500_000, 1_000_000, { rampStart: 2, floor: -1 }))
       .toBe(headroomFactor(500_000, 1_000_000)); // same as default behavior
     expect(headroomFactor(500_000, 1_000_000, { rampStart: NaN }))
@@ -150,7 +150,7 @@ describe('scoring: guardrails', () => {
     expect(headroomFactor(123, 0)).toBe(1);
   });
 
-  it('rate-window headroom rides the same ramp as the monthly one (#899)', () => {
+  it('rate-window headroom rides the same ramp as the monthly one', () => {
     expect(rateWindowHeadroomFactor(0)).toBe(1);      // idle
     expect(rateWindowHeadroomFactor(0.5)).toBe(1);    // 50% left, ramp starts at 20%
     // Exactly at the ramp start: 1 - 0.8 lands a float ulp under 0.2, so this
@@ -167,7 +167,7 @@ describe('scoring: guardrails', () => {
     expect(rateWindowHeadroomFactor(0.95)).toBeCloseTo(headroomFactor(950, 1000), 10);
   });
 
-  it('rate-window headroom takes the same tunable thresholds (#899)', () => {
+  it('rate-window headroom takes the same tunable thresholds', () => {
     const opts = { rampStart: 0.5, floor: 0.3 };
     expect(rateWindowHeadroomFactor(0.4, opts)).toBe(1);            // 60% left
     expect(rateWindowHeadroomFactor(0.6, opts)).toBeCloseTo(0.86, 5); // 0.3 + 0.7·(0.4/0.5)
@@ -254,7 +254,7 @@ describe('scoring: Beta sampler (Thompson exploration)', () => {
   });
 });
 
-describe('scoring: time-of-day dynamic ranking (#760)', () => {
+describe('scoring: time-of-day dynamic ranking', () => {
   // Every timestamp below is an absolute instant (Z), so the timezone under
   // test — not the machine running the suite — decides which hour it is.
   const cfg = (patch: Partial<PeakHoursConfig> = {}): PeakHoursConfig =>
@@ -370,7 +370,7 @@ describe('scoring: time-of-day dynamic ranking (#760)', () => {
   });
 });
 
-describe('scoring: task-type weight bias (#1127)', () => {
+describe('scoring: task-type weight bias', () => {
   it('moves speed onto intelligence for a code turn, and back for a chat turn', () => {
     const base = BANDIT_PRESETS.balanced;
     const code = taskAdjustedWeights(base, 'code', 'balanced');

@@ -1,5 +1,5 @@
 /**
- * Per-key monthly budget (#1158): optional request/token caps per api_keys row,
+ * Per-key monthly budget: optional request/token caps per api_keys row,
  * enforced against the CURRENT UTC month's successful requests. A key at its
  * cap returns `quota_exceeded` (429) with a Retry-After of "seconds until the
  * next month" — the semantic GateLLM-style rejection so an agent knows when the

@@ -3,7 +3,7 @@
 //
 // DOWN: reversible
 //
-// The failover-ladder drill-down (issue #335) renders WHY each hop failed, but
+// The failover-ladder drill-down renders WHY each hop failed, but
 // the `outcome` class alone loses the provider's actual words ("rate limit
 // reached for llama-3.3-70b, retry in 7m12s" collapses to 'rate_limited').
 // This nullable column stores a short, REDACTED summary of the per-attempt

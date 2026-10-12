@@ -1,4 +1,4 @@
-// Copy to clipboard, on secure and insecure origins alike (#734).
+// Copy to clipboard, on secure and insecure origins alike.
 //
 // `navigator.clipboard` only exists in a secure context. A LAN install served
 // over plain HTTP — http://192.168.1.50:4001, the documented Docker setup — is

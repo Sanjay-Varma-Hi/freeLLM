@@ -10,7 +10,7 @@ import {
   CLIENT_PROFILE_KEY_PREFIX,
 } from '../../lib/system-prompt.js';
 
-// resolveAuth precedence (#411): unified key → default behavior (no enforced
+// resolveAuth precedence: unified key → default behavior (no enforced
 // prompt); profile key → its own prompt; empty prompt → neutral passthrough;
 // disabled profile → rejected exactly like an unknown key.
 
@@ -24,7 +24,7 @@ function insertProfile(name: string, systemPrompt: string | null, enabled = 1): 
   return key;
 }
 
-describe('resolveAuth (#411)', () => {
+describe('resolveAuth', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -62,7 +62,7 @@ describe('resolveAuth (#411)', () => {
   });
 });
 
-describe('prependSystemPrompt (#411)', () => {
+describe('prependSystemPrompt', () => {
   const caller: ChatMessage[] = [
     { role: 'system', content: 'caller instructions' },
     { role: 'user', content: 'hi' },

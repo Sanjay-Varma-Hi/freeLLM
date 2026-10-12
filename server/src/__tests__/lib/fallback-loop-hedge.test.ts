@@ -127,7 +127,7 @@ describe('fallback loop time-budget hedging', () => {
     // Same ladder shape as above: two quick retryable failures let the third
     // attempt start, then the budget expires mid-flight and the hedge abort
     // abandons it. Hedging only arms for attempt > 1 (the first attempt and
-    // the first retry always run — #751).
+    // the first retry always run —).
     const dispatch = vi.fn()
       .mockImplementationOnce(async () => {
         await new Promise(r => setTimeout(r, 30));
@@ -163,7 +163,7 @@ describe('fallback loop time-budget hedging', () => {
 
   it('benches the route when one attempt stayed silent for the whole budget', async () => {
     // The production shape behind this branch. Same ladder position as the two
-    // tests above — hedging only arms from the third attempt on (#751) — but
+    // tests above — hedging only arms from the third attempt on — but
     // here the two failures ahead of it are INSTANT, so the stalled attempt
     // inherits essentially the whole budget and then sends no first byte for
     // all of it. That is a stalled upstream, not a scheduling accident:

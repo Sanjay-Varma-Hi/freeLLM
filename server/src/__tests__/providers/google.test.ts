@@ -47,7 +47,7 @@ describe('GoogleProvider', () => {
     expect(result._routed_via?.platform).toBe('google');
   });
 
-  it('converts an image_url data URL into a Gemini inlineData part (#118)', async () => {
+  it('converts an image_url data URL into a Gemini inlineData part', async () => {
     const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -90,7 +90,7 @@ describe('GoogleProvider', () => {
     expect(await provider.validateKey('invalid-key')).toMatchObject({ valid: false });
   });
 
-  it.each([false, true])('preserves daily quota evidence with streaming=%s (#1339)', async (stream) => {
+  it.each([false, true])('preserves daily quota evidence with streaming=%s', async (stream) => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ error: {
       message: 'You exceeded your current quota.',
       details: [
@@ -120,7 +120,7 @@ describe('GoogleProvider', () => {
       .rejects.toMatchObject({ dailyQuotaExhausted: false });
   });
 
-  // #268: Google reports a bad key as HTTP 400 INVALID_ARGUMENT / API_KEY_INVALID,
+  // Google reports a bad key as HTTP 400 INVALID_ARGUMENT / API_KEY_INVALID,
   // not 401/403. A confirmed-bad key must return false (→ auto-disable counter).
   it('validateKey returns false for a genuinely invalid key (HTTP 400 API_KEY_INVALID)', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce({
@@ -138,7 +138,7 @@ describe('GoogleProvider', () => {
     expect(await provider.validateKey('bad-key')).toMatchObject({ valid: false });
   });
 
-  // #268: a permission/region/restriction 403 (e.g. API not enabled on the project,
+  // a permission/region/restriction 403 (e.g. API not enabled on the project,
   // or an IP/API-key restriction on the proxy host) must NOT auto-disable a key that
   // may still work for generateContent elsewhere — validateKey throws so health.ts
   // records status='error' instead of incrementing the disable counter.
@@ -185,11 +185,11 @@ describe('GoogleProvider', () => {
     expect(capturedBody.contents[0].role).toBe('user');
   });
 
-  // #500: older Gemma on the Gemini API 400s with "Developer instruction is not
+  // older Gemma on the Gemini API 400s with "Developer instruction is not
   // enabled" — system prompts must keep folding into the first user turn.
-  // #582: tools must NOT be stripped anymore (Gemma 4 has native function
+  // tools must NOT be stripped anymore (Gemma 4 has native function
   // calling); the fold and tool pass-through coexist on the same request.
-  it('folds system prompts into user content for Gemma models while passing tools through (#500, #582)', async () => {
+  it('folds system prompts into user content for Gemma models while passing tools through', async () => {
     let capturedBody: any;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       capturedBody = JSON.parse((init as any).body);
@@ -223,16 +223,16 @@ describe('GoogleProvider', () => {
       },
     );
 
-    // The #500 fold is untouched: no systemInstruction, system text leads contents.
+    // The fold is untouched: no systemInstruction, system text leads contents.
     expect(capturedBody.systemInstruction).toBeUndefined();
     expect(capturedBody.contents[0]).toEqual({ role: 'user', parts: [{ text: 'You are helpful' }] });
     expect(capturedBody.contents[1]).toEqual({ role: 'user', parts: [{ text: 'Hi' }] });
-    // The #582 fix: tools reach Gemma instead of being silently deleted.
+    // The fix: tools reach Gemma instead of being silently deleted.
     expect(capturedBody.tools[0].functionDeclarations[0].name).toBe('get_weather');
     expect(capturedBody.toolConfig.functionCallingConfig.mode).toBe('AUTO');
   });
 
-  it('passes tools/tool_choice through for Gemma on the streaming path (#582)', async () => {
+  it('passes tools/tool_choice through for Gemma on the streaming path', async () => {
     let capturedBody: any;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       capturedBody = JSON.parse((init as any).body);
@@ -273,7 +273,7 @@ describe('GoogleProvider', () => {
     expect(chunks[chunks.length - 1].choices[0].finish_reason).toBe('tool_calls');
   });
 
-  it('keeps functionCall/functionResponse history for Gemma multi-turn tool round-trips (#582)', async () => {
+  it('keeps functionCall/functionResponse history for Gemma multi-turn tool round-trips', async () => {
     let capturedBody: any;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       capturedBody = JSON.parse((init as any).body);
@@ -327,7 +327,7 @@ describe('GoogleProvider', () => {
     expect(responseEntry.parts[0].functionResponse.response).toEqual({ temp: 31 });
   });
 
-  it('does not expose Gemini thought parts as visible content (#539)', async () => {
+  it('does not expose Gemini thought parts as visible content', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -396,7 +396,7 @@ describe('GoogleProvider', () => {
     expect(capturedBody.toolConfig.functionCallingConfig.allowedFunctionNames).toEqual(['get_weather']);
   });
 
-  it('maps a google_search tool to Gemini grounding, not a function declaration (#59)', async () => {
+  it('maps a google_search tool to Gemini grounding, not a function declaration', async () => {
     let capturedBody: any;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       capturedBody = JSON.parse((init as any).body);
@@ -421,7 +421,7 @@ describe('GoogleProvider', () => {
     expect(capturedBody.toolConfig).toBeUndefined();
   });
 
-  it('combines google_search grounding with real function tools (#59)', async () => {
+  it('combines google_search grounding with real function tools', async () => {
     let capturedBody: any;
     vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
       capturedBody = JSON.parse((init as any).body);
@@ -727,7 +727,7 @@ describe('GoogleProvider', () => {
     expect(chunks.some(c => c.choices[0].finish_reason)).toBe(false);
   });
 
-  it('streams Gemini thought parts as reasoning_content, not visible content (#539)', async () => {
+  it('streams Gemini thought parts as reasoning_content, not visible content', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(sseResponse([
       'data: {"candidates":[{"content":{"parts":[{"text":"private","thought":true}]}}]}\n\n',
       'data: {"candidates":[{"content":{"parts":[{"text":" answer"}]}}]}\n\n',

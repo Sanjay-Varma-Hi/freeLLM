@@ -33,7 +33,7 @@ export function ImportKeysSection({ onImported }: { onImported?: () => void } = 
   // so it is deliberately absent from the generic provider dropdown. An
   // imported row is the one case where it belongs there: the file already
   // names the endpoint, and without the option the row can never be selected
-  // and the endpoint can never be restored (#687).
+  // and the endpoint can never be restored.
   const importablePlatforms = [...PLATFORMS.filter(p => !p.keyless), CUSTOM_GROUP]
 
   function platformFromPreview(key: PreviewKey): Platform | '' {

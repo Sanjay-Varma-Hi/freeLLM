@@ -1,9 +1,9 @@
-// Migration: seed the /mcp lifecycle default (#925, MVP-1)
+// Migration: seed the /mcp lifecycle default (MVP-1)
 // Created: 2026-09-03
 //
 // DOWN: reversible
 //
-// The MCP introspection server used to be unconditionally on. #925 makes it a
+// The MCP introspection server used to be unconditionally on. makes it a
 // setting, and asks for off-by-default — but flipping it off for everyone would
 // silently break every Claude Code / Cline session already pointed at /mcp, and
 // the failure would look like a broken gateway rather than a new switch.
@@ -17,7 +17,7 @@
 //                               turns it off.
 //   - no provider keys       -> a fresh install running the whole migration
 //                               stack against an empty database: seed '0'
-//                               (off), which is the #925 default.
+//                               (off), which is the default.
 //
 // An operator's own value always wins: if the row already exists (they set it
 // through /api/settings/enable-mcp before upgrading, say) it is left alone.

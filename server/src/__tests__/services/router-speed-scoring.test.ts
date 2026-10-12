@@ -63,7 +63,7 @@ function speedRankOf(platform: string, modelId: string): number {
     .get(platform, modelId) as { speed_rank: number }).speed_rank;
 }
 
-describe('speed scoring: timeouts count against speed (#619)', () => {
+describe('speed scoring: timeouts count against speed', () => {
   beforeEach(() => {
     process.env.DEV_MODE = 'true';
     process.env.NODE_ENV = 'test';
@@ -145,7 +145,7 @@ describe('speed scoring: timeouts count against speed (#619)', () => {
     expect(refusing.reliability).toBeLessThan(fast.reliability);
   });
 
-  it("a 'canceled' row (#752 — client hung up) affects neither speed nor reliability", () => {
+  it("a 'canceled' row (— client hung up) affects neither speed nor reliability", () => {
     addModel({ platform: 'google', modelId: 'steady', name: 'Steady', priority: 1 });
     addModel({ platform: 'groq', modelId: 'hungup', name: 'HungUp', priority: 2 });
     for (const [platform, modelId] of [['google', 'steady'], ['groq', 'hungup']] as const) {
@@ -166,7 +166,7 @@ describe('speed scoring: timeouts count against speed (#619)', () => {
   });
 });
 
-describe('observed speed_rank writeback (#619)', () => {
+describe('observed speed_rank writeback', () => {
   beforeEach(() => {
     process.env.DEV_MODE = 'true';
     process.env.NODE_ENV = 'test';

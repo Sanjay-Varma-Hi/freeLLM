@@ -171,7 +171,7 @@ describe('/v1/messages shared-loop convergence', () => {
     expect(text).not.toContain('<function=');
   });
 
-  it('stream: preserves provider thought_signature on tool_use blocks (#487)', async () => {
+  it('stream: preserves provider thought_signature on tool_use blocks', async () => {
     mockRouteRequest.mockReturnValue(fakeRoute(streamProvider(async function* () {
       yield chunk({ role: 'assistant' });
       yield chunk({

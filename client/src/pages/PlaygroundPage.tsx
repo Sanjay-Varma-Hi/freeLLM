@@ -223,7 +223,7 @@ export default function PlaygroundPage() {
     () => localStorage.getItem('playground.model') ?? 'auto',
   )
   // Files staged for the NEXT message: images already downscaled to a data URI,
-  // text-like files already decoded. Cleared on send. (#325)
+  // text-like files already decoded. Cleared on send.
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [dragging, setDragging] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -352,7 +352,7 @@ export default function PlaygroundPage() {
     queryFn: () => apiFetch('/api/fallback'),
   })
 
-  // Named fallback chains (#1021). Every custom chain is served as an
+  // Named fallback chains. Every custom chain is served as an
   // `auto:<name>` model — /v1/models lists them and the send path already
   // routes them — but the picker only ever offered 'auto', so the one place
   // you could try a chain you had just built was a curl command. The id is
@@ -905,7 +905,7 @@ export default function PlaygroundPage() {
   // Searchable picker options: auto + fusion pinned at the top, then every model
   // ordered BY INTELLIGENCE — size tier first (Frontier→Small), then the catalog
   // rank within the tier, name as the final tiebreaker. (Raw intelligence_rank is
-  // per-provider, not global, so tier-first matches the server's preset; #135.)
+  // per-provider, not global, so tier-first matches the server's preset;.)
   const pickerOptions = [
     { value: 'auto', label: t('playground.autoModel'), sub: '', isNew: false, platforms: [] as string[] },
     { value: 'fusion', label: t('playground.fusionModel'), sub: '', isNew: false, platforms: [] as string[] },

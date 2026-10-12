@@ -183,7 +183,7 @@ describe('routing semantics', () => {
     expect(routed.modelDbId).not.toBe(disabledId);
   });
 
-  it('refuses model:"auto" on an empty active chain instead of routing the catalog (#1021)', () => {
+  it('refuses model:"auto" on an empty active chain instead of routing the catalog', () => {
     const db = getDb();
     addKey('groq');
     // The chain the operator is on holds nothing — a chain created with
@@ -229,12 +229,12 @@ describe('routing semantics', () => {
   });
 });
 
-// ── #919: remaining-quota key selection ─────────────────────────────────────
+// ──: remaining-quota key selection ─────────────────────────────────────
 // A separate setting from the routing strategy: the strategy ranks MODELS, this
 // picks between several keys of one platform. 'least-remaining' ranks them by
 // how much of their observed quota is left and tries the roomiest first, so the
 // key nearest its cap is held in reserve instead of being the next to 429.
-describe('key selection by remaining quota (#919)', () => {
+describe('key selection by remaining quota', () => {
   // cerebras meters each key against its own budget ('cerebras::shared'), which
   // is what makes "which key has more left" a question with an answer.
   const CEREBRAS_POOL = 'cerebras::shared';

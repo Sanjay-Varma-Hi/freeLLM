@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { summarizeExhaustion, formatResetEta } from '../../services/router.js';
 
-// #423: "All models exhausted" gave the caller nothing to act on. The summary
+// "All models exhausted" gave the caller nothing to act on. The summary
 // rolls the per-model routing diagnostics into aggregate, client-safe buckets
 // plus a soonest-reset ETA.
 

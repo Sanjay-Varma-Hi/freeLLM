@@ -10,7 +10,7 @@ import { initDb } from '../../db/index.js';
 // index.html ships one inline <script>: the theme/direction bootstrap that has
 // to run before first paint so dark-mode users do not get a white flash.
 // `script-src 'self'` blocked it on EVERY install, HTTPS included — the
-// violation is visible in the console log pasted into #682, where it was read
+// violation is visible in the console log pasted into, where it was read
 // as part of the LAN/HTTP problem. It is not: it reproduces on localhost too.
 //
 // The hash is a literal in app.ts so the CSP header stays constant. These tests
@@ -30,7 +30,7 @@ function sha256Directive(source: string): string {
   return `'sha256-${createHash('sha256').update(source, 'utf8').digest('base64')}'`;
 }
 
-describe('CSP allows the inline theme bootstrap (#682)', () => {
+describe('CSP allows the inline theme bootstrap', () => {
   let app: Express;
 
   beforeAll(() => {

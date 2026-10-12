@@ -23,7 +23,7 @@ export class ClodProvider extends OpenAICompatProvider {
 
   constructor() {
     // Same Cloudflare challenge as Septor for tool User-Agents from datacenter
-    // IPs (#1298); a product UA gets the real 401/200 answer.
+    // IPs; a product UA gets the real 401/200 answer.
     super({
       platform: 'clod', name: 'CLōD', baseUrl: 'https://api.clod.io/v1',
       extraHeaders: { 'User-Agent': 'FreeLLMAPI/1.0' },

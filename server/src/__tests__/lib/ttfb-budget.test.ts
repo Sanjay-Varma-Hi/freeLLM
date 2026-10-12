@@ -27,7 +27,7 @@ function addCustomKey(baseUrl: string): number {
   `).run(baseUrl).lastInsertRowid);
 }
 
-describe('endpoint TTFB budgets (#1262)', () => {
+describe('endpoint TTFB budgets', () => {
   beforeEach(() => {
     vi.stubEnv('DEV_MODE', 'true');
     vi.stubEnv('NODE_ENV', 'test');

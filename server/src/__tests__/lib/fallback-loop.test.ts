@@ -106,7 +106,7 @@ describe('isKeyAuthError (401 = key-fatal, rotate instead of 502)', () => {
     expect(isKeyAuthError(Object.assign(new Error('unauthorized model'), { status: 403 }))).toBe(false);
   });
 
-  it('flags Google-style HTTP 400 bad-key errors via key-specific substrings only (#268)', () => {
+  it('flags Google-style HTTP 400 bad-key errors via key-specific substrings only', () => {
     // Google reports a bad/expired key as HTTP 400 INVALID_ARGUMENT, and every
     // adapter attaches err.status (providerHttpError), so the 400 path must
     // accept the key-specific phrasings...
@@ -249,7 +249,7 @@ describe('recordRetryableFailure skipBench exemption (reasoning truncation)', ()
   });
 });
 
-describe('empty-completion streak lifts the skipBench exemption (#751)', () => {
+describe('empty-completion streak lifts the skipBench exemption', () => {
   const emptyLengthErr = (route: RouteResult) =>
     Object.assign(new Error(`empty completion from ${route.displayName}`), { skipBench: true });
   const cooldownFor = (route: RouteResult) =>
@@ -323,7 +323,7 @@ describe('empty-completion streak lifts the skipBench exemption (#751)', () => {
   });
 });
 
-describe('truncated-stream streak benches a sick route (#1218)', () => {
+describe('truncated-stream streak benches a sick route', () => {
   const truncErr = (name: string) =>
     new Error(`${name} stream ended unexpectedly (no [DONE], no finish_reason) — connection reset or truncated upstream`);
   const cooldownExpiry = (route: RouteResult): number | undefined => {
@@ -467,7 +467,7 @@ describe('runFallbackLoop: auth rotation (401 is key-fatal, not request-fatal)',
 });
 
 describe('runFallbackLoop: wall-clock retry budget', () => {
-  it('always allows one failover hop, then stops and reports timedOut (#751)', async () => {
+  it('always allows one failover hop, then stops and reports timedOut', async () => {
     const dispatch = vi.fn(async () => {
       await new Promise(r => setTimeout(r, 25));
       throw Object.assign(new Error('429 Too Many Requests'), { status: 429 });
@@ -620,7 +620,7 @@ describe('runFallbackLoop: circuit-breaker guardrail (max_consecutive_upstream_f
 
   it('skipBench failures (format ignored, hidden reasoning) never trip the breaker', async () => {
     // Three prose answers to a json_schema request say nothing about pool
-    // health — candidate four must still get its shot. (#511 x #516)
+    // health — candidate four must still get its shot. (x)
     const onExhausted = vi.fn();
     let calls = 0;
     const dispatch = vi.fn(async () => {
@@ -670,7 +670,7 @@ describe('runFallbackLoop: circuit-breaker guardrail (max_consecutive_upstream_f
   });
 });
 
-describe('isProviderLevelError (#788: the PROVIDER is sick, not this key)', () => {
+describe('isProviderLevelError (the PROVIDER is sick, not this key)', () => {
   it('flags what only a sick provider produces: a 5xx, a timeout, a dead socket', () => {
     expect(isProviderLevelError(Object.assign(new Error('Bad Gateway'), { status: 502 }))).toBe(true);
     expect(isProviderLevelError(Object.assign(new Error('Groq API error 503: Service Unavailable'), { status: 503 }))).toBe(true);
@@ -681,7 +681,7 @@ describe('isProviderLevelError (#788: the PROVIDER is sick, not this key)', () =
     expect(isProviderLevelError(new Error('fetch failed'))).toBe(true);
     expect(isProviderLevelError(new Error('The operation was aborted (groq, chat, 120s)'))).toBe(true);
     expect(isProviderLevelError(new Error('Fake stream stalled: no data for 90000ms (timeout)'))).toBe(true);
-    // A DEGRADED deployment is provider health wearing a 400 (#522).
+    // A DEGRADED deployment is provider health wearing a 400.
     expect(isProviderLevelError(Object.assign(new Error("Function id 'x': DEGRADED function cannot be invoked"), { status: 400 }))).toBe(true);
   });
 
@@ -723,7 +723,7 @@ describe('isProviderLevelError (#788: the PROVIDER is sick, not this key)', () =
   });
 });
 
-describe('runFallbackLoop: a provider-level failure skips the whole platform (#788)', () => {
+describe('runFallbackLoop: a provider-level failure skips the whole platform', () => {
   // A miniature routeRequest: walk a fixed candidate list in order and return
   // the first one this request has not ruled out, applying the same three gates
   // the real router applies (skipPlatforms, skipModels, skipKeys).

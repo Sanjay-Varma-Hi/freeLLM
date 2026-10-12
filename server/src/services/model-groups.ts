@@ -54,7 +54,7 @@ export interface GroupableRow {
   display_name: string;
   intelligence_rank?: number;
   // Which custom endpoint this row belongs to; '' (or absent) for every catalog
-  // platform and for legacy un-scoped custom rows (#651).
+  // platform and for legacy un-scoped custom rows.
   endpoint_scope?: string;
 }
 
@@ -160,7 +160,7 @@ function memberId(row: GroupableRow): string {
 /**
  * The endpoint-qualified member id, or null when the row needs no qualifier.
  * Only custom rows that actually carry an endpoint scope have one, which is why
- * an install with a single relay never sees a qualified id anywhere (#651).
+ * an install with a single relay never sees a qualified id anywhere.
  */
 export function qualifiedMemberId(row: GroupableRow): string | null {
   return qualifiedModelMemberId(row.platform, row.model_id, row.endpoint_scope);
@@ -242,11 +242,11 @@ export function groupRows(rows: GroupableRow[], ov: UnifyOverrides): ModelGroup[
  * Resolve a requested model id to the db ids of its group members, or null.
  *
  * The ladder, most specific first:
- *   1. "custom:model_id#endpoint" → exactly that relay's copy (#651) — the only
+ *   1. "custom:model_id#endpoint" → exactly that relay's copy — the only
  *      form that can separate two endpoints offering the same model id. The
  *      endpoint part accepts the short handle or the endpoint URL itself;
  *   2. "platform:model_id" → that platform's copies. Normally exactly one row,
- *      so this is unchanged (#580: naming the platform means "this provider's
+ *      so this is unchanged (naming the platform means "this provider's
  *      copy", no failover to the rest of the group). Two relays sharing a model
  *      id are both 'custom', so this names both and the router picks the better
  *      one — nothing an existing setup can notice, and no error to hit;
@@ -256,7 +256,7 @@ export function groupRows(rows: GroupableRow[], ov: UnifyOverrides): ModelGroup[
  *      several providers) but it must never SHRINK it. Renaming one relay's
  *      copy, or splitting it out for display, moves it to its own group;
  *      stopping at the first match would strand the other relay, unreachable by
- *      the id every client already has (#651).
+ *      the id every client already has.
  *
  * Member order here is incidental — the router re-orders by the active strategy.
  */
@@ -341,7 +341,7 @@ export interface DispatchMembers {
 
 /**
  * One-call resolution for the request path: the member ids to route over plus
- * the ones that must not outrank a literal match on score (#651).
+ * the ones that must not outrank a literal match on score.
  */
 export function resolveRequestedIdForDispatch(
   requested: string,
@@ -354,9 +354,9 @@ export function resolveRequestedIdForDispatch(
 
 // ── DB convenience ───────────────────────────────────────────────────────────
 
-// #1047: GET /api/fallback calls this on every request, and grouping the whole
+// GET /api/fallback calls this on every request, and grouping the whole
 // catalog (regex + canonical-id assignment over hundreds of rows) dominated the
-// handler once the chain read went catalog-wide (#1023). The SELECT itself is a
+// handler once the chain read went catalog-wide. The SELECT itself is a
 // cheap pk scan, so run it every time and memoize only the expensive grouping,
 // keyed on a fingerprint of the exact inputs — any row change, in place or not,
 // and any override change recomputes, so this can never serve stale groups.

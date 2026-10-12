@@ -49,7 +49,7 @@ export function EditKeyDialog({
   const [apiKeyValue, setApiKeyValue] = useState('')
   const [accountId, setAccountId] = useState('')
   const [attempted, setAttempted] = useState(false)
-  // Monthly budget caps (#1158): editable here so the cap is settable from
+  // Monthly budget caps: editable here so the cap is settable from
   // the dashboard at all; it shipped API-only. Empty = unlimited.
   const [requestCap, setRequestCap] = useState(capToInput(apiKey.monthlyRequestCap))
   const [tokenCap, setTokenCap] = useState(capToInput(apiKey.monthlyTokenCap))
@@ -57,7 +57,7 @@ export function EditKeyDialog({
   const needsAccountId = apiKey.platform === 'cloudflare'
   // Every row takes a credential, including the anonymous row of a
   // key-optional platform (Kilo, OVH, AI Horde): a real key replaces the
-  // sentinel there (#1331).
+  // sentinel there.
   const provider = PLATFORMS.find(p => p.value === apiKey.platform)
   const credential = useMemo(() => {
     if (!apiKeyValue.trim()) return ''
@@ -173,7 +173,7 @@ export function EditKeyDialog({
             </p>
           </div>
 
-          {/* Monthly budget (#1158) stays one collapsed line; it opens by
+          {/* Monthly budget stays one collapsed line; it opens by
               default only when a cap is already set, so a cap is never hidden. */}
           <details className="group" open={Boolean(apiKey.monthlyRequestCap || apiKey.monthlyTokenCap) || undefined}>
             <summary className="cursor-pointer select-none text-[11px] text-muted-foreground hover:text-foreground">

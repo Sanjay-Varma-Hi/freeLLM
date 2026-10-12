@@ -441,7 +441,7 @@ export function familyKey(modelId: string): string {
 /**
  * Order a strategy-sorted servable chain for panel diversity along TWO axes:
  * provider (platform) AND model family. Fusion's value comes from genuinely
- * DIFFERENT perspectives (issue #326 spike: a panel only beats the best single
+ * DIFFERENT perspectives (spike: a panel only beats the best single
  * model when its members actually disagree); the same model family served by
  * two providers is platform-distinct but perspective-redundant — one viewpoint
  * filling two slots.
@@ -627,7 +627,7 @@ export async function runFusion(params: {
 
   // Dispatch ONE panel slot: hard-pinned to its model, rotating only that
   // model's keys (so a key 429 doesn't collapse the slot onto a duplicate
-  // backend — issue #326). Returns its answer and fires onPanel the moment it
+  // backend —). Returns its answer and fires onPanel the moment it
   // settles so a streaming client sees answers arrive one by one.
   const runSlot = (cand: FusionCandidate, slotOptions: CompletionOptions = options): Promise<PanelAnswer> =>
     runModelCall(
@@ -824,7 +824,7 @@ export async function runFusion(params: {
           // The judge writes the final answer the client receives, so a
           // structured-output request must not land it on a platform whose
           // policy drops response_format (kilo) — the schema would never even
-          // reach the model. Mirrors the non-fusion routing (#516).
+          // reach the model. Mirrors the non-fusion routing.
           options.response_format !== undefined,
         );
 

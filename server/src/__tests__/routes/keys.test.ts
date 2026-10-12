@@ -106,7 +106,7 @@ describe('Keys API', () => {
     expect(body[0].platform).toBe('groq');
   });
 
-  it('POST /api/keys warns when the platform has no catalog models yet (#438)', async () => {
+  it('POST /api/keys warns when the platform has no catalog models yet', async () => {
     const db = getDb();
     // Simulate the Agnes case: a registered platform whose models aren't in
     // this install's catalog tier. Force it by disabling every agnes row (a
@@ -123,7 +123,7 @@ describe('Keys API', () => {
     expect(body.notice).toMatch(/no agnes models/i);
   });
 
-  it('#1327: the no-catalog notice names the provider base URL so the custom-provider workaround is actionable', async () => {
+  it('the no-catalog notice names the provider base URL so the custom-provider workaround is actionable', async () => {
     const db = getDb();
     db.prepare("UPDATE models SET enabled = 0 WHERE platform = 'agnes'").run();
 
@@ -136,7 +136,7 @@ describe('Keys API', () => {
     expect(body.notice).toMatch(/base URL https:\/\/apihub\.agnes-ai\.com\/v1/);
   });
 
-  it('#1327: a non-OpenAI-compat provider gets no bogus custom-provider advice', async () => {
+  it('a non-OpenAI-compat provider gets no bogus custom-provider advice', async () => {
     const db = getDb();
     db.prepare("DELETE FROM media_models WHERE platform = 'speechify'").run();
     const { body } = await request(app, 'POST', '/api/keys', {
@@ -149,7 +149,7 @@ describe('Keys API', () => {
     expect(body.notice).not.toMatch(/custom OpenAI-compatible/);
   });
 
-  it('#1327: a media-only provider whose TTS models are in the catalog gets no notice', async () => {
+  it('a media-only provider whose TTS models are in the catalog gets no notice', async () => {
     const db = getDb();
     db.prepare("DELETE FROM media_models WHERE platform = 'speechify'").run();
     db.prepare(`
@@ -169,7 +169,7 @@ describe('Keys API', () => {
     }
   });
 
-  it('#1327: a Premium install is not told to add a Premium license key', async () => {
+  it('the no-models notice names the base URL and never mentions a paid tier', async () => {
     const db = getDb();
     db.prepare("UPDATE models SET enabled = 0 WHERE platform = 'agnes'").run();
     db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('catalog_applied_tier', 'live')").run();
@@ -178,8 +178,8 @@ describe('Keys API', () => {
         platform: 'agnes',
         key: 'agnes_test_key_123456',
       });
-      expect(body.notice).toMatch(/Premium catalog does not list any agnes models/);
-      expect(body.notice).not.toMatch(/Add a Premium license key/);
+      expect(body.notice).toMatch(/no agnes models are in your current catalog/);
+      expect(body.notice).not.toMatch(/premium/i);
       expect(body.notice).toMatch(/base URL https:\/\/apihub\.agnes-ai\.com\/v1/);
     } finally {
       db.prepare("DELETE FROM settings WHERE key = 'catalog_applied_tier'").run();
@@ -196,7 +196,7 @@ describe('Keys API', () => {
     expect(body.notice ?? null).toBeNull();
   });
 
-  it('POST /api/keys accepts the modelscope platform (#581)', async () => {
+  it('POST /api/keys accepts the modelscope platform', async () => {
     const { status, body } = await request(app, 'POST', '/api/keys', {
       platform: 'modelscope',
       key: 'ms-test-invalid-not-a-real-token',
@@ -204,7 +204,7 @@ describe('Keys API', () => {
     });
     expect(status).toBe(201);
     expect(body.platform).toBe('modelscope');
-    // Catalog rows land only after community testing (#581), so a fresh DB
+    // Catalog rows land only after community testing, so a fresh DB
     // has no modelscope models and the no-catalog-models notice is expected.
     expect(body.modelsAvailable).toBe(0);
   });
@@ -358,7 +358,7 @@ describe('Keys API', () => {
     expect(row.last_checked_at).toBeTruthy();
   });
 
-  // #1331: key-optional providers (Kilo, OVH, AI Horde) accept a real key.
+  // key-optional providers (Kilo, OVH, AI Horde) accept a real key.
   const storedKey = (id: number) => {
     const row = getDb().prepare('SELECT encrypted_key, iv, auth_tag FROM api_keys WHERE id = ?').get(id) as any;
     return decrypt(row.encrypted_key, row.iv, row.auth_tag);
@@ -520,7 +520,7 @@ describe('Keys API', () => {
     });
   });
 
-  // #705: the dashboard only ever had the platform-wide switch, which for the
+  // the dashboard only ever had the platform-wide switch, which for the
   // Custom group meant every endpoint the operator runs. These are the two
   // scopes it now offers, kept honest against each other.
   describe('enable scope', () => {

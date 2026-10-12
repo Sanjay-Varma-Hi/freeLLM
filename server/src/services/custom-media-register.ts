@@ -1,7 +1,7 @@
 import type { Db } from '../db/types.js';
 import { customEndpointKeyIds } from './custom-endpoint.js';
 
-// ── Shared custom MEDIA-model registration (#1051) ───────────────────────────
+// ── Shared custom MEDIA-model registration ───────────────────────────
 //
 // POST /api/media/custom and the classified branch of POST /api/keys/custom
 // register image/audio/transcription models against a user's own endpoint
@@ -28,7 +28,7 @@ export interface RegisteredCustomMediaModel {
  * Upsert one media model row against an ALREADY-resolved endpoint key, inside
  * the caller's transaction. media_models identity is (platform, model_id) with
  * no endpoint_scope — a model already on this endpoint keeps the key it has;
- * only a move to a different endpoint re-binds it (#619 semantics).
+ * only a move to a different endpoint re-binds it (semantics).
  */
 export function registerCustomMediaModel(
   db: Db,

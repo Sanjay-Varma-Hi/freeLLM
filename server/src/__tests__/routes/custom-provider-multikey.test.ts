@@ -6,7 +6,7 @@ import { decrypt } from '../../lib/crypto.js';
 import { routePinnedModel } from '../../services/router.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// #619(b): a custom endpoint can hold SEVERAL credentials. Adding a second key
+// (b): a custom endpoint can hold SEVERAL credentials. Adding a second key
 // for a base_url that already has one used to UPDATE the existing row — the
 // first key vanished with no warning — and the models upsert re-bound every
 // model of that endpoint to whichever key was submitted last.
@@ -53,7 +53,7 @@ function chatModel(modelId: string) {
     .get(modelId) as { id: number; key_id: number | null } | undefined;
 }
 
-describe('multiple keys per custom endpoint (#619)', () => {
+describe('multiple keys per custom endpoint', () => {
   let app: Express;
 
   beforeEach(() => {
@@ -195,11 +195,11 @@ describe('multiple keys per custom endpoint (#619)', () => {
     expect(routePinnedModel(chatModel('other-model')!.id)!.provider).toMatchObject({ baseUrl: other });
   });
 
-  // #702: every route into POST /custom demanded a model alongside the key, so
+  // every route into POST /custom demanded a model alongside the key, so
   // an endpoint whose models were all registered had no way left to take a
   // second credential. The reporter got past it by registering a throwaway
   // model id and deleting it afterwards, which silently took the new key too.
-  describe('adding a key without naming a model (#702)', () => {
+  describe('adding a key without naming a model', () => {
     const modelSettings = (modelId: string) => getDb().prepare(
       "SELECT key_id, enabled, display_name, supports_tools, supports_vision FROM models WHERE platform = 'custom' AND model_id = ?",
     ).get(modelId) as { key_id: number; enabled: number; display_name: string; supports_tools: number; supports_vision: number };
@@ -285,7 +285,7 @@ describe('multiple keys per custom endpoint (#619)', () => {
       expect((res.body as any).error.message).toBe('model or models is required');
     });
 
-    // #705: every endpoint used to default to the literal label 'Custom', so the
+    // every endpoint used to default to the literal label 'Custom', so the
     // panels that name a key by its label alone showed identical rows for every
     // relay the operator ran.
     it('names an unlabelled endpoint after its host', async () => {
@@ -302,7 +302,7 @@ describe('multiple keys per custom endpoint (#619)', () => {
       expect(customKeys()[0]!.label).toBe('My relay');
     });
 
-    // The per-key switch the dashboard grew in #705 is only worth anything if
+    // The per-key switch the dashboard grew is only worth anything if
     // routing honours it, which it has all along.
     it('drops a disabled credential out of the endpoint rotation', async () => {
       await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-model', apiKey: 'first-secret' });

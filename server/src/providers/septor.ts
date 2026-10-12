@@ -18,7 +18,7 @@ export class SeptorProvider extends OpenAICompatProvider {
     // /models rejects missing and invalid credentials (401), unlike Router9.
     // Cloudflare in front challenges tool User-Agents (Node's default "node",
     // curl) from datacenter IPs with a 403 HTML page, which read as a bad key
-    // on self-hosted VPS installs (#1298). A product UA passes.
+    // on self-hosted VPS installs. A product UA passes.
     super({
       platform: 'septor', name: 'Septor Labs', baseUrl: 'https://api.septorlabs.com/v1',
       extraHeaders: { 'User-Agent': 'FreeLLMAPI/1.0' },

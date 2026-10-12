@@ -117,7 +117,7 @@ describe('POST /v1/completions', () => {
   it('answers with an estimated usage block when the provider omits usage', async () => {
     // The OpenAI completions shape requires `usage`; free-tier providers that
     // drop it used to surface as `usage: undefined` on /v1/completions even
-    // though the chars/4 fallback (#764) was already computed.
+    // though the chars/4 fallback was already computed.
     const origFetch = global.fetch;
 
     vi.spyOn(global, 'fetch').mockImplementation(async (url, init) => {

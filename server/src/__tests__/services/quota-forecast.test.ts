@@ -31,7 +31,7 @@ function isoPlus(hours: number): string {
 
 const future = () => isoPlus(12); // 12h ahead → within today
 
-describe('quota-forecast: daily balance aggregation (#1104)', () => {
+describe('quota-forecast: daily balance aggregation', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -129,7 +129,7 @@ describe('quota-forecast: daily balance aggregation (#1104)', () => {
     expect(forecast).toHaveLength(0);
   });
 
-  // --- estimated-exhaustion fields (the #1104 extension) ---
+  // --- estimated-exhaustion fields (the extension) ---
 
   it('returns null rate_exhaustion when the observation window is empty', () => {
     insertState({ platform: 'groq', keyId: 1, pool: 'groq::account', metric: 'requests', limit: 100, remaining: 80, resetAt: future() });

@@ -26,8 +26,8 @@ async function request(app: Express, method: string, path: string, body?: any) {
   return { status: res.status, body: data };
 }
 
-// #952: the Router pressure panel's "Clear all" and the cooldown-ceiling knob.
-describe('Router pressure controls (#952)', () => {
+// the Router pressure panel's "Clear all" and the cooldown-ceiling knob.
+describe('Router pressure controls', () => {
   let app: Express;
   let keyId: number;
   let modelDbId: number;

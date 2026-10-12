@@ -73,7 +73,7 @@ function setup(rank: number, onlyModel = false): Setup {
   return { modelDbId: model.id, modelId: model.model_id, keyA: ids[0], keyB: ids[1] };
 }
 
-describe('hasOtherUsableKey (#454)', () => {
+describe('hasOtherUsableKey', () => {
   beforeAll(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     initDb(':memory:');
@@ -104,7 +104,7 @@ describe('hasOtherUsableKey (#454)', () => {
   });
 });
 
-describe('one key\'s 429 must not demote the whole model (#454)', () => {
+describe('one key\'s 429 must not demote the whole model', () => {
   let app: Express;
   let key: string;
 

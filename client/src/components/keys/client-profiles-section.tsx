@@ -21,7 +21,7 @@ interface ClientProfile {
 
 type ProfileWithKey = ClientProfile & { key: string }
 
-// Per-client API keys with a server-enforced system prompt (#411). Deliberately
+// Per-client API keys with a server-enforced system prompt. Deliberately
 // a collapsed accordion under the unified-key card — the unified key stays the
 // first-class flow; this is the power-user add-on.
 export function ClientProfilesSection() {

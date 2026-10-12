@@ -13,7 +13,7 @@ const {
   RECENT_CHECK_SKIP_MS,
 } = await import('../../services/health.js');
 
-// #553: every enabled key was probed in raw DB order behind a concurrency-8
+// every enabled key was probed in raw DB order behind a concurrency-8
 // pool every 5 minutes with no spacing, so a fleet with many keys on one
 // provider fired them all back to back from one IP — which reads as abuse to
 // the provider. The pass now interleaves providers, spaces same-provider

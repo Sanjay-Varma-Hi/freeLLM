@@ -1,4 +1,4 @@
-// Observed tool-calling rejections (#1230).
+// Observed tool-calling rejections.
 //
 // `models.supports_tools` is a declaration, and for custom endpoints it defaults
 // to 1 (migration 20260706_000002): a relay model that actually rejects every

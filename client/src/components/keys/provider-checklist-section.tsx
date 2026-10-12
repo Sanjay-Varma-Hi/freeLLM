@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/tooltip'
 import { useI18n } from '@/i18n'
 import { PLATFORMS } from './shared'
 
-// Shape of GET /api/keys/providers (#543). Declared inline: the backend owns
+// Shape of GET /api/keys/providers. Declared inline: the backend owns
 // the contract (server/src/routes/keys.ts) and this is the only consumer.
 interface ProviderChecklistEntry {
   platform: string
@@ -21,7 +21,7 @@ interface ProvidersChecklist {
   summary: { total: number; configured: number; unconfigured: number }
 }
 
-// One-line coverage strip above the key manager (#543): "22 of 31 providers
+// One-line coverage strip above the key manager: "22 of 31 providers
 // configured", expandable to compact chips for the providers still missing a
 // key. Deliberately slim — a single line of secondary text, not a card — so
 // the key manager stays the first thing on the page. Clicking a chip opens
@@ -63,7 +63,7 @@ export function ProviderChecklistSection({ onAddKey }: { onAddKey: (platform: st
       {expanded && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {unconfigured.map(p => {
-            // #1225: the checklist knew *which* providers were missing, but the
+            // the checklist knew *which* providers were missing, but the
             // signup page was still one manual search away — and only surfaced
             // after opening the dialog and picking the provider. The chip gets
             // a direct link to the same URL the add-key form shows. Anchor is

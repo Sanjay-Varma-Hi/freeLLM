@@ -1,7 +1,7 @@
 import dns from 'node:dns';
 import net from 'node:net';
 
-// Outbound guard for user-supplied custom-provider base URLs (#440).
+// Outbound guard for user-supplied custom-provider base URLs.
 //
 // A custom provider's base_url is the one place an authenticated dashboard
 // user controls where the server sends requests. Left unchecked that is an
@@ -155,7 +155,7 @@ export function isLoopbackOrPrivateHostname(hostname: string): boolean {
  * Synchronous locality check for a stored provider base_url: true when the URL
  * points at THIS machine or the LAN (loopback, RFC1918/ULA private, 'localhost').
  * Used by the rate limiter to exempt local inference servers (Ollama/llama.cpp/
- * LM Studio via the 'custom' platform) from cloud-quota cooldown ladders (#592):
+ * LM Studio via the 'custom' platform) from cloud-quota cooldown ladders:
  * a local box has no quota, so long benches only strand the user's one route.
  *
  * Deliberately DNS-free so it can sit on the cooldown hot path: literal IPs and

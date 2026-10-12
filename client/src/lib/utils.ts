@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 // SQLite stores timestamps as `YYYY-MM-DD HH:MM:SS` with no timezone marker, so
 // passing them straight to `new Date(...)` makes the browser read them as LOCAL
 // time when they are actually UTC — shifting every displayed time by the
-// viewer's offset. These helpers tag the value as UTC before parsing. (#170)
+// viewer's offset. These helpers tag the value as UTC before parsing.
 
 /** Convert a SQLite UTC datetime string into an ISO-8601 UTC string. */
 export function sqliteUtcToIso(value: string): string {

@@ -14,7 +14,7 @@ function checkModel(requested: string, returned: string): void {
 }
 
 /** True when a 403 body says LLMTR refuses automated key-validation probes
- * (#1390) rather than rejecting the key. Reads a clone so the caller's
+ * rather than rejecting the key. Reads a clone so the caller's
  * validationResult can still consume the body. */
 async function blocksAutomatedValidation(res: Response): Promise<boolean> {
   const body = await res.clone().json().catch(() => null) as { error?: { message?: string }; message?: string } | null;
@@ -42,12 +42,12 @@ export class LlmtrProvider extends OpenAICompatProvider {
     }, providerTimeoutMs(this.platform, 30_000), { timeoutBounds: 'request' });
     recordQuotaObservationsFromResponse(res, { ...quotaContext, platform: this.platform, endpoint: 'key-validation' });
     if ([401, 403].includes(res.status)) {
-      // #1390: LLMTR answers the probe itself with 403 "Automated API key
+      // LLMTR answers the probe itself with 403 "Automated API key
       // validation tools are not supported." That is a verdict about the
       // request shape, not the key. Returning valid:false here would let the
       // health service's three-strike counter auto-disable a perfectly good
       // key purely because it was probed. Same shape as the Cloudflare
-      // challenge guard in base.validationResult (#1298): inconclusive, never
+      // challenge guard in base.validationResult: inconclusive, never
       // a disable.
       if (res.status === 403 && await blocksAutomatedValidation(res)) {
         throw providerHttpError(res, 'LLMTR rejected the key-validation probe itself (automated validation not supported); the key was not checked');

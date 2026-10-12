@@ -53,13 +53,35 @@ async function getMongo(): Promise<MongoDb> {
       connectTimeoutMS: CONNECT_TIMEOUT_MS,
       appName: 'freellmapi',
     });
-    clientPromise = client.connect().catch((err) => {
+    clientPromise = client.connect().catch(async (err) => {
       clientPromise = null; // let the next call retry instead of caching the failure
+      await client.close().catch(() => {});
       throw err;
     });
   }
   const client = await clientPromise;
   return client.db(process.env.MONGODB_DB?.trim() || 'freellmapi');
+}
+
+/**
+ * Turn a driver/TLS error into an actionable message. The most common failure
+ * on a new deploy is Atlas refusing the host's IP: Atlas answers the TLS
+ * handshake with "tlsv1 alert internal error" (SSL alert number 80) instead of
+ * a readable error, which is impossible to diagnose from the log alone.
+ */
+export function explainMongoError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/alert number 80|tlsv1 alert internal error|ssl3_read_bytes|ServerSelection|timed out|ECONNRESET|ECONNREFUSED/i.test(msg)) {
+    return `${mongoLabel()} refused the connection. In MongoDB Atlas open Security → Network Access and add 0.0.0.0/0 `
+      + `("Allow access from anywhere") — Render has no fixed outbound IP. (driver said: ${msg.slice(0, 160)})`;
+  }
+  if (/bad auth|authentication failed|auth failed/i.test(msg)) {
+    return `${mongoLabel()} rejected the username/password in MONGODB_URI. Check Atlas → Database Access, and URL-encode special characters in the password. (driver said: ${msg.slice(0, 160)})`;
+  }
+  if (/querySrv|ENOTFOUND|EAI_AGAIN/i.test(msg)) {
+    return `Could not resolve the cluster host in MONGODB_URI — check it was copied completely. (driver said: ${msg.slice(0, 160)})`;
+  }
+  return `${mongoLabel()}: ${msg}`;
 }
 
 // ---------------------------------------------------------------- snapshot ---
@@ -107,6 +129,9 @@ export async function syncMongoMirrors(db: Db): Promise<{ accounts: number; keys
   const keys = db.prepare('SELECT * FROM api_keys ORDER BY id').all() as Array<Record<string, unknown>>;
   // FreeLLMAPI is single-tenant: provider keys belong to the instance, which is
   // owned by its first dashboard account. Tag every key with that owner.
+  // Safety: a database without any account is a fresh/unclaimed one. Never let
+  // it prune the mirrors — that would erase the very data a later boot needs.
+  if (users.length === 0) return { accounts: 0, keys: 0 };
   const owner = users[0]?.email ?? null;
   const now = new Date();
 

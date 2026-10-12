@@ -232,7 +232,7 @@ modelsRouter.delete('/custom/:id', (req: Request, res: Response) => {
   }
 
   const remove = db.transaction(() => {
-    // #926: keep this deletion across the scheduled custom-model sync, or the
+    // keep this deletion across the scheduled custom-model sync, or the
     // next daily pass re-registers a model the operator removed on purpose.
     recordCustomModelTombstone(db, endpointScopeOfKey(db, row.key_id), row.model_id);
     db.prepare('DELETE FROM fallback_config WHERE model_db_id = ?').run(id);
@@ -280,7 +280,7 @@ modelsRouter.patch('/:id', (req: Request, res: Response) => {
       // The row as it stands BEFORE the update below. For a catalog model this
       // is the catalog-applied value (stored overrides re-apply to rows only
       // after each sync), i.e. the baseline an override that returns to the
-      // catalog default is recognised against (#1178).
+      // catalog default is recognised against.
       const preUpdateRow = isCatalogManagedModel(row)
         ? db.prepare('SELECT * FROM models WHERE id = ?').get(id) as Record<string, unknown> | undefined
         : undefined;
@@ -348,7 +348,7 @@ modelsRouter.delete('/:id', (req: Request, res: Response) => {
     if (isCatalogManagedModel(row)) {
       recordCatalogModelTombstone(db, 'chat', row.platform, row.model_id);
     } else if (row.platform === 'custom') {
-      // #926: same "keep it deleted" contract for custom relay models — the
+      // same "keep it deleted" contract for custom relay models — the
       // scheduled custom-model sync must not resurrect this row.
       recordCustomModelTombstone(db, endpointScopeOfKey(db, row.key_id), row.model_id);
     }
@@ -485,12 +485,12 @@ modelsRouter.get('/', (_req: Request, res: Response) => {
     // existing vocabulary for user-added rows is 'custom', so map 1:1 here —
     // this now also flags user models on native platforms (declarative
     // config / admin adds), which the old platform/key_id heuristic missed.
-    // 'discovered' (#1348) marks rows fetched from a built-in provider's own
+    // 'discovered' marks rows fetched from a built-in provider's own
     // /models because the catalog carries none for it.
     source: m.source === 'user' ? 'custom' : m.source === 'discovered' ? 'discovered' : 'catalog',
     keyId: m.key_id ?? null,
     keyLabel: m.key_label ?? null,
-    // Endpoint identity for custom rows (#651); null for catalog models and for
+    // Endpoint identity for custom rows; null for catalog models and for
     // custom rows that carry no endpoint scope.
     endpointScope: m.endpoint_scope || null,
     qualifiedModelId: qualifiedModelMemberId(m.platform, m.model_id, m.endpoint_scope),

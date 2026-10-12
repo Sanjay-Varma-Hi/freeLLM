@@ -7,7 +7,7 @@ async function loadStore() {
   return await import('./toast')
 }
 
-describe('toast store (#586)', () => {
+describe('toast store', () => {
   describe('per-severity default durations', () => {
     it('gives success and info toasts 5000ms', async () => {
       const { toast, getToasts } = await loadStore()

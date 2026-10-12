@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { startToastTimer } from './toast-timer'
 
-describe('startToastTimer (#586)', () => {
+describe('startToastTimer', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })

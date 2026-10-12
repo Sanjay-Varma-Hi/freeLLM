@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-// Provider-reported request size (#507): once one upstream names the real
+// Provider-reported request size: once one upstream names the real
 // REQUESTED size for this request, latch it onto the request state and inflate
 // the routing estimate on the next attempt so the existing tpm_limit /
 // context_window gates in router.ts skip low-ceiling models on retry instead
@@ -78,7 +78,7 @@ beforeEach(() => {
   resetModelFailureWindows();
 });
 
-describe('FallbackState.observedTotalTokens (#507)', () => {
+describe('FallbackState.observedTotalTokens', () => {
   it('starts undefined on a fresh state', () => {
     const state = newFallbackState();
     expect(state.observedTotalTokens).toBeUndefined();

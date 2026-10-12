@@ -6,7 +6,7 @@
 // The proxy overwrites the upstream `model` field with the routed id before
 // the caller sees it (the gateway contract), which also destroyed the only
 // evidence when a provider silently serves a DIFFERENT model than requested
-// (#534 — verified live: kilo-auto/small serving Gemma). The served-model
+// (— verified live: kilo-auto/small serving Gemma). The served-model
 // guard (lib/served-model.ts) now captures the raw upstream value before the
 // overwrite; this column persists it — but ONLY when it genuinely differs
 // from the routed model id after cosmetic normalization (case, provider

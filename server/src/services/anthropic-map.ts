@@ -128,7 +128,7 @@ export function resolveAnthropicModel(model?: string): ResolvedAnthropicModel {
 // maps it onto the free pool through the operator's family map. They are listed
 // in `GET /v1/models` because some Anthropic clients only accept ids that look
 // like Claude models and reject a catalog of free-model ids outright. Claude
-// Desktop's third-party gateway picker is the reported case (#880): it fetched
+// Desktop's third-party gateway picker is the reported case: it fetched
 // the full catalog over HTTP 200 and still reported "found 0 models", because
 // nothing in it belonged to a Claude family.
 //

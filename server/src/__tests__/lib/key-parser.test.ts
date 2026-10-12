@@ -179,7 +179,7 @@ describe('key parser', () => {
 
   // The platform now rides along explicitly instead of being re-derived from
   // the generated prefix: 'custom' has no PREFIX_MAP entry, so inference alone
-  // silently dropped every custom endpoint on import (#687).
+  // silently dropped every custom endpoint on import.
   it('parses CSV format with header', () => {
     const csv = 'platform,key,label\n"google","AIza-test","Google Key"\n"groq","gsk-test","Groq Key"\n';
     expect(parseCsv(csv)).toEqual([

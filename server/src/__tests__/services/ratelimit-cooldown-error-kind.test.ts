@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 
-// #592: the null-limits exhaustion heuristic (getCooldownDecisionForLimit) must
+// the null-limits exhaustion heuristic (getCooldownDecisionForLimit) must
 // only fire on an actual provider quota signal (a real 429 / rate-limit-classified
 // error). Before the fix, ANY retryable failure — a timeout on a slow local
 // generation, a 5xx blip — fed the "2+ hits in an hour = daily-exhausted"
@@ -51,7 +51,7 @@ beforeAll(() => {
 let route: RouteResult;
 beforeEach(() => { route = nullLimitRoute(); });
 
-describe('null-limits heuristic only fires on quota signals (#592)', () => {
+describe('null-limits heuristic only fires on quota signals', () => {
   it('repeated timeouts stay on the short transient bench — no ladder', () => {
     for (let i = 0; i < 4; i++) {
       const decision = cooldownDecisionForError(route, timeoutErr());
@@ -91,7 +91,7 @@ describe('null-limits heuristic only fires on quota signals (#592)', () => {
   });
 });
 
-describe('cooldownHits ladder decays on success (#592)', () => {
+describe('cooldownHits ladder decays on success', () => {
   it('a successful request resets the escalation ladder', () => {
     const { platform, modelId, keyId } = nullLimitRoute();
     expect(getNextCooldownDuration(platform, modelId, keyId)).toBe(2 * MINUTE);

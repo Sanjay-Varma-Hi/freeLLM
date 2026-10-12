@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { validateHeaderValue } from 'node:http';
 import { safeHeaderValue, routedViaValue } from '../../lib/header-value.js';
 
-// #619: relay model ids are arbitrary text. Whatever comes out of here has to
+// relay model ids are arbitrary text. Whatever comes out of here has to
 // be something Node will actually put on the wire, or an already-successful
 // upstream call dies while the response is being written.
 describe('safeHeaderValue', () => {

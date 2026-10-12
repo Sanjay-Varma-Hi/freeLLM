@@ -8,7 +8,7 @@ import {
   responsesInputHasFileIdImage,
 } from '../../routes/responses.js';
 
-describe('Responses → chat translation (#96)', () => {
+describe('Responses → chat translation', () => {
   it('maps a plain string input to a single user message', () => {
     expect(toChatMessages({ input: 'hello' } as any)).toEqual([
       { role: 'user', content: 'hello' },
@@ -282,7 +282,7 @@ describe('Responses → chat translation (#96)', () => {
   });
 });
 
-describe('chat result → Responses object (#96)', () => {
+describe('chat result → Responses object', () => {
   it('builds a message output item plus usage for text', () => {
     const r = buildResponseObject({ id: 'resp_x', model: 'm', text: 'hi there', toolCalls: [], promptTokens: 5, completionTokens: 2 });
     expect(r.object).toBe('response');

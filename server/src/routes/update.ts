@@ -7,7 +7,7 @@ import { getAppVersion } from '../lib/app-version.js';
 
 const execFileAsync = promisify(nodeExecFile);
 
-const REPOSITORY = 'tashfeenahmed/freellmapi';
+const REPOSITORY = 'Sanjay-Varma-Hi/freeLLM';
 const RELEASES_URL = `https://github.com/${REPOSITORY}/releases`;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 /**
@@ -46,7 +46,7 @@ interface CheckResult {
   installation: Installation;
   localSha: string | null;
   checkedAt: string;
-  /** The release this build is (#703), or null when it cannot be established. */
+  /** The release this build is, or null when it cannot be established. */
   version: string | null;
   remoteSha?: string;
   remoteMessage?: string;
@@ -66,7 +66,7 @@ interface CachedResult {
 }
 
 /**
- * Settings-table key for the dashboard's automatic release check (#782).
+ * Settings-table key for the dashboard's automatic release check.
  * Absent or anything other than '1' means off, so an install that has never
  * been told otherwise never phones GitHub on its own. The manual checker above
  * is a separate surface and stays available regardless.
@@ -403,7 +403,7 @@ export function createUpdateRouter(options: UpdateRouterOptions = {}): Router {
       version: appVersion(),
     };
     // A desktop build can only be replaced by installing a published release,
-    // so it must compare against the latest tag rather than `main` (#1270):
+    // so it must compare against the latest tag rather than `main`:
     // untagged commits on main have no installer, and offering them produced
     // an "Update available" that did nothing when clicked.
     let compareTarget = 'main';
@@ -550,7 +550,7 @@ export function createUpdateRouter(options: UpdateRouterOptions = {}): Router {
   }
 
   /**
-   * The latest published release, for the dashboard's automatic reminder (#782).
+   * The latest published release, for the dashboard's automatic reminder.
    *
    * The browser cannot ask GitHub itself — the CSP this server sends is
    * `connect-src 'self'`, so a direct fetch to api.github.com is blocked on

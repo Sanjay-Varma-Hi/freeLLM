@@ -7,7 +7,7 @@ import { inferQuotaPoolKey, getQuotaStateForKeys } from '../services/provider-qu
 import type { Platform, QuotaMetric } from '@freellmapi/shared/types.js';
 
 /**
- * Free-tier budget dashboard (#905).
+ * Free-tier budget dashboard.
  *
  * Pool-deduped monthly budget overview: the models table carries per-model
  * labels like '~120M' / '~3M (1k credits)' / 'credits-based'; many models on

@@ -4,7 +4,7 @@
 // recharts' default `interval` is 'preserveEnd' (see `implicitXAxis` /
 // `implicitYAxis` in recharts' axisSelectors): when the labels are wider than
 // the space available it silently DROPS ticks, keeping the tail and thinning
-// out everything before it. The visible result is the #890 complaint — only a
+// out everything before it. The visible result is the complaint — only a
 // few provider names render, the rest are only visible on hover, and the bars
 // no longer line up with the labels the user can actually see (a bar with no
 // label looks like a different provider than it is).

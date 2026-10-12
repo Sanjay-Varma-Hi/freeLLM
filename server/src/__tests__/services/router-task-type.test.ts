@@ -138,7 +138,7 @@ describe('task-type-aware routing', () => {
   // `fastest`'s pick close enough to the edge that the code bias WOULD flip it
   // (0.55/0.10 speed/intelligence becomes 0.385/0.265). It must not: `fastest`,
   // `reliable` and `custom` are the operator's explicit choice of where on the
-  // axis to sit, so a per-request header does not get to rewrite them (#1127).
+  // axis to sit, so a per-request header does not get to rewrite them.
   // The other two exempt strategies are covered exactly in scoring.test.ts.
   function seedSmartVsFlakyFast() {
     addModel({ platform: 'google', modelId: 'smart', name: 'Smart', intelligenceRank: 1, speedRank: 9, sizeLabel: 'Large', budget: '~50M', priority: 1 });

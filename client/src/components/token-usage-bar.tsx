@@ -8,7 +8,7 @@ const LEGEND_COLLAPSED_PX = 126
 
 // The monthly token budget: a stacked bar of every configured model's remaining
 // allowance, and under it one flat legend of models, smartest first. No
-// provider headers — the provider pool grouping (#1010) made the first thing on
+// provider headers — the provider pool grouping made the first thing on
 // the Models page read as "arranged by provider"; pool quota readings live on
 // each model's own page instead.
 export function TokenUsageBar({ data }: { data: TokenUsageData }) {
@@ -50,7 +50,7 @@ export function TokenUsageBar({ data }: { data: TokenUsageData }) {
           {totalUsed > 0 && (
             <>
               <span className="mx-1.5">·</span>
-              {/* Say out loud what this number counts (#887): it is not the
+              {/* Say out loud what this number counts: it is not the
                   analytics total, and custom endpoints are in it. */}
               <span className="cursor-help underline decoration-dotted underline-offset-2" title={t('models.usedScopeHint')}>
                 <span className="text-foreground font-medium">{formatTokens(totalUsed)}</span> {t('models.used')}
@@ -95,7 +95,7 @@ export function TokenUsageBar({ data }: { data: TokenUsageData }) {
               <span className="truncate">{m.displayName}</span>
               <span className="flex-1" />
               {/* remaining / budget: a bare remaining figure gives no sense of
-                  how much of the allowance is gone (#887). */}
+                  how much of the allowance is gone. */}
               <span
                 className="font-mono text-muted-foreground"
                 title={t('models.legendRemainingTitle', { name: m.displayName, platform: m.platform })}

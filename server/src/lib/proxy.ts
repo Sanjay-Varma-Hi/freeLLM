@@ -7,7 +7,7 @@ import { decrypt, encrypt } from './crypto.js';
 import { assertProviderUrlAllowed, isLoopbackOrPrivateHostname } from './url-guard.js';
 import type { ProxyMode } from '@freellmapi/shared/types.js';
 
-// #590 (per-key proxy): the SAME provider may be reached through different
+//  (per-key proxy): the SAME provider may be reached through different
 // exit IPs per key (geo-ban / risk-control avoidance). Providers are process
 // singletons, so the per-key override cannot live on the provider instance —
 // it rides request-scoped AsyncLocalStorage instead, set by the dispatcher
@@ -41,7 +41,7 @@ async function loadSocksAgent(): Promise<Ctor<unknown>> {
 }
 
 // SOCKS schemes socks-proxy-agent understands. `socks5h`/`socks4a` are the
-// "resolve DNS at the proxy" variants (#630) — the ones that matter on
+// "resolve DNS at the proxy" variants — the ones that matter on
 // DNS-poisoned networks, where resolving the upstream hostname locally is
 // exactly what fails. They are ordinary SOCKS URLs to the agent; only our
 // scheme detection ever needed teaching.
@@ -103,7 +103,7 @@ function redactProxyUrl(url: string): string {
 
 // Standard proxy env vars, in the order they are consulted. PROXY_URL is the
 // app's own knob and outranks the dashboard; the rest are ambient system
-// settings (#353) that only apply when nothing is configured in the dashboard.
+// settings that only apply when nothing is configured in the dashboard.
 const ENV_PROXY_FALLBACKS = ['ALL_PROXY', 'HTTPS_PROXY', 'HTTP_PROXY'] as const;
 
 /** Read an env var in either the upper- or lower-case spelling. */
@@ -131,7 +131,7 @@ function resolveProxySource(dbValue: string): { url: string; source: string } {
  * Options and macOS `scutil --proxy` both store the proxy that way, and so do
  * plenty of hand-written HTTPS_PROXY values; `new URL('127.0.0.1:7890')`
  * throws, so without this the proxy was logged as invalid and every request
- * silently went direct (#1373).
+ * silently went direct.
  */
 export function normalizeProxyUrl(url: string): string {
   const trimmed = url.trim();
@@ -151,7 +151,7 @@ function pickProxySource(dbValue: string): { url: string; source: string } {
     if (value) return { url: value, source: name };
   }
 
-  // #353: last resort — read the system-wide proxy settings (macOS System
+  // last resort — read the system-wide proxy settings (macOS System
   // Settings / Windows Internet Options / GNOME desktop) so the app works
   // without duplicating the OS config. Best-effort: every failure here just
   // falls through to the direct (no-proxy) path.
@@ -300,7 +300,7 @@ let cached: {
 } | null = null;
 const CACHE_TTL_MS = 30_000;
 
-// #590: per-key proxy dispatchers, keyed by the key's proxy URL. Independent
+// per-key proxy dispatchers, keyed by the key's proxy URL. Independent
 // of the global cache so a per-key override never poisons the global one.
 //
 // A working dispatcher is cached for as long as it stays in the map: the cache
@@ -385,7 +385,7 @@ function enforceRelayUrlPolicy(): void {
  * embedder (desktop/src/server-host.ts) builds the app without index.ts and
  * must call this itself — otherwise the URL saved by PUT /api/settings/proxy
  * sits in the DB but the process starts with an empty proxy and every
- * outbound request goes direct until the user re-saves the setting (#949).
+ * outbound request goes direct until the user re-saves the setting.
  * Safe to call more than once; it is idempotent.
  */
 export function restoreProxySettings(): void {
@@ -481,7 +481,7 @@ export function getNoProxyRules(): string[] {
  * Returns true when a request should NOT use the proxy.
  * True when: proxy is disabled globally, the platform is in the bypass list,
  * the upstream host is covered by NO_PROXY, or the upstream is a local/LAN
- * destination (#951 — see below).
+ * destination (— see below).
  *
  * A loopback (127.0.0.0/8, ::1, 0.0.0.0, `localhost`) or private/LAN
  * (RFC1918, ULA, CGNAT) destination is unreachable through a remote proxy:
@@ -610,7 +610,7 @@ export function describeAbort(
  * and keeps the reason (ENOTFOUND, ECONNREFUSED, a certificate error) in
  * `err.cause`, which never reached the attempt trail, the logs or the client.
  * A DNS failure, a dead proxy and TLS-intercepting antivirus all looked the
- * same (#1373). Append the cause code and the upstream host so the message
+ * same. Append the cause code and the upstream host so the message
  * says which it was. "fetch failed" stays as the prefix, which the
  * retry classifier matches on.
  */
@@ -712,10 +712,10 @@ function socksFetch(
   // while `timeoutMs` is a header/request deadline the caller disarms the
   // moment response headers arrive (providers/base.ts fetchWithTimeout). Mid-
   // stream time is owned by the stall watchdog and the first-byte grace
-  // (#553/#584, default 90s), so pinning the socket timer to a platform's
+  // (/#584, default 90s), so pinning the socket timer to a platform's
   // 15-60s chat timeout would kill healthy streams during prefill.
   //
-  // So this only ever RAISES the historical 120s floor (#666): a user with
+  // So this only ever RAISES the historical 120s floor: a user with
   // PROVIDER_TIMEOUT_CUSTOM=600000 no longer dies at 120s, and the +30s grace
   // keeps the caller's abort firing first so the tagged AbortError (see
   // enrichAbort) survives instead of the bare socket 'timeout'. 0 means "no
@@ -831,7 +831,7 @@ export async function proxyFetch(
   timeoutMs?: number,
 ): Promise<Response> {
   try {
-    // SSRF guard (#440): 'custom' is the only platform whose target URL is
+    // SSRF guard: 'custom' is the only platform whose target URL is
     // user-supplied (base_url on the api_keys row), so it is re-assessed on
     // every request — a URL saved before the guard existed, edited in the DB,
     // or whose DNS now points somewhere blocked still can't reach cloud
@@ -875,7 +875,7 @@ async function dispatchFetch(
   requestType: ProxyRequestType,
   timeoutMs: number | undefined,
 ): Promise<Response> {
-  // #590: a per-key proxy override (set via withKeyProxy around the provider
+  // a per-key proxy override (set via withKeyProxy around the provider
   // call) takes precedence over the global proxy for THIS request. Empty
   // string (the store default) means "fall back to global".
   const perKeyUrl = perKeyProxyStore.getStore() ?? '';
@@ -899,7 +899,7 @@ async function dispatchFetch(
 
   // Bypass check: disabled globally, this platform is exempt, the upstream
   // host is listed in NO_PROXY, or it is a local/LAN destination no proxy can
-  // reach (#951).
+  // reach.
   if (shouldBypassProxy(url, platform)) {
     return fetch(url, init);
   }
@@ -1051,7 +1051,7 @@ export interface ProxyProbeResult {
 export const DEFAULT_PROXY_PROBE_TARGET = 'https://www.cloudflare.com/cdn-cgi/trace';
 
 /**
- * Test whether a proxy URL can actually route traffic (#863). Backs the
+ * Test whether a proxy URL can actually route traffic. Backs the
  * Settings → Outbound proxy "Test" button so an operator can verify a draft
  * value BEFORE saving it.
  *

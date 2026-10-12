@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// #1403 phase 3: the provider-reported balance surfaces on the key row itself,
+//  phase 3: the provider-reported balance surfaces on the key row itself,
 // not only in the Quota signals tab. Covers the pure per-key pool pick and the
 // rendered badge (amber at ≤20% left, tooltip with the exact numbers).
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'

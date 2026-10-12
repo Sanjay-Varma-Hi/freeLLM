@@ -6,13 +6,13 @@ const merges: AliasMerge[] = [
   { into: 'Llama 3.3 70B', keys: ['custom:llama-relay', 'custom:llama-backup'] },
 ]
 
-describe('normalizeInto (#790)', () => {
+describe('normalizeInto', () => {
   it('ignores case, separators, and surrounding space', () => {
     expect(normalizeInto('  Llama-3.3_70B ')).toBe('llama 3.3 70b')
   })
 })
 
-describe('aliasesFor (#790)', () => {
+describe('aliasesFor', () => {
   it('returns only the aliases of the named group', () => {
     expect(aliasesFor(merges, 'Llama 3.3 70B')).toEqual(['custom:llama-relay', 'custom:llama-backup'])
   })
@@ -26,7 +26,7 @@ describe('aliasesFor (#790)', () => {
   })
 })
 
-describe('addAlias (#790)', () => {
+describe('addAlias', () => {
   it('keeps the aliases already merged into the group', () => {
     const next = addAlias(merges, 'Llama 3.3 70B', 'custom:llama-third')
     expect(aliasesFor(next, 'Llama 3.3 70B')).toEqual([
@@ -57,7 +57,7 @@ describe('addAlias (#790)', () => {
   })
 })
 
-describe('removeAlias (#790)', () => {
+describe('removeAlias', () => {
   it('drops one alias and keeps the rest of the group', () => {
     const next = removeAlias(merges, 'Llama 3.3 70B', 'custom:llama-relay')
     expect(aliasesFor(next, 'Llama 3.3 70B')).toEqual(['custom:llama-backup'])

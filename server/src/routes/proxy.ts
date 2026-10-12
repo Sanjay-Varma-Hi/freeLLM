@@ -57,7 +57,7 @@ function isAutoModel(modelId: string | undefined): boolean {
 // for existing importers (anthropic, gemini, mcp, ollama, status, url-tokens).
 export { timingSafeStringEqual } from '../lib/system-prompt.js';
 
-// Shared auth gate for the /v1 inference endpoints (#411): accepts the unified
+// Shared auth gate for the /v1 inference endpoints: accepts the unified
 // key (default behavior, no enforced prompt) or an enabled client-profile key
 // (which may carry a server-enforced system prompt). Profile keys are ONLY
 // valid here — never on the /api dashboard surface. Writes the 401 itself so
@@ -169,7 +169,7 @@ export { exhaustedRetryError };
 const stickySessionMap = new Map<string, { modelDbId: number; lastUsed: number }>();
 const STICKY_TTL_MS = 30 * 60 * 1000; // 30 min session TTL
 
-// #797: per-session memory of the last assistant turn's thinking trace.
+// per-session memory of the last assistant turn's thinking trace.
 // DeepSeek thinking models on OpenCode Zen 400 on a follow-up turn unless the
 // prior `reasoning_content` is replayed; opencode (and other AI-SDK clients)
 // strip the field when re-serializing history, so the proxy restores what it
@@ -185,7 +185,7 @@ const REASONING_TTL_MS = 30 * 60 * 1000; // 30 min, matching sticky sessions
 // conversation is in thinking mode, i.e. where the field has to be present on
 // every assistant message and older turns need an empty-string filler. Only
 // OpenCode Zen is on record for this (the DeepSeek thinking semantics behind
-// #255/#797); everywhere else only the turn we actually have a trace for is
+// /#797); everywhere else only the turn we actually have a trace for is
 // touched, so no other provider's bytes change.
 const PLATFORMS_REQUIRING_REASONING_ECHO = new Set(['opencode']);
 
@@ -315,10 +315,10 @@ proxyRouter.get('/models', (req: Request, res: Response) => {
 
   // By default we return the WHOLE catalog (one row per model id), each tagged
   // with whether it is currently usable, so a client can see everything and know
-  // what's connected vs. disabled/keyless (#242). `?available=true` (aliases
+  // what's connected vs. disabled/keyless. `?available=true` (aliases
   // `?connected=true`, `?ready=true`) narrows the list to only models that can
   // serve a request right now — the previous default behavior. The `ready`
-  // alias is the machine-readable filter a meta-gateway uses (#433) to ask
+  // alias is the machine-readable filter a meta-gateway uses to ask
   // "which models can this instance actually serve now". `available` is computed as
   // "enabled AND an enabled key can serve it"; dedup prefers an available
   // instance of a model id over a disabled/keyless one.
@@ -327,14 +327,14 @@ proxyRouter.get('/models', (req: Request, res: Response) => {
   // is the honest ceiling for the virtual "auto" model: the largest context
   // window among models that can serve a request right now. Advertising null
   // makes OpenAI-compatible clients (opencode, Continue) fall back to their own
-  // conservative default and truncate long inputs before they reach us (#282).
+  // conservative default and truncate long inputs before they reach us.
   const { models: allListed, autoContextWindow } = buildModelListing();
 
   const q = String(req.query.available ?? req.query.connected ?? req.query.ready ?? '').toLowerCase();
   const onlyAvailable = q === '1' || q === 'true' || q === 'yes';
   const listed = onlyAvailable ? allListed.filter(m => m.available === 1) : allListed;
 
-  // Named fallback chains (#960/#895): every user-defined profile is exposed
+  // Named fallback chains: every user-defined profile is exposed
   // as an `auto:<name>` model so a client can pick a specific fallback chain
   // per request (auto:my-group) instead of only the active one. Available iff
   // at least one model in that profile's chain can serve a request right now.
@@ -360,7 +360,7 @@ proxyRouter.get('/models', (req: Request, res: Response) => {
     ORDER BY p.sort_order, p.id
   `).all() as { id: number; name: string; usable: number; max_ctx: number | null }[];
 
-  // Claude-family discovery entries (#880). The Anthropic-shaped GET /v1/models
+  // Claude-family discovery entries. The Anthropic-shaped GET /v1/models
   // in routes/anthropic.ts already lists one id per Claude family so clients
   // that only accept Claude-looking ids can discover anything at all — but that
   // handler only answers when the caller sends an `anthropic-version` header.
@@ -476,7 +476,7 @@ const MAX_RETRIES = 20;
 // send `arguments` as a parsed object instead of a JSON string, and `id` may
 // be missing or empty (ids aren't a Gemini concept) — all get normalized
 // below rather than 400-ing the whole session. Missing ids are synthesized
-// and paired with their tool-result messages by order. (#200)
+// and paired with their tool-result messages by order.
 const toolCallSchema = z.object({
   id: z.string().optional(),
   type: z.literal('function').optional(),
@@ -496,7 +496,7 @@ const toolCallArgsToString = (args: string | Record<string, unknown>): string =>
 // no `type` at all. Accept any object (or bare string) as a block; flatten to
 // string for providers that don't support arrays (Cohere, Cloudflare).
 // Non-text blocks pass z validation but get dropped by contentToString —
-// vision/audio still isn't supported. (#200)
+// vision/audio still isn't supported.
 const contentBlockSchema = z.union([z.string(), z.record(z.string(), z.unknown())]);
 const contentSchema = z.union([z.string(), z.array(contentBlockSchema)]);
 
@@ -508,7 +508,7 @@ const systemMessageSchema = z.object({
 
 // OpenAI's newer SDKs send the system prompt as role:"developer"; accept it
 // and forward as "system" — none of the routed providers know the developer
-// role. (#200)
+// role.
 const developerMessageSchema = z.object({
   role: z.literal('developer'),
   content: contentSchema,
@@ -526,29 +526,29 @@ const userMessageSchema = z.object({
 // a placeholder, a tool turn whose content was emptied), and clients replay
 // them verbatim. We accept them too and coerce empty/null content to "" before
 // forwarding (see message build below) rather than 400-ing a payload OpenAI
-// would take. (#165)
+// would take.
 const assistantMessageSchema = z.object({
   role: z.literal('assistant'),
   content: z.union([contentSchema, z.null()]).optional(),
   name: z.string().optional(),
   // tool_calls: null (not just missing) is what several agents replay for
   // no-tool assistant turns — aionrs (AionUI's engine) writes it into every
-  // session-resumed assistant echo. Treated as absent. (#200)
+  // session-resumed assistant echo. Treated as absent.
   tool_calls: z.array(toolCallSchema).nullable().optional(),
   // Thinking trace echoed back by a client. DeepSeek thinking models on
   // OpenCode Zen 400 ("reasoning_content in thinking mode must be passed back")
   // unless the prior turn's reasoning_content is replayed, so keep it through
-  // validation instead of stripping it. See issue #255.
+  // validation instead of stripping it..
   reasoning_content: z.string().nullable().optional(),
   // Moonshot's "partial" prefill flag. A plain z.object (no .passthrough())
   // would silently strip it; keep it through validation so it can be forwarded
-  // to Moonshot/Kimi models, which document it. See issue #1038.
+  // to Moonshot/Kimi models, which document it..
   partial: z.boolean().optional(),
 });
 
 // Tool results may arrive with null/missing content (a tool that returned
 // nothing) and a missing/empty tool_call_id (Gemini-lineage agents) — coerced
-// to "" and paired by order with the preceding tool_calls respectively. (#200)
+// to "" and paired by order with the preceding tool_calls respectively.
 const toolMessageSchema = z.object({
   role: z.literal('tool'),
   content: z.union([contentSchema, z.null()]).optional(),
@@ -557,7 +557,7 @@ const toolMessageSchema = z.object({
 });
 
 // Legacy function-calling shape (pre-tools OpenAI API). Old clients still
-// replay these in history; forwarded as a tool message. (#200)
+// replay these in history; forwarded as a tool message.
 const functionMessageSchema = z.object({
   role: z.literal('function'),
   name: z.string().min(1),
@@ -566,7 +566,7 @@ const functionMessageSchema = z.object({
 
 const toolDefinitionSchema = z.object({
   // Some agents omit `type` on tool definitions; re-defaulted to 'function'
-  // on forward. (#200)
+  // on forward.
   type: z.literal('function').optional(),
   function: z.object({
     name: z.string().min(1),
@@ -578,7 +578,7 @@ const toolDefinitionSchema = z.object({
 
 const toolChoiceSchema = z.union([
   // 'any' is the Mistral/Gemini wording for OpenAI's 'required'; mapped on
-  // forward. (#200)
+  // forward.
   z.enum(['none', 'auto', 'required', 'any']),
   z.object({
     type: z.literal('function'),
@@ -607,7 +607,7 @@ const chatCompletionSchema = z.object({
   model: z.string().optional(),
   temperature: z.number().min(0).max(2).optional(),
   // Some clients send max_tokens <= 0 (or -1) to mean "no limit"; accepted and
-  // treated as unset on forward. (#200)
+  // treated as unset on forward.
   max_tokens: z.number().int().optional(),
   top_p: z.number().min(0).max(1).optional(),
   stop: stopSchema.optional(),
@@ -617,7 +617,7 @@ const chatCompletionSchema = z.object({
   }).optional(),
   // Top-level tool knobs may arrive as explicit nulls from clients that
   // serialize every field of their request struct; all treated as absent
-  // and never forwarded as null. (#200)
+  // and never forwarded as null.
   tools: z.array(toolDefinitionSchema).nullable().optional(),
   tool_choice: toolChoiceSchema.nullable().optional(),
   parallel_tool_calls: z.boolean().nullable().optional(),
@@ -651,7 +651,7 @@ export function streamChunkText(chunk: any): string {
 // <think> extractor in base.ts normalizes inline tags into the same field) or
 // `reasoning` (Ollama-style) before the first visible answer token; both
 // spellings must count for ttfb and output-token estimates. Same shape
-// tolerance as streamChunkText. (#764)
+// tolerance as streamChunkText.
 export function streamReasoningText(chunk: any): string {
   const delta = chunk?.choices?.[0]?.delta;
   const r = delta?.reasoning_content ?? delta?.reasoning;
@@ -1003,7 +1003,7 @@ function completionTextFromChat(result: any): string {
 // Non-streaming counterpart of streamReasoningText: reasoning models attach
 // thinking to the completed message as `reasoning_content` or `reasoning`.
 // Included in the chars/4 output estimate so analytics and the rate-limit
-// ledger aren't undercounted for thinking models. (#764)
+// ledger aren't undercounted for thinking models.
 export function completionReasoningText(result: any): string {
   const msg = result?.choices?.[0]?.message;
   const r = msg?.reasoning_content ?? msg?.reasoning;
@@ -1063,9 +1063,9 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
   const messages = prependSystemPrompt(completionPromptToMessages(prompt, suffix), auth.systemPrompt);
   const estimatedInputTokens = messages.reduce((sum, m) => sum + Math.ceil(contentToString(m.content).length / 4), 0);
   // Cap the reserved output so a huge client-set max_tokens doesn't falsely
-  // exclude the whole model pool (#470); input is still counted in full. The
+  // exclude the whole model pool; input is still counted in full. The
   // reserve is passed to the router separately: it is an exact count and must
-  // not be inflated by the context-window safety margin (#956 review).
+  // not be inflated by the context-window safety margin.
   const outputReserve = routingReserveTokens(max_tokens);
   const estimatedTotal = estimatedInputTokens + outputReserve;
 
@@ -1175,7 +1175,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
     clientGone: () => clientGone,
     abortInFlight: () => hedgeAbort.abort(newHedgeAbortError()),
     route: () => {
-      // #507: see inbound-chat.ts — inflate the routing estimate from any
+      // see inbound-chat.ts — inflate the routing estimate from any
       // provider-reported REQUESTED size latched onto state so the existing
       // size gates in router.ts skip low-TPM / small-context models on retry.
       const routingTotal = fallbackRoutingTokens(state, estimatedTotal, outputReserve);
@@ -1219,7 +1219,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
 
         const flushHeaders = () => {
           if (headerSent) return;
-          // #764: ttfb is recorded on the first token of ANY kind (content or
+          // ttfb is recorded on the first token of ANY kind (content or
           // reasoning) in the pump loop below; this call only backfills streams
           // that reached the commit point without one.
           if (ttfbMs === null) ttfbMs = Date.now() - start;
@@ -1249,7 +1249,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
             if (clientGone) break; // client hung up: stop pulling; reader.cancel() aborts upstream
             const text = streamChunkText(chunk);
             if (text.length > 0) sawText = true;
-            // #764: reasoning models stream thinking before any visible text.
+            // reasoning models stream thinking before any visible text.
             // ttfb must count the first token of ANY kind — otherwise the speed
             // shown is the thinking tail, or NULL when headers never flush.
             const reasoning = streamReasoningText(chunk);
@@ -1258,7 +1258,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
             }
             const finish = (chunk as any)?.choices?.[0]?.finish_reason;
             if (finish) upstreamFinish = finish;
-            // #764: reasoning tokens are real output consumption — count them
+            // reasoning tokens are real output consumption — count them
             // so analytics and the rate-limit ledger aren't undercounted.
             totalOutputTokens += Math.ceil((text.length + reasoning.length) / 4);
             const frame = legacyCompletionChunk(route, chunk, text);
@@ -1354,7 +1354,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
           result.choices?.[0]?.finish_reason === 'length' ? { skipBench: true } : {},
         );
       }
-      // #809: a bare "safe"/"unsafe" classification word from a relay is an
+      // a bare "safe"/"unsafe" classification word from a relay is an
       // upstream filter, not the requested model — fail over like an empty
       // completion.
       if (isUpstreamClassificationOutput(text, route.platform)) {
@@ -1367,7 +1367,7 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
       // Usage fallback: providers that omit `usage` used to be logged as 0
       // tokens, silently undercounting analytics and the rate-limit ledger.
       // Fall back to the same chars/4 estimate the streaming path uses,
-      // including reasoning tokens (thinking models). (#764)
+      // including reasoning tokens (thinking models).
       const promptTokens = result.usage?.prompt_tokens ?? estimatedInputTokens;
       const completionTokens = result.usage?.completion_tokens
         ?? Math.ceil((text.length + completionReasoningText(result).length) / 4);
@@ -1388,8 +1388,8 @@ proxyRouter.post('/completions', async (req: Request, res: Response) => {
           finish_reason: result.choices?.[0]?.finish_reason ?? 'stop',
         }],
         // `usage` is required by the OpenAI completions spec. The fallback
-        // counts computed just above (chars/4 when the provider omits usage,
-        // #764) existed but were dropped here — clients like editor
+        // counts computed just above (chars/4 when the provider omits usage)
+        //  existed but were dropped here — clients like editor
         // ghost-text plugins read usage to throttle and saw `undefined`.
         usage: result.usage ?? {
           prompt_tokens: promptTokens,
@@ -1458,7 +1458,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   // Authenticate every proxy request, including loopback callers. Browser
   // pages can reach localhost, so socket locality is not a reliable
   // authorization boundary. Client-profile keys resolve here too, carrying
-  // their server-enforced system prompt (#411).
+  // their server-enforced system prompt.
   const auth = requireInferenceAuth(req, res);
   if (!auth) return;
 
@@ -1467,7 +1467,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   if (!parsed.success) {
     // Path-qualified issues ("messages.1.content: Invalid input" beats a bare
     // "Invalid input") and a server-side breadcrumb — these rejections never
-    // reach the request log, which made #200 nearly undebuggable.
+    // reach the request log, which made nearly undebuggable.
     const detail = parsed.error.errors
       .map(e => (e.path.length ? `${e.path.join('.')}: ${e.message}` : e.message))
       .slice(0, 5)
@@ -1485,7 +1485,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
   const { model: requestedModel, temperature, top_p, stream } = parsed.data;
   const requestedModelLabel = requestedModel ?? 'auto';
-  // Agent-tolerant knob normalization (#200): max_tokens <= 0 means "no
+  // Agent-tolerant knob normalization: max_tokens <= 0 means "no
   // limit" in several clients → unset; tool_choice 'any' is OpenAI's
   // 'required'; tool definitions get their 'function' type re-defaulted.
   // `max_completion_tokens` is OpenAI's newer alias — honored when max_tokens
@@ -1503,7 +1503,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   const tools = parsed.data.tools?.map(t => ({ ...t, type: 'function' as const }));
   const parallel_tool_calls = parsed.data.parallel_tool_calls ?? undefined;
 
-  // Pairing state for id-less tool calls (#200): every tool_call id (given or
+  // Pairing state for id-less tool calls: every tool_call id (given or
   // synthesized) queues up here; a tool message without a tool_call_id takes
   // the oldest unanswered one, which matches the single-call-per-turn flow
   // Gemini-lineage agents produce.
@@ -1523,7 +1523,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
       const hasToolCalls = (m.tool_calls?.length ?? 0) > 0;
       // With tool_calls, content: null is the correct OpenAI shape — keep it.
       // Without tool_calls, coerce empty/null content to "" so strict upstreams
-      // don't choke on a null-content assistant turn we just accepted. (#165)
+      // don't choke on a null-content assistant turn we just accepted.
       const isEmptyContent = m.content == null
         || (typeof m.content === 'string' && m.content.length === 0)
         || (Array.isArray(m.content) && m.content.length === 0);
@@ -1537,21 +1537,21 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         // Replay the thinking trace verbatim. DeepSeek thinking models on
         // OpenCode Zen reject a follow-up turn that drops it; other providers
         // ignore the unknown field. Same round-trip rationale as
-        // thought_signature below. (#255)
+        // thought_signature below.
         ...(typeof m.reasoning_content === 'string' && m.reasoning_content.length > 0
           ? { reasoning_content: m.reasoning_content }
           : {}),
         // Moonshot's "partial" prefill flag: keep it through the message build
         // (the schema already preserves it); the provider layer decides whether
-        // the routed model understands it and strips it otherwise. (#1038)
+        // the routed model understands it and strips it otherwise.
         ...(m.partial === true ? { partial: true } : {}),
         // hasToolCalls (not a bare truthiness check) so null AND empty-array
         // tool_calls are dropped rather than forwarded — strict upstreams
-        // reject both shapes. (#200)
+        // reject both shapes.
         ...(hasToolCalls ? { tool_calls: m.tool_calls!.map(tc => {
           // Normalize echo-tolerant inputs back to the strict OpenAI shape
           // before forwarding (see toolCallSchema); synthesize missing ids
-          // and queue every id for order-based tool-result pairing. (#200)
+          // and queue every id for order-based tool-result pairing.
           const id = tc.id && tc.id.length > 0 ? tc.id : `call_auto_${++syntheticIdCounter}`;
           pendingToolCallIds.push(id);
           return {
@@ -1567,7 +1567,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     if (m.role === 'tool') {
       return {
         role: 'tool',
-        // Null/missing content (a tool that returned nothing) → "". (#200)
+        // Null/missing content (a tool that returned nothing) → "".
         content: m.content ?? '',
         tool_call_id: takeToolCallId(m.tool_call_id),
         ...(m.name ? { name: m.name } : {}),
@@ -1575,7 +1575,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     }
 
     // Legacy function-calling result → forward as a tool message, paired by
-    // order like an id-less tool message. (#200)
+    // order like an id-less tool message.
     if (m.role === 'function') {
       return {
         role: 'tool',
@@ -1587,7 +1587,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
     return {
       // 'developer' is OpenAI's newer name for the system role — providers
-      // downstream only know 'system'. (#200)
+      // downstream only know 'system'.
       role: m.role === 'developer' ? 'system' : m.role,
       content: m.content,
       ...(m.name ? { name: m.name } : {}),
@@ -1612,7 +1612,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   messages = compressionResult.messages;
   res.setHeader('X-FreeLLM-Compress', formatCompressionHeader(compressionResult));
 
-  // Server-enforced system prompt (#411): injected AFTER compression so it is
+  // Server-enforced system prompt: injected AFTER compression so it is
   // never compressed away, and FIRST in the list so a caller-supplied system
   // message follows it and cannot override it. Constant per profile, so the
   // provider-side cache prefix stays stable across requests. Neutral no-op for
@@ -1634,7 +1634,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
   // Image requests must route to a vision-capable model. Reject up front with a
   // clear message when none is enabled, rather than silently dropping the image
-  // or surfacing the generic "all models exhausted" error (#118, #125). Add a
+  // or surfacing the generic "all models exhausted" error. Add a
   // rough per-image token cost so budget routing isn't skewed by content the
   // heuristic above (text-only) can't see.
   const hasImage = messageHasImage(messages);
@@ -1652,10 +1652,10 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   const IMAGE_TOKEN_ESTIMATE = 1000;
   const imageCount = messages.reduce((n, m) =>
     n + (Array.isArray(m.content) ? m.content.filter(b => (b as { type?: string })?.type === 'image_url' || (b as { type?: string })?.type === 'image').length : 0), 0);
-  // The reserved output is capped (routingReserveTokens, #470) so an oversized
+  // The reserved output is capped (routingReserveTokens) so an oversized
   // client max_tokens can't starve routing; input + images count in full. The
   // reserve is threaded to the router separately: it is exact and must not be
-  // inflated by the context-window safety margin (#956 review).
+  // inflated by the context-window safety margin.
   const outputReserve = routingReserveTokens(max_tokens);
   const estimatedTotal = estimatedInputTokens + imageCount * IMAGE_TOKEN_ESTIMATE + outputReserve;
 
@@ -1803,7 +1803,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         estimatedTokens: estimatedTotal,
         vision: hasImage,
       });
-      // Structured-output enforcement for fusion (#516 scope gap): the panel/
+      // Structured-output enforcement for fusion (scope gap): the panel/
       // judge output got no format check, so model:"fusion" could hand back
       // prose as a "success" for a json_schema request. Fusion has no failover
       // machinery to hand this to — heal what's healable, otherwise answer
@@ -1976,7 +1976,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     recordIncomingMessages(sessionKey, messages);
   }
 
-  // #797: key for the per-session thinking-trace memory. Read and written
+  // key for the per-session thinking-trace memory. Read and written
   // inside the dispatch loop, where the routed platform/model is known — the
   // restore only ever touches the OUTBOUND copy, never `messages`, so handoff
   // recording above, request logging, compression and the response cache all
@@ -2015,7 +2015,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     const db = getDb();
     // Unify ON: a requested id (canonical slug OR any provider's model_id) maps
     // to the whole logical-model group, and we route STRICTLY across only its
-    // providers — failing over between them, never to a different model (#335).
+    // providers — failing over between them, never to a different model.
     const resolved = isUnifyEnabled() ? resolveRequestedIdForDispatch(requestedModel, getModelGroups()) : null;
     const members = resolved?.memberDbIds ?? null;
     if (members && members.length > 0) {
@@ -2089,7 +2089,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   // context-handoff injection, group/unified-chain routing, and the OpenAI
   // stream turn-integrity framing.
   const state = newFallbackState();
-  // Lets the failover loop learn which models reject tool calls (#1230).
+  // Lets the failover loop learn which models reject tool calls.
   state.wantsTools = wantsTools;
   const attemptLog: AttemptRecord[] = [];
   // Fallback-v2 hedging: the loop aborts this controller (via abortInFlight)
@@ -2112,7 +2112,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
       // model is on record). Turns where injection can't happen — every turn 1, and
       // sessions that never switched — pay no headroom tax.
       const routingEstimate = fallbackRoutingTokens(state, estimatedTotal, outputReserve) + (handoffPossible ? HANDOFF_MAX_TOKENS : 0);
-      // Task-type routing (#1127): the client can declare code/chat intent via
+      // Task-type routing: the client can declare code/chat intent via
       // header; otherwise a bounded rule derives it (tools present / code
       // markers). undefined keeps the preset weights untouched.
       const taskType = resolveTaskType(req, tools, messages);
@@ -2130,7 +2130,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
       requestedModel: attempt === 0 ? requestedModelLabel : undefined,
     });
     let outboundMessages = messages;
-    // #797: thinking trace accumulated from this turn's streamed deltas, then
+    // thinking trace accumulated from this turn's streamed deltas, then
     // remembered per-session so a follow-up whose client stripped the field
     // can have it restored (see restore block above).
     let streamReasoning = '';
@@ -2146,7 +2146,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
       injectedHandoffTokens = handoff.injectedTokens;
     }
 
-    // #797: restore the thinking trace this proxy emitted last turn, for THIS
+    // restore the thinking trace this proxy emitted last turn, for THIS
     // model, when the client dropped it on replay. Scoped to the outbound copy
     // and to the model that produced the trace, so a failover hop and every
     // provider that never needed the field send the client's bytes unchanged.
@@ -2166,7 +2166,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     }
 
       if (stream) {
-        // — Stream turn-integrity (#231 audit) —
+        // — Stream turn-integrity —
         // The old loop forwarded upstream chunks verbatim and called any
         // stream that produced bytes a success. Live failure modes that
         // slipped through: in-band `{"error":...}` frames delivered as dead
@@ -2201,7 +2201,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         // Raw upstream-reported model, captured off the first frame that
         // carries one — BEFORE the per-frame overwrite below destroys it.
         // Only evidence when a provider serves a different model than routed
-        // (#534); compared/persisted on success via observeServedModel.
+        // compared/persisted on success via observeServedModel.
         let upstreamModel: string | null = null;
         // Every `data: ...` frame the client sees, captured for a possible
         // streaming cache store on success (exact SSE replay on a later hit).
@@ -2226,7 +2226,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
         const flushHeaders = () => {
           if (headerSent) return;
-          // #764: backfill only — the pump loop already records ttfb on the
+          // backfill only — the pump loop already records ttfb on the
           // first token (content or reasoning) it sees.
           if (ttfbMs === null) ttfbMs = Date.now() - start;
           res.setHeader('Content-Type', 'text/event-stream');
@@ -2322,11 +2322,11 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
             if (choice.finish_reason) upstreamFinish = choice.finish_reason;
 
-            // #797: accumulate this turn's thinking trace (native reasoning
+            // accumulate this turn's thinking trace (native reasoning
             // deltas; the <think> extractor in base.ts has already normalized
             // inline tags into reasoning_content) so a follow-up request whose
             // client stripped it can have it restored from session memory.
-            // Shared with the #764 ttfb/token accounting below.
+            // Shared with the ttfb/token accounting below.
             const reasoning = streamReasoningText(anyChunk);
             if (reasoning.length > 0) streamReasoning += reasoning;
 
@@ -2344,7 +2344,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             sanitizeResponse(anyChunk);
             const text = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
 
-            // #764: ttfb = first token of ANY kind, not just visible content —
+            // ttfb = first token of ANY kind, not just visible content —
             // reasoning models stream thinking long before the first answer
             // token, and the old code deferred ttfb until header flush (or left
             // it NULL on long-thinking turns that never flushed).
@@ -2358,7 +2358,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
               // stripped — both are re-emitted complete at the end (OpenRouter
               // attaches tool_call deltas to chunks that also carry role/
               // reasoning keys; forwarding them raw would duplicate the call).
-              // #764: thinking-only chunks still consumed tokens — count them.
+              // thinking-only chunks still consumed tokens — count them.
               if (reasoning.length > 0) totalOutputTokens += Math.ceil(reasoning.length / 4);
               if (choice.delta && Object.keys(choice.delta).some(k => k !== 'content' && k !== 'tool_calls' && choice.delta[k] != null)) {
                 // `usage: undefined` (dropped by JSON.stringify): it was held
@@ -2369,7 +2369,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
               continue;
             }
 
-            // #764: count reasoning tokens with the same chars/4 estimate so
+            // count reasoning tokens with the same chars/4 estimate so
             // analytics and rate-limit reflect real consumption of thinking
             // models (a chunk can carry both reasoning and text).
             totalOutputTokens += Math.ceil((text.length + reasoning.length) / 4);
@@ -2388,7 +2388,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             if (wantsTools && startsWithDialectMarker(probe)) {
               mode = 'dialect';
             } else if (samplingParams.response_format) {
-              // Structured-output request (#933): hold ALL text until the
+              // Structured-output request: hold ALL text until the
               // stream ends, then enforce JSON (mirrors the non-stream check
               // below). Streaming bytes are already committed once headers
               // flush, so a model that answers in prose despite the forwarded
@@ -2478,7 +2478,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
               upstreamFinish === 'length' ? { skipBench: true } : {},
             );
           }
-          // #809: a bare "safe"/"unsafe" classification word streamed by a
+          // a bare "safe"/"unsafe" classification word streamed by a
           // relay is an upstream filter, not the requested model — fail over
           // like an empty completion.
           if (isUpstreamClassificationOutput(heldText, route.platform) && completedCalls.length === 0) {
@@ -2488,7 +2488,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             );
           }
 
-          // Structured-output enforcement for streams (#933): the non-stream
+          // Structured-output enforcement for streams: the non-stream
           // path checks JSON before returning; the stream path must too, or a
           // model that answers in prose despite the forwarded response_format
           // ships the essay as a "success" — the worst case for a
@@ -2539,7 +2539,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             // nor otherwise. Strict clients (Hermes, Cline, Continue) treat a
             // missing usage block as "no accounting happened" and skip
             // per-call token/cost/billing_provider writes entirely; agents
-            // that read usage for context-window display (e.g. #1084) show 0.
+            // that read usage for context-window display (e.g.) show 0.
             //
             // So inject the estimate whenever the upstream never sent one —
             // regardless of whether the client asked for include_usage. The
@@ -2593,7 +2593,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
           setStickyModel(messages, route.modelDbId, sessionIdHeader, stickyStrategyKey);
           if (handoffMode !== 'off' && sessionKey) recordSuccessfulModel({ sessionKey, modelKey });
-          // #797: remember this turn's thinking trace so the next request from
+          // remember this turn's thinking trace so the next request from
           // the same session can restore it (clients strip it on replay).
           if (streamReasoning.length > 0) rememberReasoning(reasoningSessionKey, modelKey, streamReasoning);
           traceRouteEvent('Proxy', {
@@ -2650,7 +2650,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
 
         // Raw upstream-reported model, captured BEFORE the contract overwrite
         // below destroys it — the only evidence when a provider silently
-        // serves a different model than requested (#534). The OpenAI-compat,
+        // serves a different model than requested. The OpenAI-compat,
         // cohere, and cloudflare adapters pass the upstream body through, so
         // result.model here is still the provider's own claim; google/aihorde
         // synthesize their responses with the routed id (no upstream signal).
@@ -2678,7 +2678,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             result.choices?.[0]?.finish_reason === 'length' ? { skipBench: true } : {},
           );
         }
-        // #809: a bare "safe"/"unsafe" classification word from a relay is an
+        // a bare "safe"/"unsafe" classification word from a relay is an
         // upstream filter, not the requested model — fail over like an empty
         // completion.
         if (isUpstreamClassificationOutput(respText, route.platform) && (respMsg?.tool_calls?.length ?? 0) === 0) {
@@ -2688,7 +2688,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           );
         }
 
-        // Inline tool-call dialect rescue (#231 audit): a tool-bearing
+        // Inline tool-call dialect rescue: a tool-bearing
         // request answered with the call serialized as TEXT (a mid-
         // conversation model switch makes the new model imitate the previous
         // model's private syntax). Re-parse it into structured tool_calls so
@@ -2712,7 +2712,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           }
         }
 
-        // Structured-output enforcement (#514 follow-up): the client asked for
+        // Structured-output enforcement: the client asked for
         // JSON; a model that answered in prose despite the forwarded
         // response_format must not be returned as a "success". Heal the common
         // almost-right shapes (fenced block, prose-wrapped JSON) in place;
@@ -2772,14 +2772,14 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         // arguments included, mirroring the stream accounting; counted after
         // the repair above, so it measures the bytes actually sent, and
         // reasoning tokens included too, so thinking models aren't
-        // undercounted — #764).
+        // undercounted —).
         const respToolArgChars = (respMsg?.tool_calls ?? []).reduce((n, tc) => n + (tc?.function?.arguments?.length ?? 0), 0);
         const promptTokens = result.usage?.prompt_tokens ?? estimatedInputTokens;
         const completionTokens = result.usage?.completion_tokens
           ?? Math.ceil((contentToString(respMsg?.content ?? '').length + completionReasoningText(result).length + respToolArgChars) / 4);
         const totalTokens = result.usage?.total_tokens ?? (promptTokens + completionTokens);
         recordUpstreamSuccess(route, totalTokens, state);
-        // #797: remember this turn's thinking trace so the next request from
+        // remember this turn's thinking trace so the next request from
         // the same session can restore it (clients strip it on replay).
         // normalizeChoices keeps reasoning_content on the message even when it
         // folds the trace into an otherwise-empty content field.
@@ -2790,17 +2790,17 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         // request writes its sticky entry under the SAME key the next turn reads
         // from (set to the requested model id at the top of the loop). Matches the
         // streaming success path; without it, "prefer last successful provider"
-        // is lost for non-streaming group-pinned sessions. (#341 review)
+        // is lost for non-streaming group-pinned sessions.
         setStickyModel(messages, route.modelDbId, sessionIdHeader, stickyStrategyKey);
         if (handoffMode !== 'off' && sessionKey) recordSuccessfulModel({ sessionKey, modelKey });
 
         res.setHeader('X-Routed-Via', routedViaValue(route.platform, route.modelId));
         setFallbackHeaders(res, attempt, attemptLog);
-        // Normalize array-shaped message.content to a string on the way out (#166).
+        // Normalize array-shaped message.content to a string on the way out.
         const outboundBody = sanitizeResponse(normalizeOutboundContent(result));
         res.setHeader('X-FreeLLM-Cache', cacheKey ? 'MISS' : 'OFF');
 
-        // #1084: agents show zero context usage when the upstream omits
+        // agents show zero context usage when the upstream omits
         // `usage` (many free-tier providers do). Fall back to the same
         // chars/4 estimate used for accounting above, flagged `estimated:
         // true` so a cost-accounting client can tell it apart from the
@@ -2832,7 +2832,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           );
         }
 
-        // #1102: expose the execution id in the body so clients (incl. AI
+        // expose the execution id in the body so clients (incl. AI
         // agents that ignore headers) can trace this response to its analytics
         // attempt trail. Additive — OpenAI clients ignore unknown fields.
         res.json({ execution_id: requestGroupId, ...outboundBody });

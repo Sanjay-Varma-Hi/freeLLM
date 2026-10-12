@@ -1,5 +1,5 @@
 /**
- * Inline tool-call dialect rescue (#231 audit).
+ * Inline tool-call dialect rescue.
  *
  * When a conversation switches models mid-task (failover, sticky miss), the
  * new model often continues the previous model's tool-call style and emits

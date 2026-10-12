@@ -2,7 +2,7 @@
 // Created: 2026-08-19
 //
 // DOWN: reversible — the added table is dropped, which simply means deleted
-// custom models can be re-added by the next sync pass again (#926).
+// custom models can be re-added by the next sync pass again.
 
 import type { Db } from '../types.js';
 

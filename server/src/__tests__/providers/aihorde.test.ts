@@ -3,7 +3,7 @@ import { AIHordeProvider } from '../../providers/aihorde.js';
 
 // AI Horde's OpenAI proxy diverges from the OpenAI contract; these tests pin the
 // AIHordeProvider normalizations that keep it from 422-ing or recording zero
-// usage. See issue #345.
+// usage..
 describe('AIHordeProvider', () => {
   let provider: AIHordeProvider;
 

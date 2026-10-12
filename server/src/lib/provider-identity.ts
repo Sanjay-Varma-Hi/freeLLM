@@ -2,7 +2,7 @@
 // Every custom OpenAI-compatible endpoint shares the platform id 'custom'
 // (see services/custom-endpoint.ts), so any analytics view that groups by
 // `platform` alone collapses every custom relay into a single "custom" row and
-// the operator can no longer tell which endpoint did what (#889).
+// the operator can no longer tell which endpoint did what.
 //
 // The canonical identity of a custom endpoint is the serving key's `base_url`
 // — custom-endpoint.ts already groups its credential pool by base_url, and the
@@ -45,7 +45,7 @@ export function endpointHost(baseUrl: string | null | undefined): string | null 
  */
 export function providerIdFor(platform: string, baseUrl: string | null | undefined): string {
   if (platform !== 'custom') return platform;
-  // The base_url IS the endpoint-scope token of #651 (see the header), so this
+  // The base_url IS the endpoint-scope token (see the header), so this
   // id agrees with `models.endpoint_scope` and with the router's view of which
   // keys are one endpoint.
   return baseUrl ? `custom:${baseUrl}` : 'custom';
@@ -82,7 +82,7 @@ function endpointPathLabel(baseUrl: string): string {
  *
  * Host alone is not an identity: a single gateway commonly fronts several
  * endpoints ('https://gw.example.com/tenant-a/v1' and '…/tenant-b/v1'), and
- * naming both of them 'gw.example.com' re-creates the #889 collision one level
+ * naming both of them 'gw.example.com' re-creates the collision one level
  * down — two rows the operator cannot tell apart. Appending the path makes the
  * name injective on (host, path), while a bare '…/v1' endpoint still reads as
  * the plain host it is.

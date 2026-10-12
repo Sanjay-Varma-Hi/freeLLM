@@ -1,4 +1,4 @@
-// Task-type-aware routing (#1127): lets a client declare what kind of work a
+// Task-type-aware routing: lets a client declare what kind of work a
 // request is (code vs chat) so the router can bias the bandit weights toward
 // quality or speed. A coding turn is quality-sensitive — a weak model
 // "completes" it with wrong code the user must manually verify; a chat turn is

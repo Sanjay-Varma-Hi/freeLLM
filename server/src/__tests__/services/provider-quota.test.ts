@@ -182,7 +182,7 @@ describe('provider-quota: record + read round-trip', () => {
     expect(row!.remaining).toBe(950);
   });
 
-  // #705: the panel rendered a bare "key #7", which names nothing an operator
+  // the panel rendered a bare "key #7", which names nothing an operator
   // recognises once a provider holds several keys.
   it('carries the label of the key the state belongs to', () => {
     const db = getDb();

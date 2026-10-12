@@ -38,7 +38,7 @@ export type RoutingStrategy = 'priority' | 'balanced' | 'smartest' | 'fastest' |
 // selection are independent choices, and folding this into the strategy enum
 // would mean switching key policy also switches (or disables) the model bandit.
 // 'auto' is the historical behaviour — per-key bandit score, else round-robin.
-// 'least-remaining' additionally ranks by observed remaining quota (#919).
+// 'least-remaining' additionally ranks by observed remaining quota.
 export type KeySelectionStrategy = 'auto' | 'least-remaining';
 
 export const BANDIT_PRESETS: Record<Exclude<RoutingStrategy, 'priority' | 'custom'>, RoutingWeights> = {
@@ -58,7 +58,7 @@ export const BANDIT_PRESETS: Record<Exclude<RoutingStrategy, 'priority' | 'custo
 // dashboard or PUT /api/fallback/routing.
 export const DEFAULT_STRATEGY: RoutingStrategy = 'balanced';
 
-// ── Time-of-day dynamic ranking (#760) ─────────────────────────────────────
+// ── Time-of-day dynamic ranking ─────────────────────────────────────
 // During an operator-declared peak window free relays are congested, so a
 // model's raw throughput is a weaker signal than its reliability: part of the
 // speed weight is moved onto reliability. This is OFF by default and every
@@ -193,7 +193,7 @@ export function peakAdjustedWeights(
   };
 }
 
-// ── Task-type weight bias (#1127) ─────────────────────────────────────────
+// ── Task-type weight bias ─────────────────────────────────────────
 // A coding turn is quality-sensitive, a chat turn is budget/speed-sensitive.
 // When a request declares (or derives) a task type, move part of one axis onto
 // the other — code: speed → intelligence, chat: intelligence → speed. The
@@ -260,7 +260,7 @@ export const PRIOR_SUCCESS = 1;
 export const PRIOR_FAILURE = 1;
 
 /** Community-sourced prior counts, folded into the Beta posterior as the
- *  starting balance (#685 follow-up). `successes`/`failures` are the
+ *  starting balance. `successes`/`failures` are the
  *  decay-weighted LOCAL sample counts; the community numbers are the
  *  aggregated, de-poisoned counts from other instances. Local samples dilute
  *  the community prior automatically: the more this install has observed, the
@@ -328,7 +328,7 @@ export function speedScore(tokPerSec: number, ttfbMs: number | null): number {
   return THROUGHPUT_WEIGHT * tp + TTFB_WEIGHT * ttfbScore(ttfbMs);
 }
 
-// ── Speed: what a timeout costs (#619) ──────────────────────────────────────
+// ── Speed: what a timeout costs ──────────────────────────────────────
 // A request that times out IS the model being slow — the reporter's exact
 // complaint: a relay model that hangs on half its calls loses reliability but
 // used to keep a pristine speed number, because the analytics query fed the
@@ -351,7 +351,7 @@ export const TIMEOUT_LATENCY_CAP_MS = 120_000;
 // ordering (1 = fastest; the shipped catalog spans 1..11) and it drives the
 // dashboard's sort-by-speed preset. Until now nothing ever wrote it at runtime,
 // so it stayed frozen at whatever the seed said no matter how the model
-// actually behaved (#619). observedSpeedRank projects the live [0,1] speed axis
+// actually behaved. observedSpeedRank projects the live [0,1] speed axis
 // back onto that same low-is-fast scale so an observed rank is directly
 // comparable with a catalog one.
 export const OBSERVED_SPEED_RANK_BEST = 1;
@@ -364,18 +364,18 @@ export function observedSpeedRank(speed: number): number {
 }
 
 // ── Intelligence ────────────────────────────────────────────────────────────
-// `size_label` is the CROSS-PROVIDER capability tier (issue #135 — a seeded
+// `size_label` is the CROSS-PROVIDER capability tier (— a seeded
 // intelligence_rank is only calibrated within one provider's own catalog), so
 // tier still dominates and no rank can promote a model past the tier above it.
 // Inside a tier, though, rank is no longer a near-invisible tiebreak: it now
 // has a real, visible effect on the composite ACROSS providers by design, so
 // that a user's rank edit actually moves the axis and the routing order
-// (#673). A label we don't recognize scores below every real tier — it is the
+// A label we don't recognize scores below every real tier — it is the
 // FLOOR of this axis, not an exclusion from routing: intelligence is one
 // weighted term in the convex combination below, so an untiered model with
 // strong reliability and speed still wins routes under most presets. Custom
 // models are seeded at the catalog median tier for the same reason
-// (custom-model-seed.ts, #488) — "unknown" is no opinion, not "worst".
+// (custom-model-seed.ts) — "unknown" is no opinion, not "worst".
 export const TIER_VALUE: Record<string, number> = { Frontier: 4, Large: 3, Medium: 2, Small: 1 };
 
 export function tierValue(sizeLabel: string): number {
@@ -383,7 +383,7 @@ export function tierValue(sizeLabel: string): number {
 }
 
 // Rank is 1..1000 with 1 = best. A LINEAR rank term made the axis effectively
-// blind to user edits (#673): tier*1000 dwarfed the rank, and the chain-level
+// blind to user edits: tier*1000 dwarfed the rank, and the chain-level
 // min-max normalization diluted a few-rank-point change to well under a
 // displayed percentage point, so "set the intelligence rank to a better
 // number" looked like it did nothing. Compress the rank with a square root so
@@ -394,7 +394,7 @@ const RANK_SCALE = 31;
 
 export function intelligenceComposite(sizeLabel: string, intelligenceRank: number): number {
   // tier*1000 keeps tiers strictly separated; -sqrt(rank)*RANK_SCALE prefers
-  // lower rank in-tier but lets rank edits move the axis (see #673).
+  // lower rank in-tier but lets rank edits move the axis.
   return tierValue(sizeLabel) * 1000 - Math.sqrt(Math.max(1, intelligenceRank)) * RANK_SCALE;
 }
 
@@ -409,7 +409,7 @@ export function intelligenceScore(composite: number, min: number, max: number): 
 // Multiplier that stays at 1 while a model has comfortable monthly headroom and
 // ramps down to a floor as it approaches its free-tier cap, so we stop steering
 // traffic at a model we're about to burn out. Unknown budget (0) → no opinion.
-// Thresholds are tunable per-instance (#899): callers may pass explicit
+// Thresholds are tunable per-instance: callers may pass explicit
 // rampStart/floor, and the defaults below are the historical behavior (start
 // protecting at 20% remaining, floor at 10% of the score). Router wires these
 // to persisted settings so operators can tune without a code change.
@@ -432,7 +432,7 @@ export function headroomFactor(usedTokens: number, budgetTokens: number, opts?: 
  *  fraction of the quota still available) is comfortable, then linear down to
  *  `floor` as it reaches zero. Factored out so the monthly-budget guardrail and
  *  the rate-window one below cannot drift apart — and so a single pair of
- *  operator-tuned thresholds governs both (#899). */
+ *  operator-tuned thresholds governs both. */
 function headroomRamp(remainingRaw: number, opts?: HeadroomThresholds): number {
   const rampStart = clampUnit(opts?.rampStart, HEADROOM_RAMP_START);
   const floor = clampUnit(opts?.floor, HEADROOM_FLOOR);
@@ -442,7 +442,7 @@ function headroomRamp(remainingRaw: number, opts?: HeadroomThresholds): number {
   return floor + (1 - floor) * (remaining / rampStart);
 }
 
-// ── Guardrail: rate-window headroom (#899) ──────────────────────────────────
+// ── Guardrail: rate-window headroom ──────────────────────────────────
 // The monthly-budget guardrail above only has an opinion about models that
 // declare a `monthly_token_budget`. The far more common free-tier shape is a
 // per-day request or token cap (rpd/tpd, plus the per-minute rpm/tpm), and
@@ -467,7 +467,7 @@ export function rateWindowHeadroomFactor(usedFraction: number | null, opts?: Hea
 }
 
 // Out-of-range / non-finite operator input falls back to the default rather
-// than silently clamping to a legal-but-unintended value (#899).
+// than silently clamping to a legal-but-unintended value.
 function clampUnit(n: number | undefined, fallback: number): number {
   if (n === undefined || !Number.isFinite(n) || n < 0 || n > 1) return fallback;
   return n;

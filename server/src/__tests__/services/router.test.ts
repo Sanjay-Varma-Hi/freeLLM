@@ -112,7 +112,7 @@ describe('Router', () => {
     expect(result.platform).toBe('groq');
   });
 
-  it('skips a model whose context window cannot hold the request (#167)', () => {
+  it('skips a model whose context window cannot hold the request', () => {
     const db = getDb();
     const groqKey = encrypt('test-groq-key');
     db.prepare(`
@@ -136,7 +136,7 @@ describe('Router', () => {
     expect(large.modelDbId).not.toBe(baseline.modelDbId);
   });
 
-  it('skips GitHub GPT-4.1 above its free-tier 8K request cap (#426)', () => {
+  it('skips GitHub GPT-4.1 above its free-tier 8K request cap', () => {
     const db = getDb();
     const githubKey = encrypt('test-github-key');
     db.prepare(`
@@ -172,7 +172,7 @@ describe('Router', () => {
     expect(routeRequest(9000).modelDbId).toBe(groq.id);
   });
 
-  it('prefers margin-fitting models but still serves raw-window fits (#956 review)', () => {
+  it('prefers margin-fitting models but still serves raw-window fits', () => {
     const db = getDb();
     const groqKey = encrypt('test-groq-key');
     db.prepare(`
@@ -224,7 +224,7 @@ describe('Router', () => {
     expect(routeRequest(106000).modelDbId).toBe(groq.id);
   });
 
-  it('still routes a model with an unknown (null) context window (#167)', () => {
+  it('still routes a model with an unknown (null) context window', () => {
     const db = getDb();
     const groqKey = encrypt('test-groq-key');
     db.prepare(`

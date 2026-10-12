@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip } from '@/components/tooltip'
 
-// Named fallback chains (#960/#895). The backend /api/profiles CRUD is
+// Named fallback chains. The backend /api/profiles CRUD is
 // complete and every chain is listed as an `auto:<name>` model in /v1/models;
 // this panel is the missing dashboard surface: list chains, create new ones,
 // switch the active chain (the fallback table below then edits that chain),
@@ -39,7 +39,7 @@ export interface Chain {
   sort_order: number
   auto_sort: string | null
   layout_config: string | null
-  // 0 once the chain opts out of the catalog-sync backfill (#895), which is
+  // 0 once the chain opts out of the catalog-sync backfill, which is
   // what an empty-created chain does — it stays exactly as hand-built.
   auto_include_new_models: number
   created_at: string
@@ -52,7 +52,7 @@ export function ChainManager() {
   const [startEmpty, setStartEmpty] = useState(true)
   const [createError, setCreateError] = useState('')
   const [collapsed, setCollapsed] = useState<boolean>(readCollapsed)
-  // Inline rename (#1179): one row is editable at a time, like the Playground
+  // Inline rename: one row is editable at a time, like the Playground
   // conversation list. Renaming is safe mid-flight — routing resolves the name
   // at request time — but in-flight auto:<old-name> requests fail, so the
   // confirm step says so.
@@ -71,7 +71,7 @@ export function ChainManager() {
 
   const invalidate = async () => {
     // Resolve WHICH chain is active before refreshing anything keyed on it
-    // (#1047): invalidating ['fallback'] first refetched the chain table under
+    // invalidating ['fallback'] first refetched the chain table under
     // the old profile id — a wasted full-catalog round trip, and the write that
     // poisoned the old chain's cache entry with the new chain's rows.
     await queryClient.refetchQueries({ queryKey: ['profiles', 'active'], exact: true })

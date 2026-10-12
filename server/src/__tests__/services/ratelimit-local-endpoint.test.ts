@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-// #592 locality exemption: a key whose base_url points at loopback or an
+//  locality exemption: a key whose base_url points at loopback or an
 // RFC1918/private address is a LOCAL inference server (Ollama / llama.cpp /
 // LM Studio registered through the 'custom' platform). It has no provider
 // quota, so neither the 90s transient bench nor the 2m→24h escalation ladder
@@ -45,7 +45,7 @@ function routeForKey(keyId: number): RouteResult {
 const real429 = () => Object.assign(new Error('429 Too Many Requests'), { status: 429 });
 const timeoutErr = () => Object.assign(new Error('Request timeout after 120000ms'), { name: 'TimeoutError' });
 
-describe('local-endpoint cooldown cap (#592)', () => {
+describe('local-endpoint cooldown cap', () => {
   it('loopback base_url: capped short bench even on repeated real 429s', () => {
     const route = routeForKey(insertKey('http://127.0.0.1:11434/v1'));
     for (let i = 0; i < 4; i++) {

@@ -3,7 +3,7 @@ import { OpenAICompatProvider } from '../../providers/openai-compat.js';
 import { initDb, getDb } from '../../db/index.js';
 import { resolveProvider } from '../../providers/index.js';
 
-// #1403 phase 1: quota_api observations from a provider key-info endpoint.
+//  phase 1: quota_api observations from a provider key-info endpoint.
 beforeAll(() => {
   process.env.ENCRYPTION_KEY = '0'.repeat(64);
   initDb(':memory:');
@@ -26,7 +26,7 @@ function stateRows(platform = 'openrouter') {
   ).all(platform) as { metric: string; limit_value: number | null; remaining_value: number | null; source: string }[];
 }
 
-describe('fetchQuota — provider-reported quota polling (#1403)', () => {
+describe('fetchQuota — provider-reported quota polling', () => {
   beforeEach(() => {
     getDb().prepare('DELETE FROM provider_quota_state').run();
     getDb().prepare('DELETE FROM provider_quota_observations').run();

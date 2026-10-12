@@ -147,7 +147,7 @@ describe('resolveRequestedIdToMembers', () => {
     expect(resolveRequestedIdToMembers('gpt-oss-120b', groups)!.sort()).toEqual([1, 2, 3, 4, 5]);
     expect(resolveRequestedIdToMembers('@cf/openai/gpt-oss-120b', groups)!.sort()).toEqual([1, 2, 3, 4, 5]);
   });
-  it('hard-pins an explicit "platform:model_id" member to ONLY that member (#580)', () => {
+  it('hard-pins an explicit "platform:model_id" member to ONLY that member', () => {
     expect(resolveRequestedIdToMembers('groq:openai/gpt-oss-120b', groups)).toEqual([2]);
     expect(resolveRequestedIdToMembers('cloudflare:@cf/openai/gpt-oss-120b', groups)).toEqual([3]);
   });
@@ -165,7 +165,7 @@ describe('resolveRequestedIdToMembers', () => {
 
 // A canonical id is a SLUG of a display name, so it can coincide with some other
 // model's literal model_id. Resolution unions both matches — grouping must never
-// shrink what an id reaches (#651) — but the two are not equally intended: an id
+// shrink what an id reaches — but the two are not equally intended: an id
 // typed literally must be tried literally first, and a coincidental slug sibling
 // is only a fallback. Anything else is a silent substitution.
 describe('slug / model_id collisions resolve as an ordered union', () => {

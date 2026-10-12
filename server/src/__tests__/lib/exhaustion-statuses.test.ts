@@ -97,7 +97,7 @@ describe('isContextTooLargeError', () => {
   });
 
   it('flags Zhipu AI prompt-length 400s (error 1261: "Prompt exceeds max length")', () => {
-    // #873: Zhipu returns HTTP 400 with "Prompt exceeds max length" for an
+    // Zhipu returns HTTP 400 with "Prompt exceeds max length" for an
     // over-long context. Its wording matches none of the OpenAI/Anthropic/Google
     // markers, so it was mis-bucketed as provider_bad_request instead of
     // context_too_large.

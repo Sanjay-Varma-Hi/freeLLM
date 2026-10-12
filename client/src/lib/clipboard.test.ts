@@ -43,7 +43,7 @@ describe('copyText', () => {
     expect(appended).toHaveLength(0)
   })
 
-  // #734: navigator.clipboard is undefined on an insecure origin, which is what
+  // navigator.clipboard is undefined on an insecure origin, which is what
   // a plain-HTTP LAN install (http://192.168.1.50:4001) is.
   it('falls back to execCommand when there is no Clipboard API', async () => {
     vi.stubGlobal('navigator', {})

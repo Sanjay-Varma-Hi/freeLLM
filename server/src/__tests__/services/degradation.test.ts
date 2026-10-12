@@ -10,7 +10,7 @@ const {
   resetDegradationState,
 } = await import('../../services/degradation.js');
 
-// #904 degraded-mode state machine: when the healthy-provider ratio stays
+//  degraded-mode state machine: when the healthy-provider ratio stays
 // below the threshold for a sustained period, the gateway flips to degraded
 // mode (router stops exploring, health endpoint reports the state); recovery
 // needs the ratio back above threshold for a longer grace period.

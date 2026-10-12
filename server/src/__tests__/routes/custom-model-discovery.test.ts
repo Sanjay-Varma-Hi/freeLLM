@@ -6,7 +6,7 @@ import { setCooldown, isOnCooldown } from '../../services/ratelimit.js';
 import { PROBE_MAX_TOKENS } from '../../services/model-discovery.js';
 import { mintDashboardToken, isGatedApiPath } from '../helpers/auth.js';
 
-// #488: a relay's model list changes weekly, so the endpoint's own /models
+// a relay's model list changes weekly, so the endpoint's own /models
 // route is the source of truth for what the USER's key can reach. This is
 // discovery on the operator's OWN endpoint with the operator's OWN key — it
 // never touches the published provider catalog.
@@ -62,7 +62,7 @@ function chatModel(modelId: string) {
     { id: number; key_id: number | null; intelligence_rank: number; speed_rank: number; size_label: string; source: string } | undefined;
 }
 
-describe('custom endpoint model discovery (#488)', () => {
+describe('custom endpoint model discovery', () => {
   let app: Express;
 
   beforeEach(() => {
@@ -172,7 +172,7 @@ describe('custom endpoint model discovery (#488)', () => {
   });
 });
 
-describe('bulk registration of discovered models (#488)', () => {
+describe('bulk registration of discovered models', () => {
   let app: Express;
 
   beforeEach(() => {
@@ -190,7 +190,7 @@ describe('bulk registration of discovered models (#488)', () => {
 
   it('registers a selection against the endpoint binding and reports what was new', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'first-secret' });
-    // A second credential for the same endpoint (#640/#619): models bind to the
+    // A second credential for the same endpoint: models bind to the
     // endpoint, and the pool rotates underneath that binding.
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'second-secret' });
     const [firstKeyId, secondKeyId] = customKeyIds();
@@ -240,7 +240,7 @@ describe('bulk registration of discovered models (#488)', () => {
   });
 });
 
-describe('median seeding for custom models (#488)', () => {
+describe('median seeding for custom models', () => {
   let app: Express;
 
   function seedCatalog() {
@@ -303,7 +303,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(chatModel('relay-b')!.size_label).toBe('Large');
   });
 
-  it('probe fires one chat request at the REGISTERED model and records a success sample (#685 follow-up)', async () => {
+  it('probe fires one chat request at the REGISTERED model and records a success sample', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
     setCooldown('custom', 'relay-a', keyId, 60_000);
@@ -354,10 +354,10 @@ describe('median seeding for custom models (#488)', () => {
     expect(isOnCooldown('custom', 'relay-a', keyId)).toBe(false);
   });
 
-  // #903: relays that enforce `max_tokens > 2` rejected the old probe with a
+  // relays that enforce `max_tokens > 2` rejected the old probe with a
   // 400 before it could measure anything, so the endpoint looked broken when
   // only the probe's own cap was wrong.
-  it('probe clears the max_tokens floor relays enforce (#903)', async () => {
+  it('probe clears the max_tokens floor relays enforce', async () => {
     expect(PROBE_MAX_TOKENS).toBeGreaterThan(2);
 
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
@@ -365,7 +365,7 @@ describe('median seeding for custom models (#488)', () => {
 
     const mock = vi.fn(async (url: string, init?: RequestInit) => {
       const body = init?.body ? JSON.parse(String(init.body)) as { max_tokens?: number } : {};
-      // Mirror the upstream that reported #903.
+      // Mirror the upstream that reported.
       if ((body.max_tokens ?? 0) <= 2) {
         return jsonResponse({ error: { message: 'max_tokens must be greater than 2' } }, 400);
       }
@@ -385,7 +385,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(body.modelId).toBe('relay-a');
   });
 
-  it('probe falls back to discovery when the endpoint has no registered model (#685 follow-up)', async () => {
+  it('probe falls back to discovery when the endpoint has no registered model', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
     getDb().prepare("DELETE FROM fallback_config WHERE model_db_id IN (SELECT id FROM models WHERE platform = 'custom')").run();
@@ -415,7 +415,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(chatBody.model).toBe('relay-b');
   });
 
-  it('probe failure surfaces the reason, records no sample and keeps the cooldown (#685 follow-up)', async () => {
+  it('probe failure surfaces the reason, records no sample and keeps the cooldown', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
     setCooldown('custom', 'relay-a', keyId, 60_000);
@@ -437,7 +437,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(isOnCooldown('custom', 'relay-a', keyId)).toBe(true);
   });
 
-  it('probe reports reasoning=true when the reasoning probe answer is correct (#874)', async () => {
+  it('probe reports reasoning=true when the reasoning probe answer is correct', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
 
@@ -471,7 +471,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(body.toolCalls).toBe(false);
   });
 
-  it('probe reports toolCalls and writes supports_tools back to the model row (#874)', async () => {
+  it('probe reports toolCalls and writes supports_tools back to the model row', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
     // Start from an explicit "no tool support" flag so the write-back is provable.
@@ -506,7 +506,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(row.supports_tools).toBe(1);
   });
 
-  it('probe without tool-call evidence leaves supports_tools untouched (#874)', async () => {
+  it('probe without tool-call evidence leaves supports_tools untouched', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
     getDb().prepare("UPDATE models SET supports_tools = 0 WHERE platform = 'custom' AND model_id = 'relay-a'").run();
@@ -531,7 +531,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(row.supports_tools).toBe(0);
   });
 
-  it('reports the ping round trip as latency, not the sum of the capability probes (#874)', async () => {
+  it('reports the ping round trip as latency, not the sum of the capability probes', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
 
@@ -565,7 +565,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(sample.latency_ms).toBeLessThan(SLOW_PROBE_MS);
   });
 
-  it('scopes the supports_tools write-back to the probed endpoint key pool (#874)', async () => {
+  it('scopes the supports_tools write-back to the probed endpoint key pool', async () => {
     // Two unrelated custom endpoints that happen to serve the SAME model id —
     // a very common case with OpenAI-compatible relays. Probing one must not
     // claim tool support for the other.
@@ -603,7 +603,7 @@ describe('median seeding for custom models (#488)', () => {
     expect(flagFor(otherKeyId)).toBe(0);
   });
 
-  it('leaves capability flags absent (unknown) when the capability probes fail (#874)', async () => {
+  it('leaves capability flags absent (unknown) when the capability probes fail', async () => {
     await post(app, '/api/keys/custom', { baseUrl: ENDPOINT, model: 'relay-a', apiKey: 'relay-secret' });
     const keyId = customKeyIds()[0]!;
 

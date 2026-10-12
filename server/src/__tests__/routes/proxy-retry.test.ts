@@ -4,13 +4,13 @@ import { isProviderBadRequestError } from '../../lib/error-classify.js';
 import { cooldownDecisionForError } from '../../lib/fallback-loop.js';
 import { MODEL_FORBIDDEN_COOLDOWN_MS } from '../../services/ratelimit.js';
 
-describe('isModelAccessForbiddenError (403 model-not-on-tier, drives whole-model skip — issue #256)', () => {
+describe('isModelAccessForbiddenError (403 model-not-on-tier, drives whole-model skip —)', () => {
   it('flags a 403 reaching the proxy by message or attached status', () => {
     // GitHub Models / Cloudflare 403 a model the key's free tier can't reach.
     expect(isModelAccessForbiddenError(new Error('GitHub Models API error 403: Model not available on your plan'))).toBe(true);
     expect(isModelAccessForbiddenError(new Error('Cloudflare API error 403: this model requires a subscription'))).toBe(true);
     expect(isModelAccessForbiddenError(new Error('Forbidden'))).toBe(true);
-    // #261 attaches the upstream status to the thrown error; honor it even if
+    //  attaches the upstream status to the thrown error; honor it even if
     // the message phrasing omits the code.
     expect(isModelAccessForbiddenError(Object.assign(new Error('access denied'), { status: 403 }))).toBe(true);
   });
@@ -21,11 +21,11 @@ describe('isModelAccessForbiddenError (403 model-not-on-tier, drives whole-model
     expect(isModelAccessForbiddenError(new Error('HuggingFace Router API error 402: Payment required'))).toBe(false);
   });
 
-  // Issue #618: some providers deny model access with a 400 (or 401) instead of
+  // some providers deny model access with a 400 (or 401) instead of
   // a 403. Classified transient, those got the 90s bench — and the auto-router
   // re-picked the same unreachable model the moment it expired, forever, with
   // an escalating penalty. They must classify as model-inaccessible-for-this-key.
-  it('flags a 400/401 whose body says the key may not access the model (#618)', () => {
+  it('flags a 400/401 whose body says the key may not access the model', () => {
     expect(isModelAccessForbiddenError(Object.assign(
       new Error('API error 400: user is not allowed to access model kat-coder-pro-v2.5'),
       { status: 400 },
@@ -58,7 +58,7 @@ describe('isModelAccessForbiddenError (403 model-not-on-tier, drives whole-model
 // The loop-level consequence of the classification above: a "not allowed to
 // access" 400 must take the model-forbidden bench (a day, source 'tier'), not
 // the 90s transient one that made the router re-pick it every 90 seconds.
-describe('cooldownDecisionForError on a 400 not-allowed body (#618)', () => {
+describe('cooldownDecisionForError on a 400 not-allowed body', () => {
   const route = {
     platform: 'kat', modelId: 'kat-coder-pro-v2.5', modelDbId: 1, keyId: 1,
     rpdLimit: null, tpdLimit: null,
@@ -93,7 +93,7 @@ describe('isModelNotFoundError (drives whole-model skip within a request)', () =
     expect(isModelNotFoundError(new Error('API error 404: no such model'))).toBe(true);
   });
 
-  it('flags 410 Gone (model pulled upstream) by message or attached status — #339', () => {
+  it('flags 410 Gone (model pulled upstream) by message or attached status —', () => {
     expect(isModelNotFoundError(new Error('Ollama Cloud API error 410: Gone'))).toBe(true);
     expect(isModelNotFoundError(Object.assign(new Error('Gone'), { status: 410 }))).toBe(true);
   });
@@ -120,7 +120,7 @@ describe('isRetryableError', () => {
     });
   });
 
-  describe('404 model removed / not found (the bug #66 fixes)', () => {
+  describe('404 model removed / not found', () => {
     it('treats explicit "404" in the error message as retryable', () => {
       expect(isRetryableError(new Error('OpenRouter API error 404: Provider returned error'))).toBe(true);
       expect(isRetryableError(new Error('Groq API error 404: model not found'))).toBe(true);
@@ -136,12 +136,12 @@ describe('isRetryableError', () => {
     });
   });
 
-  describe('provider tool-call generation 400s fail over (#168)', () => {
+  describe('provider tool-call generation 400s fail over', () => {
     // Groq (and every other openai-compat provider) throws its errors as
     // `${name} API error ${status}: ${msg}`, so a tool-call-generation failure
     // surfaces as "Groq API error 400: Failed to call a function...". That
     // matches the "api error 400" rule, so it's ALREADY retryable and fails
-    // over to the next provider — #168 is covered by existing behavior.
+    // over to the next provider — is covered by existing behavior.
     it('treats a Groq failed_generation 400 as retryable', () => {
       expect(isRetryableError(new Error(
         "Groq API error 400: Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.",
@@ -178,7 +178,7 @@ describe('isRetryableError', () => {
     });
   });
 
-  describe('403 model not on this key\'s tier fails over instead of 502 (issue #256)', () => {
+  describe('403 model not on this key\'s tier fails over instead of 502', () => {
     it('treats a 403 from GitHub Models / Cloudflare as retryable', () => {
       expect(isRetryableError(new Error('GitHub Models API error 403: Model not available on your plan'))).toBe(true);
       expect(isRetryableError(new Error('Cloudflare API error 403: this model requires a subscription'))).toBe(true);
@@ -212,7 +212,7 @@ describe('isRetryableError', () => {
       expect(isPaymentRequiredError(new Error('503 Service Unavailable'))).toBe(false);
     });
 
-    // #1277 follow-up: the digits 402 inside a token count or id are not a
+    // the digits 402 inside a token count or id are not a
     // status. The 402 bench takes the key off every model of the platform for
     // a day, so these false positives emptied whole providers.
     it('isPaymentRequiredError ignores 402 inside other numbers and under another status', () => {
@@ -238,7 +238,7 @@ describe('isRetryableError', () => {
     });
   });
 
-  describe('410 Gone & un-enumerated upstream statuses fail over instead of 502 (#337/#339)', () => {
+  describe('410 Gone & un-enumerated upstream statuses fail over instead of 502', () => {
     // The headline bug: a provider error whose HTTP status the substring allowlist
     // never enumerated (410 Gone, 502, 504, 408 …) used to abort the whole chain
     // with a 502 — stranding the healthy paid routes still queued later in the
@@ -289,7 +289,7 @@ describe('isRetryableError', () => {
       expect(isRetryableError(new Error('Invalid API key'))).toBe(false);
       // 403 is deliberately NOT here anymore: a request-time 403 on a key that
       // passed validateKey is a model-not-on-tier gate, so it fails over to the
-      // next model rather than 502-ing the request (issue #256). The 403 cases
+      // next model rather than 502-ing the request. The 403 cases
       // are covered in the dedicated describe block above.
     });
   });

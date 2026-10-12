@@ -1,7 +1,7 @@
 import { getDb } from '../db/index.js';
 
 /**
- * Global degraded-mode state machine (#904).
+ * Global degraded-mode state machine.
  *
  * When a large share of enabled providers fails at once, per-request probing
  * and bandit exploration just burn retry budget on dead routes. This module

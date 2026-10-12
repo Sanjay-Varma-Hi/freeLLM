@@ -43,12 +43,12 @@ function observe(row: {
   `).run(row.platform, row.keyId, row.pool, row.metric, row.limit, row.remaining, row.resetAt, row.observedAt, row.observedAt);
 }
 
-// GET /api/free-tier reports one budget per provider pool (#905). The pools it
+// GET /api/free-tier reports one budget per provider pool. The pools it
 // reports group the per-model legend under the stacked token bar, so it
 // has to agree with /api/fallback/token-usage about key scaling and about which
 // models are in play, and it must never present a request counter as if it were
 // a token budget.
-describe('free-tier pool overview (#905)', () => {
+describe('free-tier pool overview', () => {
   let app: Express;
   let groqKey = 0;
   let cerebrasA = 0;

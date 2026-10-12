@@ -3,7 +3,7 @@ import { initDb, getDb } from '../../db/index.js';
 import { buildModelListing } from '../../services/model-listing.js';
 import { setCooldown } from '../../services/ratelimit.js';
 
-// #1100: /v1/models gains a per-model execution_status (ready / needsKey /
+// /v1/models gains a per-model execution_status (ready / needsKey /
 // exhausted) derived from whether the router could actually dispatch to the
 // model right now, so agents can filter ?execution_status=ready and route
 // around exhausted models instead of 429ing.
@@ -30,7 +30,7 @@ function statusFor(modelId: string) {
   return m?.executionStatus;
 }
 
-describe('buildModelListing execution_status (#1100)', () => {
+describe('buildModelListing execution_status', () => {
   beforeEach(() => {
     process.env.ENCRYPTION_KEY = '0'.repeat(64);
     process.env.UNIFY_MODELS = 'false';
@@ -91,7 +91,7 @@ describe('buildModelListing execution_status (#1100)', () => {
     expect(statusFor('sibling-model')).toBe('ready');
   });
 
-  // #657: a key scoped to other models cannot serve this one, so it must not
+  // a key scoped to other models cannot serve this one, so it must not
   // make the model look ready.
   it('ignores a key scoped away from the model', () => {
     seedModel('groq', 'scoped-out-model');

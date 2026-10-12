@@ -135,7 +135,7 @@ export function refreshModelOverrideBaselines(db: Db, platform: string, modelId:
  * The fields a stored overrides blob actually overrides, for callers that
  * already selected `model_overrides.overrides_json` alongside the model row.
  * The dashboard uses this to mark individual inputs as locally overridden
- * instead of flagging the whole model (#551).
+ * instead of flagging the whole model.
  */
 export function overriddenFieldNames(overridesJson: string | null | undefined): Array<keyof ModelOverridePatch> {
   const stored = parseOverrides(overridesJson ?? undefined);
@@ -144,7 +144,7 @@ export function overriddenFieldNames(overridesJson: string | null | undefined): 
 
 export function isCatalogManagedModel(row: { platform: string; key_id?: number | null; source?: string }): boolean {
   // `source` is the authoritative provenance (models.source: 'catalog', 'user'
-  // or 'discovered'). Discovered rows on built-in platforms (#1348) count as
+  // or 'discovered'). Discovered rows on built-in platforms count as
   // catalog-managed: deleting one records a catalog tombstone, which both
   // discovery and a later catalog honor;
   // callers that select it get an exact answer. The platform/key_id fallback
@@ -157,7 +157,7 @@ export function isCatalogManagedModel(row: { platform: string; key_id?: number |
 //   'user'        — deleted in the dashboard. Stays deleted across syncs, and
 //                   the row is removed from `models` on the next catalog apply.
 //   'upstream_eol' — the provider reported it permanently gone (410 / end of
-//                   life, issue #634). The row SURVIVES and is only disabled,
+//                   life). The row SURVIVES and is only disabled,
 //                   so the dashboard can show "retired upstream" instead of
 //                   silently losing the model, and so a later catalog that
 //                   still lists it can lift the retirement.
@@ -225,7 +225,7 @@ export function recordCatalogModelTombstone(
 
 /**
  * Auto-disable a catalog model the provider reports as permanently retired
- * (issue #634). Deliberately NOT a delete: the row stays visible in the
+ * Deliberately NOT a delete: the row stays visible in the
  * dashboard, tagged with the upstream wording, and the user can flip it back on
  * if they disagree. Turning off the chain entries (and the active profile's
  * copy) is exactly what the dashboard's own switch does, so the router stops
@@ -353,7 +353,7 @@ export function getModelOverrides(
  *
  * Note it keys off the field, not the row: a user who renamed a model has an
  * override row but has said nothing about its speed_rank, so a derived value
- * may still fill that column (#619).
+ * may still fill that column.
  */
 export function modelsWithOverriddenField(
   db: Db,

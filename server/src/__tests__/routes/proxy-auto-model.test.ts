@@ -45,8 +45,8 @@ describe('Virtual "auto" model', () => {
     const db = getDb();
     // Unification is always on: /v1/models lists one entry per logical model
     // (owned_by = freellmapi, id = canonical slug) that aggregates availability
-    // across its providers. This suite asserts the availability tagging (#242)
-    // and context-window advertising (#282) under that unified shape.
+    // across its providers. This suite asserts the availability tagging
+    // and context-window advertising under that unified shape.
     db.prepare('DELETE FROM api_keys').run();
     db.prepare('DELETE FROM requests').run();
 
@@ -91,9 +91,9 @@ describe('Virtual "auto" model', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  // #242: default returns the whole catalog, each entry annotated with whether
+  // default returns the whole catalog, each entry annotated with whether
   // it's currently usable (connected) and, if not, why.
-  it('returns the whole catalog by default, each tagged with availability (#242)', async () => {
+  it('returns the whole catalog by default, each tagged with availability', async () => {
     const { status, body } = await request(app, 'GET', '/v1/models', undefined, authHeaders());
     expect(status).toBe(200);
     expect(body.data[0]).toMatchObject({ id: 'auto', available: true, unavailable_reason: null });
@@ -113,7 +113,7 @@ describe('Virtual "auto" model', () => {
     expect(models.some((m: any) => !m.available && m.unavailable_reason === 'no_key')).toBe(true);
   });
 
-  it('?available=true narrows to only connected models (#242)', async () => {
+  it('?available=true narrows to only connected models', async () => {
     const filtered = await request(app, 'GET', '/v1/models?available=true', undefined, authHeaders());
     expect(filtered.status).toBe(200);
     const filteredModels = filtered.body.data.filter((m: any) => m.id !== 'auto');
@@ -126,10 +126,10 @@ describe('Virtual "auto" model', () => {
     expect(allModels.length).toBeGreaterThan(filteredModels.length);
   });
 
-  // #1100: every catalog row carries a machine-readable execution_status, and
+  // every catalog row carries a machine-readable execution_status, and
   // `?execution_status=` narrows to one of them so an agent can ask for models
   // it can call right now without parsing the whole list.
-  it('?execution_status= narrows to that status (#1100)', async () => {
+  it('?execution_status= narrows to that status', async () => {
     const all = await request(app, 'GET', '/v1/models', undefined, authHeaders());
     expect(all.status).toBe(200);
     const catalog = all.body.data.filter((m: any) => m.execution_status !== undefined);
@@ -155,7 +155,7 @@ describe('Virtual "auto" model', () => {
     expect(bogus.body.data.filter((m: any) => m.execution_status !== undefined).length).toBe(catalog.length);
   });
 
-  it('marks a fully-disabled model with unavailable_reason "disabled" (#242)', async () => {
+  it('marks a fully-disabled model with unavailable_reason "disabled"', async () => {
     const db = getDb();
     const row = db.prepare("SELECT display_name FROM models WHERE platform='groq' AND enabled=1 LIMIT 1").get() as { display_name: string } | undefined;
     expect(row).toBeDefined();
@@ -172,11 +172,11 @@ describe('Virtual "auto" model', () => {
     }
   });
 
-  // #282: clients read a model's context window from /v1/models; advertise it
+  // clients read a model's context window from /v1/models; advertise it
   // under both `context_window` and the OpenRouter-convention `context_length`,
   // and give "auto" the largest window among connected models so clients don't
   // fall back to a conservative ~16k default and truncate long inputs.
-  it('advertises context_length and a non-null auto context window (#282)', async () => {
+  it('advertises context_length and a non-null auto context window', async () => {
     const { status, body } = await request(app, 'GET', '/v1/models', undefined, authHeaders());
     expect(status).toBe(200);
 
