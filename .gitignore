@@ -25,3 +25,9 @@ update-hermes.sh
 
 # Monetization planning — private, never committed
 monetization/
+
+# macOS/iCloud conflict copies (e.g. "app 2.ts") — never commit these
+* [0-9]
+* [0-9].*
+* [0-9][0-9]
+* [0-9][0-9].*
