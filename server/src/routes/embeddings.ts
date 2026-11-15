@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getWeeklyBudget } from '../services/weekly-budget.js';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { getDb, setSetting } from '../db/index.js';
@@ -282,5 +283,6 @@ embeddingsRouter.get('/usage', (_req: Request, res: Response) => {
     families,
     totalTokensMonth: families.reduce((s, f) => s + f.tokensMonth, 0),
     totalRequestsToday: families.reduce((s, f) => s + f.requestsToday, 0),
+    weekly: getWeeklyBudget('embedding'),
   });
 });

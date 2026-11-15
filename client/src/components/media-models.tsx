@@ -9,6 +9,7 @@ import { CardSkeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
 import { ModelsTabs } from '@/components/models-tabs'
 import { UsageSummaryCard } from '@/components/usage-summary-card'
+import { WeeklyBudgetCard, type WeeklyBudgetData } from '@/components/weekly-budget-card'
 import { useI18n } from '@/i18n'
 
 export interface MediaModel {
@@ -37,6 +38,7 @@ interface MediaUsage {
   }[]
   totalRequestsToday: number
   totalRequestsMonth: number
+  weekly?: WeeklyBudgetData
 }
 
 export interface MediaGroup {
@@ -209,6 +211,8 @@ export function MediaModelsView({ modality }: { modality: 'image' | 'video' | 'a
         <p className="text-xs text-muted-foreground">
           {t('models.mediaHint')} <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">{endpoint}</code>
         </p>
+
+        {usage?.weekly && <WeeklyBudgetCard data={usage.weekly} />}
 
         {usage && usage.models.length > 0 && (
           <UsageSummaryCard

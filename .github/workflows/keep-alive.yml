@@ -1,0 +1,35 @@
+name: Keep-alive
+
+# Pings the deployed gateway so a free-plan host (Render) never spins it down
+# for inactivity, and wakes it if it ever does. The server also pings itself
+# while it is running (server/src/lib/keep-alive.ts); this is the outside half.
+#
+# Setup: repository Settings → Secrets and variables → Actions → Variables →
+# add KEEPALIVE_URL = https://<your-service>.onrender.com
+# Without that variable the job is skipped.
+#
+# Note: GitHub pauses scheduled workflows after 60 days without repository
+# activity, and scheduled runs can start a few minutes late.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    if: ${{ vars.KEEPALIVE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping the gateway
+        env:
+          KEEPALIVE_URL: ${{ vars.KEEPALIVE_URL }}
+        # A sleeping free instance takes up to a minute to answer, so allow a
+        # long first response and retry instead of failing the run.
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            --max-time 120 --retry 3 --retry-delay 10 --retry-all-errors \
+            "${KEEPALIVE_URL%/}/api/ping"

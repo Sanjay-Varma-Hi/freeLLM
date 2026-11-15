@@ -1163,5 +1163,17 @@
     "renameConfirm": "ਚੇਨ \"{oldName}\" ਦਾ ਨਾਂ \"{name}\" ਕਰਨਾ? auto:{oldName} ਕਾਲ ਕਰਦੇ ਕਲਾਇੰਟਾਂ ਨੂੰ auto:{name} 'ਤੇ ਜਾਣਾ ਪਵੇਗਾ।",
     "renamePlaceholder": "ਨਵਾਂ ਚੇਨ ਨਾਂ",
     "renameFailed": "ਚੇਨ ਦਾ ਨਾਂ ਨਹੀਂ ਬਦਲਿਆ ਜਾ ਸਕਿਆ।"
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

@@ -61,6 +61,7 @@ const NOT_GUARDED = [
   'endpoint-scope.ts',
   'error-redaction.ts',
   'gemini-wire.ts',
+  'keep-alive.ts',
   'key-parser.ts',
   'log-redaction.ts',
   'model-scope.ts',

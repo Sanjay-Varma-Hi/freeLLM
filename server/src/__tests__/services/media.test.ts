@@ -469,6 +469,60 @@ describe('media service', () => {
       // Submit + result read only; the metadata address was never contacted.
       expect(fetchMock).toHaveBeenCalledTimes(2);
     });
+
+    it('Zhipu: falls back to the global console on 401, polls the job, and downloads without the key', async () => {
+      addMedia('zhipu', 'cogvideox-flash', 'video');
+      addKey('zhipu', 'zhipu_test_key');
+      const domestic = 'https://open.bigmodel.cn/api/paas/v4/videos/generations';
+      const global = 'https://api.z.ai/api/paas/v4/videos/generations';
+      const resultUrl = 'https://api.z.ai/api/paas/v4/async-result/task-1';
+      let polls = 0;
+      const fetchMock = vi.fn(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url === domestic) return new Response('bad key', { status: 401 });
+        if (url === global) return jsonResponse({ id: 'task-1', task_status: 'PROCESSING' });
+        if (url === resultUrl) {
+          polls++;
+          return polls === 1
+            ? jsonResponse({ task_status: 'PROCESSING' })
+            : jsonResponse({ task_status: 'SUCCESS', video_result: [{ url: 'https://cdn.example.test/zhipu.mp4' }] });
+        }
+        if (url === 'https://cdn.example.test/zhipu.mp4') {
+          return new Response(Buffer.from('ZHIPUVIDEO'), { status: 200, headers: { 'content-type': 'video/mp4' } });
+        }
+        throw new Error(`unexpected fetch: ${url}`);
+      });
+      globalThis.fetch = fetchMock as any;
+
+      vi.useFakeTimers({ toFake: ['setTimeout'] });
+      try {
+        const pending = runVideoGeneration('cogvideox-flash', { prompt: 'paper boats on a stream' });
+        await vi.advanceTimersByTimeAsync(10_000);
+        const result = await pending;
+        expect(result.video.toString()).toBe('ZHIPUVIDEO');
+        expect(result.platform).toBe('zhipu');
+      } finally {
+        vi.useRealTimers();
+      }
+
+      expect(fetchMock.mock.calls.map(c => String(c[0]))).toEqual([
+        domestic, global, resultUrl, resultUrl, 'https://cdn.example.test/zhipu.mp4',
+      ]);
+      expect(JSON.parse(String((fetchMock.mock.calls[1][1] as RequestInit).body))).toEqual({
+        model: 'cogvideox-flash',
+        prompt: 'paper boats on a stream',
+      });
+      // The CDN download carries no credentials.
+      expect((fetchMock.mock.calls[4][1] as RequestInit).headers).toBeUndefined();
+    });
+
+    it('Zhipu: a failed job surfaces as an upstream failure', async () => {
+      addMedia('zhipu', 'cogvideox-flash', 'video');
+      addKey('zhipu');
+      globalThis.fetch = vi.fn(async () => jsonResponse({ id: 'task-2', task_status: 'FAIL' })) as any;
+      await expect(runVideoGeneration('cogvideox-flash', { prompt: 'x' }))
+        .rejects.toMatchObject({ status: 502 });
+    });
   });
 
   describe('text-to-speech', () => {

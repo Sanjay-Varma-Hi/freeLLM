@@ -1163,5 +1163,17 @@
     "renameConfirm": "\"{oldName}\" சங்கிலியை \"{name}\" என மறுபெயரிடவா? auto:{oldName} அழைக்கும் கிளையண்டுகள் auto:{name} க்கு மாற வேண்டும்.",
     "renamePlaceholder": "புதிய சங்கிலி பெயர்",
     "renameFailed": "சங்கிலிக்கு மறுபெயரிட முடியவில்லை."
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

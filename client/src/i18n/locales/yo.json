@@ -1163,5 +1163,17 @@
     "renameConfirm": "Tún orúkọ ẹwẹ̀ \"{oldName}\" sí \"{name}\"? Àwọn oníbàárà̀ tó ̀ pè auto:{oldName} gbọ́dọ̀ yí padà sí auto:{name}.",
     "renamePlaceholder": "Orúkọ ẹwẹ̀ tuntun",
     "renameFailed": "A kò lè tún orúkọ ẹwẹ̀ yẹn sọ."
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

@@ -1163,5 +1163,17 @@
     "renameConfirm": "将链“{oldName}”重命名为“{name}”？调用 auto:{oldName} 的客户端必须改用 auto:{name}。",
     "renamePlaceholder": "新链名称",
     "renameFailed": "无法重命名该链。"
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

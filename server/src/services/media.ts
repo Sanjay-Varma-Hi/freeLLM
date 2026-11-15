@@ -25,7 +25,7 @@ export const MEDIA_PLATFORMS = new Set(['nvidia', 'pollinations', 'cloudflare', 
 /** Video uses a dedicated optional catalog registry so binaries that predate
  *  this modality ignore the rows instead of accidentally ingesting them as
  *  chat models. Keep its adapter allowlist separate for the same reason. */
-export const VIDEO_PLATFORMS = new Set(['pollinations', 'huggingface']);
+export const VIDEO_PLATFORMS = new Set(['pollinations', 'huggingface', 'zhipu']);
 
 /** Platforms whose free media path needs no API key (anonymous). */
 const KEYLESS_CAPABLE = new Set(['pollinations']);
@@ -538,6 +538,79 @@ async function callHuggingFaceVideo(
   };
 }
 
+// Zhipu AI / Z.ai text-to-video (CogVideoX). The two consoles do not share a
+// key namespace (see providers/zhipu.ts), so a key the domestic host rejects
+// with 401 is retried once against the global host; everything after the
+// submit stays on whichever host accepted it.
+const ZHIPU_VIDEO_BASE_URLS = [
+  'https://open.bigmodel.cn/api/paas/v4',
+  'https://api.z.ai/api/paas/v4',
+];
+const ZHIPU_VIDEO_POLL_MS = 3_000;
+
+async function callZhipuVideo(
+  row: MediaModelRow,
+  key: string | null,
+  p: VideoParams,
+  clientSignal?: AbortSignal,
+): Promise<{ video: Buffer; contentType: string }> {
+  if (!key) throw new MediaError('zhipu key required', 401);
+  const deadline = Date.now() + VIDEO_FETCH_TIMEOUT_MS;
+  const remaining = () => Math.max(1, deadline - Date.now());
+  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` };
+  const body = JSON.stringify({
+    model: row.model_id,
+    prompt: p.prompt,
+    ...(p.image ? { image_url: p.image } : {}),
+    ...(p.audio !== undefined ? { with_audio: p.audio } : {}),
+  });
+
+  let baseUrl = ZHIPU_VIDEO_BASE_URLS[0]!;
+  let submitted: Response | undefined;
+  for (const [i, candidate] of ZHIPU_VIDEO_BASE_URLS.entries()) {
+    try {
+      submitted = await mediaFetch(`${candidate}/videos/generations`, 'zhipu', 'video',
+        { method: 'POST', headers, body }, remaining(), clientSignal);
+      baseUrl = candidate;
+      break;
+    } catch (err) {
+      const last = i === ZHIPU_VIDEO_BASE_URLS.length - 1;
+      if (!last && err instanceof MediaError && err.status === 401) continue;
+      throw err;
+    }
+  }
+  const job = (await submitted!.json()) as { id?: string; task_status?: string };
+  if (!job.id) throw new MediaError('zhipu returned no video job id', 502);
+
+  // The job is asynchronous: poll the result endpoint until it settles.
+  let videoUrl: string | undefined;
+  let status = job.task_status ?? 'PROCESSING';
+  while (status !== 'SUCCESS') {
+    if (status === 'FAIL') throw new MediaError('zhipu video job failed', 502);
+    if (remaining() <= 1) throw new MediaError('zhipu video generation timed out', 504);
+    throwIfClientGone(clientSignal);
+    await new Promise(resolve => setTimeout(resolve, ZHIPU_VIDEO_POLL_MS));
+    const polled = await mediaFetch(`${baseUrl}/async-result/${encodeURIComponent(job.id)}`, 'zhipu', 'video',
+      { method: 'GET', headers: { Authorization: `Bearer ${key}` } }, remaining(), clientSignal);
+    const state = (await polled.json()) as { task_status?: string; video_result?: { url?: string }[] };
+    if (!state.task_status) throw new MediaError('zhipu returned an invalid video job status', 502);
+    status = state.task_status;
+    videoUrl = state.video_result?.[0]?.url;
+  }
+  if (!videoUrl) throw new MediaError('zhipu returned no video URL', 502);
+  // Same rule as the Hugging Face adapter: a URL taken from an upstream JSON
+  // body goes through the SSRF guard and is downloaded without the API key.
+  const verdict = await assessProviderUrl(videoUrl);
+  if (!verdict.allowed) {
+    throw new MediaError(`zhipu returned an unusable video URL: ${verdict.reason}`, 502);
+  }
+  const downloaded = await mediaFetch(videoUrl, 'zhipu', 'video', { method: 'GET' }, remaining(), clientSignal);
+  return {
+    video: Buffer.from(await downloaded.arrayBuffer()),
+    contentType: downloaded.headers.get('content-type') ?? 'video/mp4',
+  };
+}
+
 async function callVideoProvider(
   row: MediaModelRow,
   credential: ProviderCredential,
@@ -580,6 +653,8 @@ async function callVideoProvider(
     }
     case 'huggingface':
       return callHuggingFaceVideo(row, key, p, clientSignal);
+    case 'zhipu':
+      return callZhipuVideo(row, key, p, clientSignal);
     default:
       throw new MediaError(`no video adapter for platform '${row.platform}'`, 500);
   }

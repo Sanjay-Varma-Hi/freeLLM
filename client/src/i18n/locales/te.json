@@ -1163,5 +1163,17 @@
     "renameConfirm": "చైన్ \"{oldName}\" పేరును \"{name}\" గా మార్చాలా? auto:{oldName} ని కాల్ చేసే క్లయింట్లు auto:{name} కి మారాలి.",
     "renamePlaceholder": "కొత్త చైన్ పేరు",
     "renameFailed": "చైన్ పేరును మార్చడం సాధ్యం కాలేదు."
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

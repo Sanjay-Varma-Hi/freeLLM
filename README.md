@@ -79,6 +79,13 @@ MongoDB so nothing is lost:
 3. Deploy. The log shows `[db-backup] persisting to MongoDB (…)`. Create your account
    and add provider keys once — they now survive every restart.
 
+**Staying awake.** Render's free plan also puts a service to sleep after 15 minutes
+without traffic. The server pings its own public URL every 10 minutes (automatic on
+Render), which keeps it running. As a backup that can also wake a sleeping service,
+the included GitHub workflow `.github/workflows/keep-alive.yml` pings it every
+10 minutes — enable it by adding a repository **variable** named `KEEPALIVE_URL`
+(Settings → Secrets and variables → Actions → Variables) with your service URL.
+
 How persistence works: the whole SQLite database is gzipped, encrypted with
 `ENCRYPTION_KEY` and stored in MongoDB GridFS a few seconds after every dashboard
 change, every two minutes while anything changes, and on shutdown. On boot, an empty

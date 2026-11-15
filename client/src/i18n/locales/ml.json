@@ -1163,5 +1163,17 @@
     "renameConfirm": "ചെയിൻ \"{oldName}\" എന്നതിന്റെ പേരു \"{name}\" ആക്കണോ? auto:{oldName} വിളിക്കുന്ന ക്ലയന്റുകൾ auto:{name} ലേക്ക് മാറണം.",
     "renamePlaceholder": "പുതിയ ചെയിൻ പേര്",
     "renameFailed": "ചെയിനിന്റെ പേരു മാറ്റാനായില്ല."
+  },
+  "weeklyBudget": {
+    "title": "This week",
+    "estimated": "estimate",
+    "estimateHint": "These providers publish daily limits, not token totals, so the weekly total is an estimate: a typical daily allowance for each connected provider x 7. The used figure is exact. Weeks start on Monday (UTC).",
+    "remaining": "remaining",
+    "of": "of",
+    "used": "used",
+    "legendTitle": "{used} used this week",
+    "unmetered": "{providers}: no key needed and no quota, only rate limits.",
+    "unpublished": "{providers}: connected, but no published daily cap to count.",
+    "empty": "Connect a provider key to see this week's allowance."
   }
 }

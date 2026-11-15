@@ -24,6 +24,7 @@ import { PageHeader } from '@/components/page-header'
 import { FloatingBar } from '@/components/floating-bar'
 import { ModelsTabs } from '@/components/models-tabs'
 import { UsageSummaryCard } from '@/components/usage-summary-card'
+import { WeeklyBudgetCard, type WeeklyBudgetData } from '@/components/weekly-budget-card'
 import { useI18n } from '@/i18n'
 
 interface ProviderEntry {
@@ -61,6 +62,7 @@ interface UsageData {
   }[]
   totalTokensMonth?: number
   totalRequestsToday?: number
+  weekly?: WeeklyBudgetData
 }
 
 function formatTokens(n: number): string {
@@ -260,6 +262,8 @@ export default function EmbeddingsPage() {
         <p className="text-xs text-muted-foreground">
           {t('embeddings.autoDescription')}
         </p>
+
+        {usage?.weekly && <WeeklyBudgetCard data={usage.weekly} />}
 
         {usage && usage.families.length > 0 && (
           <UsageSummaryCard

@@ -22,6 +22,8 @@ import { warnOnRoutingOverrideDrift } from './services/model-weight-overrides.js
 import { installLogRedaction } from './lib/log-redaction.js';
 import { cleanupExpiredCooldowns } from './services/ratelimit.js';
 import { loadCacheFromDb } from './services/cache.js';
+import { ensureBuiltinMediaModels } from './services/builtin-media-models.js';
+import { startKeepAlive } from './lib/keep-alive.js';
 
 // Before any other statement runs, so no provider key can reach stdout — users
 // paste server output into bug reports. Module scope, not inside main(), so it
@@ -52,6 +54,9 @@ async function main() {
   // restore, bring back dashboard accounts and provider keys from the mirrors.
   await seedFromMirrorsIfEmpty(getDb());
   if (isMongoConfigured()) console.log(`[db-backup] persisting to ${mongoLabel()}`);
+  // Image/video models this binary can serve without waiting on (or being
+  // limited to) the remote catalog — also covers CATALOG_SYNC_DISABLED=1.
+  ensureBuiltinMediaModels(getDb());
   applyDeclarativeConfigFromEnv();
   // After initDb: the unknown-model half of this check reads the catalog.
   warnOnRoutingOverrideDrift();
@@ -96,6 +101,8 @@ async function main() {
     startBackupScheduler(scheduler);
     startCustomModelSync(getDb(), scheduler);
     startBuiltinModelDiscovery(getDb(), scheduler);
+    // Free hosts (Render) sleep an idle service; ping our own public URL.
+    startKeepAlive(scheduler);
 
     // Post-sleep recovery: while the host was suspended (laptop lid, VM
     // pause) timers and keep-alive sockets froze, so the first requests after
@@ -135,11 +142,19 @@ async function main() {
   // that happens every time the service spins down. Upload a final snapshot
   // first so nothing changed since the last periodic backup is lost.
   let shuttingDown = false;
+  let activeServer: ReturnType<typeof app.listen> | null = null;
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     process.once(signal, () => {
       if (shuttingDown) return;
       shuttingDown = true;
       console.log(`[server] ${signal} received — saving a final database backup`);
+      // Stop accepting new connections right away so the platform's load
+      // balancer fails over instead of handing us requests that would die
+      // mid-flight. In-flight requests keep running while the backup uploads;
+      // the exit below is still bounded by flushDbBackup's own timeout, which
+      // has to fit inside Docker's 10s stop grace period.
+      activeServer?.close();
+      activeServer?.closeIdleConnections();
       void flushDbBackup()
         .finally(() => closeMongo())
         .finally(() => process.exit(0));
@@ -147,6 +162,7 @@ async function main() {
   }
 
   const server = app.listen(Number(PORT), HOST, onReady(HOST));
+  activeServer = server;
   tuneKeepAlive(server);
   server.on('error', (err: NodeJS.ErrnoException) => {
     // The default '::' bind fails where IPv6 is disabled (kernel
@@ -155,7 +171,8 @@ async function main() {
     // fail-fast posture documented in main().catch below.
     if (!process.env.HOST && (err.code === 'EAFNOSUPPORT' || err.code === 'EADDRNOTAVAIL')) {
       console.warn('[server] IPv6 unavailable on this host — falling back to 0.0.0.0 (IPv4-only)');
-      tuneKeepAlive(app.listen(Number(PORT), '0.0.0.0', onReady('0.0.0.0')));
+      activeServer = app.listen(Number(PORT), '0.0.0.0', onReady('0.0.0.0'));
+      tuneKeepAlive(activeServer);
       return;
     }
     console.error('\n[server] Failed to start:\n  ' + (err?.message ?? err) + '\n');
