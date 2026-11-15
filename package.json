@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "jsdom": "^27.4.0"
+    "jsdom": "^31.0.0"
   },
   "engines": {
     "node": ">=20.18.0 <25.0.0",
