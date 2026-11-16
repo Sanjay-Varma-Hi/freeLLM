@@ -6,6 +6,7 @@
 // token budget. Each platform has a small adapter here; routing fails over
 // across the providers serving the same modality. The rows are maintained in the
 // published catalog and arrive via catalog-sync — never seeded by migrations.
+import { ChainGuard } from './media-health.js';
 import { getDb } from '../db/index.js';
 import { parseRetryAfterMs } from '../providers/base.js';
 import { RetryHintTracker } from '../lib/retry-hint.js';
@@ -837,11 +838,12 @@ function chainError(modality: MediaModality, lastError: MediaError | null, hints
 
 /** Generate image(s), failing over across providers serving the modality. */
 export async function runImageGeneration(model: string | undefined, params: ImageParams): Promise<ImageResult> {
-  const chain = resolveMediaChain(model, 'image');
+  const guard = new ChainGuard(resolveMediaChain(model, 'image'), 'image', r => ({ platform: r.platform, modelId: r.model_id }));
   let lastError: MediaError | null = null;
   // Only a chain rate limited end to end earns a Retry-After (the soonest).
   const hints = new RetryHintTracker();
-  for (const row of chain) {
+  for (const row of guard.items) {
+    if (guard.skip(row)) continue;
     const { credential, budgetBlocked } = KEYLESS_CAPABLE.has(row.platform)
       ? { credential: { id: null, key: null, baseUrl: null, release: () => {} }, budgetBlocked: false }
       : reserveProviderCredential(row, 0);
@@ -859,10 +861,12 @@ export async function runImageGeneration(model: string | undefined, params: Imag
         throw new MediaError('upstream returned no image', 502);
       }
       logMedia(row, credential.id, 'success', Date.now() - started, null);
+      guard.ok(row);
       return { platform: row.platform, modelId: row.model_id, images };
     } catch (err: any) {
       const e = err instanceof MediaError ? err : new MediaError(String(err?.message ?? err), 502);
       logMedia(row, credential.id, 'error', Date.now() - started, e.message.slice(0, 300));
+      guard.fail(row, e);
       lastError = e;
       hints.record(e.status, e.retryAfterMs);
     } finally {
@@ -880,12 +884,13 @@ export async function runVideoGeneration(
   params: VideoParams,
   clientSignal?: AbortSignal,
 ): Promise<VideoResult> {
-  const chain = resolveMediaChain(model, 'video');
+  const guard = new ChainGuard(resolveMediaChain(model, 'video'), 'video', r => ({ platform: r.platform, modelId: r.model_id }));
   let lastError: MediaError | null = null;
   // Only a chain rate limited end to end earns a Retry-After (the soonest).
   const hints = new RetryHintTracker();
-  for (const row of chain) {
+  for (const row of guard.items) {
     throwIfClientGone(clientSignal);
+    if (guard.skip(row)) continue;
     const { credential, budgetBlocked } = reserveProviderCredential(row, 0,
       keyId => isOnCooldown(row.platform, row.model_id, keyId));
     if (!credential) {
@@ -900,11 +905,13 @@ export async function runVideoGeneration(
       const out = await callVideoProvider(row, credential, params, clientSignal);
       if (!out.video.length) throw new MediaError('upstream returned no video', 502);
       logMedia(row, credential.id, 'success', Date.now() - started, null);
+      guard.ok(row);
       return { platform: row.platform, modelId: row.model_id, ...out };
     } catch (err: any) {
       const e = err instanceof MediaError ? err : new MediaError(String(err?.message ?? err), 502);
       logMedia(row, credential.id, 'error', Date.now() - started, e.message.slice(0, 300));
       if (e.status === 429 && credential.id != null) setCooldown(row.platform, row.model_id, credential.id);
+      guard.fail(row, e);
       lastError = e;
       hints.record(e.status, e.retryAfterMs);
       // A caller that hung up gets no second generation charged to its account.
@@ -1162,7 +1169,9 @@ export async function runTranscription(model: string | undefined, p: Transcripti
   let lastError: MediaError | null = null;
   // Only a chain rate limited end to end earns a Retry-After (the soonest).
   const hints = new RetryHintTracker();
-  for (const m of usable) {
+  const guard = new ChainGuard(usable, 'transcription', m => ({ platform: m.platform, modelId: m.modelId }));
+  for (const m of guard.items) {
+    if (guard.skip(m)) continue;
     const { credential, budgetBlocked } = reserveProviderCredential({ platform: m.platform, key_id: m.keyId }, 0,
       keyId => isOnCooldown(m.platform, m.modelId, keyId));
     if (!credential) {
@@ -1180,6 +1189,7 @@ export async function runTranscription(model: string | undefined, p: Transcripti
         throw new MediaError('upstream returned no vtt subtitles', 502);
       }
       logMedia(logRow, credential.id, 'success', Date.now() - started, null);
+      guard.ok(m);
       return { platform: m.platform, modelId: m.modelId, ...out };
     } catch (err: any) {
       const e = err instanceof MediaError ? err : new MediaError(String(err?.message ?? err), 502);
@@ -1187,6 +1197,7 @@ export async function runTranscription(model: string | undefined, p: Transcripti
       if (e.status === 429 && credential.id != null) {
         setCooldown(m.platform, m.modelId, credential.id);
       }
+      guard.fail(m, e);
       lastError = e;
       hints.record(e.status, e.retryAfterMs);
     } finally {
@@ -1198,11 +1209,12 @@ export async function runTranscription(model: string | undefined, p: Transcripti
 
 /** Synthesize speech, failing over across providers serving the modality. */
 export async function runSpeech(model: string | undefined, params: SpeechParams): Promise<SpeechResult> {
-  const chain = resolveMediaChain(model, 'audio');
+  const guard = new ChainGuard(resolveMediaChain(model, 'audio'), 'audio', r => ({ platform: r.platform, modelId: r.model_id }));
   let lastError: MediaError | null = null;
   // Only a chain rate limited end to end earns a Retry-After (the soonest).
   const hints = new RetryHintTracker();
-  for (const row of chain) {
+  for (const row of guard.items) {
+    if (guard.skip(row)) continue;
     const { credential, budgetBlocked } = KEYLESS_CAPABLE.has(row.platform)
       ? { credential: { id: null, key: null, baseUrl: null, release: () => {} }, budgetBlocked: false }
       : reserveProviderCredential(row, 0);
@@ -1218,10 +1230,12 @@ export async function runSpeech(model: string | undefined, params: SpeechParams)
       const out = await callSpeechProvider(row, credential, params);
       if (!out.audio.length) throw new MediaError('upstream returned no audio', 502);
       logMedia(row, credential.id, 'success', Date.now() - started, null);
+      guard.ok(row);
       return { platform: row.platform, modelId: row.model_id, audio: out.audio, contentType: out.contentType };
     } catch (err: any) {
       const e = err instanceof MediaError ? err : new MediaError(String(err?.message ?? err), 502);
       logMedia(row, credential.id, 'error', Date.now() - started, e.message.slice(0, 300));
+      guard.fail(row, e);
       lastError = e;
       hints.record(e.status, e.retryAfterMs);
     } finally {
