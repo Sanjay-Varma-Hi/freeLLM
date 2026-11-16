@@ -1175,5 +1175,20 @@
     "unmetered": "{providers}: no key needed and no quota, only rate limits.",
     "unpublished": "{providers}: connected, but no published daily cap to count.",
     "empty": "Connect a provider key to see this week's allowance."
+  },
+  "monthlyUsage": {
+    "title": "This month",
+    "exact": "exact",
+    "exactHint": "Counted from this gateway's own request log since the 1st of the month (UTC). Image, audio and video calls carry no token counts, so usage is shown in calls. Providers that publish no monthly limit show usage only; nothing is estimated for them.",
+    "used": "ok",
+    "failed": "failed",
+    "calls": "calls",
+    "left": "left",
+    "of": "of",
+    "noLimit": "no published limit",
+    "limitEstimate": "Limit is an estimate: the provider's daily allowance x days in the month.",
+    "keyless": "{providers}: no key needed and no quota, only rate limits.",
+    "empty": "Connect a provider key to start tracking this month's usage.",
+    "allFailed": "Every call to this provider failed this month, so its quota may be exhausted or its key restricted; the remaining figure cannot be trusted."
   }
 }

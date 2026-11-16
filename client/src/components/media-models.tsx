@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/page-header'
 import { ModelsTabs } from '@/components/models-tabs'
 import { UsageSummaryCard } from '@/components/usage-summary-card'
 import { WeeklyBudgetCard, type WeeklyBudgetData } from '@/components/weekly-budget-card'
+import { MonthlyMediaCard, type MonthlyMediaData } from '@/components/monthly-media-card'
 import { useI18n } from '@/i18n'
 
 export interface MediaModel {
@@ -39,6 +40,7 @@ interface MediaUsage {
   totalRequestsToday: number
   totalRequestsMonth: number
   weekly?: WeeklyBudgetData
+  monthly?: MonthlyMediaData
 }
 
 export interface MediaGroup {
@@ -213,6 +215,7 @@ export function MediaModelsView({ modality }: { modality: 'image' | 'video' | 'a
         </p>
 
         {usage?.weekly && <WeeklyBudgetCard data={usage.weekly} />}
+        {usage?.monthly && <MonthlyMediaCard data={usage.monthly} />}
 
         {usage && usage.models.length > 0 && (
           <UsageSummaryCard

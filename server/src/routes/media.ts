@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getWeeklyBudget } from '../services/weekly-budget.js';
+import { getMonthlyMediaUsage } from '../services/monthly-media-usage.js';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db/index.js';
@@ -98,6 +99,8 @@ mediaRouter.get('/usage', (req: Request, res: Response) => {
     totalRequestsToday: models.reduce((s, m) => s + m.requestsToday, 0),
     totalRequestsMonth: models.reduce((s, m) => s + m.requestsMonth, 0),
     weekly: modality === 'image' ? getWeeklyBudget('image') : undefined,
+    // Exact per-platform calls this month (image, audio, video; not STT).
+    monthly: modality === 'transcription' ? undefined : getMonthlyMediaUsage(modality),
   });
 });
 
