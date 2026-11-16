@@ -40,6 +40,9 @@ export interface Config {
   host: string;
   dbPath: string | null;
   dashboardOrigins: string[];
+  /** Host-header allowlist (DNS-rebinding guard) from ALLOWED_HOSTS, comma-separated.
+   *  Empty (default) or `*` leaves the guard off; once set, loopback is always allowed too. */
+  allowedHosts: string[];
   clientDist: string | null;
   proxyRateLimitRpm: number;
   /** JSON body limit (bytes) for the LLM wire surfaces — see
@@ -79,6 +82,7 @@ export function loadConfig(): Config {
       .split(',')
       .map(s => s.trim())
       .filter(Boolean),
+    allowedHosts: parseAllowedHosts(),
     clientDist: process.env.CLIENT_DIST ?? null,
     proxyRateLimitRpm: parseRateLimitRpm(),
     requestBodyLimitBytes: parseRequestBodyLimitBytes(),
@@ -90,6 +94,12 @@ export function loadConfig(): Config {
     // already TLS or forwarded as https, so HTTP LAN installs still render.
     cspUpgradeInsecureRequests: parseCspUpgradeInsecureRequests(),
   };
+}
+
+function parseAllowedHosts(): string[] {
+  const raw = process.env.ALLOWED_HOSTS;
+  if (raw === undefined || raw.trim() === '') return [];
+  return raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 }
 
 // Parse TRUST_PROXY. unset/empty/false → false (do not trust forwarded

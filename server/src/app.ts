@@ -39,6 +39,8 @@ import { createProxyRateLimiter, createAdminRateLimiter } from './middleware/rat
 // Password-guess ceiling for GET /api/keys/export. Deliberately low: a real
 // user exports keys occasionally, never ten times a minute.
 const EXPORT_RATE_LIMIT_RPM = 10;
+import { createHostGuard } from './middleware/allowed-hosts.js';
+import { collapseDoubledV1Prefix } from './middleware/doubled-v1.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { clientContextMiddleware } from './lib/client-context.js';
 import type { Config } from './lib/config.js';
@@ -103,6 +105,8 @@ export function createApp(config?: Config) {
   // /CIDRs trusts only those proxies. Must be set before client-context and
   // the rate-limit middleware, which both resolve the client IP.
   app.set('trust proxy', cfg.trustProxy);
+  // DNS-rebinding guard: first middleware, opt-in via ALLOWED_HOSTS.
+  app.use(createHostGuard(cfg.allowedHosts));
   const allowedCorsOrigins = new Set([
     ...DEFAULT_DASHBOARD_ORIGINS,
     ...cfg.dashboardOrigins,
@@ -177,6 +181,9 @@ export function createApp(config?: Config) {
 
     next();
   });
+  // Forgive a doubled `/v1` prefix: Anthropic-style clients append /v1/... to the
+  // base URL themselves, so pasting an OpenAI-style `.../v1` base 404s.
+  app.use(collapseDoubledV1Prefix);
   app.use(cors({
     origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
       callback(null, !origin || allowedCorsOrigins.has(origin));
